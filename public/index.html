@@ -1,71 +1,26 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
 <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
 
-<div class="overlay">
+<div class="box">
 
-<div class="landing">
+<h2>🌷 Tulip Chat</h2>
 
-<h1 class="logo">🌷 Tulip Chat</h1>
-
-<p class="tag">
-Make new friends and enjoy chatting with people around the world
-</p>
-
-<button class="loginBtn" onclick="openLogin()">Login</button>
-
-<button class="guestBtn" onclick="guest()">Guest Login</button>
-
-<p class="registerLink">
-New here? <a href="register.html">Register now</a>
-</p>
-
-</div>
-
-</div>
-
-
-<!-- LOGIN MODAL -->
-
-<div id="loginModal" class="modal">
-
-<div class="modalBox">
-
-<span class="close" onclick="closeLogin()">✕</span>
-
-<h2>Login</h2>
-
-<input id="username" placeholder="Username or Email">
-
+<input id="username" placeholder="Username">
 <input id="password" type="password" placeholder="Password">
 
 <button onclick="login()">Login</button>
+<button onclick="guest()">Guest Login</button>
+
+<p><a href="register.html">Register</a></p>
 
 </div>
-
-</div>
-
-
 
 <script>
-
-function openLogin(){
-document.getElementById("loginModal").style.display="flex"
-}
-
-function closeLogin(){
-document.getElementById("loginModal").style.display="none"
-}
-
 
 function login(){
 
@@ -87,14 +42,13 @@ window.location="chat.html"
 
 }else{
 
-alert("Wrong login")
+alert("Login failed")
 
 }
 
 })
 
 }
-
 
 function guest(){
 
@@ -109,5 +63,4 @@ window.location="chat.html"
 </script>
 
 </body>
-
 </html>
