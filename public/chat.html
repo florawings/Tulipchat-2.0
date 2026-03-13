@@ -15,18 +15,13 @@ font-family:Arial;
 background:#f5f5f5;
 }
 
-/* TOP BAR */
-
 #topbar{
 background:#111;
 color:white;
 padding:12px;
 display:flex;
-align-items:center;
 justify-content:space-between;
 }
-
-/* MAIN LAYOUT */
 
 #container{
 display:flex;
@@ -35,20 +30,24 @@ height:90vh;
 
 /* LEFT MENU */
 
-#menu{
+#rooms{
 width:220px;
 background:white;
 border-right:1px solid #ddd;
-padding:10px;
+overflow:auto;
 }
 
 .room{
-padding:10px;
+padding:12px;
 border-bottom:1px solid #eee;
 cursor:pointer;
 }
 
-/* CHAT AREA */
+.room:hover{
+background:#f0f0f0;
+}
+
+/* CHAT */
 
 #chat{
 flex:1;
@@ -64,12 +63,12 @@ padding:10px;
 
 .msg{
 background:#ddd;
+margin:5px 0;
 padding:8px;
-margin:6px 0;
 border-radius:6px;
 }
 
-/* USERS PANEL */
+/* USERS */
 
 #users{
 width:200px;
@@ -121,14 +120,15 @@ padding:12px 20px;
 
 <!-- ROOMS -->
 
-<div id="menu">
+<div id="rooms">
 
-<h3>Rooms</h3>
+<div class="room" onclick="joinRoom('main')">Main Room</div>
 
-<div class="room">Main room</div>
-<div class="room">Adult room</div>
-<div class="room">Quiz room</div>
-<div class="room">Marathi room</div>
+<div class="room" onclick="joinRoom('adult')">Adult Room</div>
+
+<div class="room" onclick="joinRoom('quiz')">Quiz Room</div>
+
+<div class="room" onclick="joinRoom('marathi')">Marathi Room</div>
 
 </div>
 
@@ -148,7 +148,7 @@ padding:12px 20px;
 
 </div>
 
-<!-- ONLINE USERS -->
+<!-- USERS -->
 
 <div id="users">
 
@@ -164,6 +164,8 @@ const socket = io()
 
 let username = localStorage.getItem("username")
 
+let currentRoom="main"
+
 if(!username){
 
 location="index.html"
@@ -172,7 +174,27 @@ location="index.html"
 
 document.getElementById("user").innerText=username
 
-socket.emit("join",username)
+socket.emit("join",{
+
+username:username,
+room:currentRoom
+
+})
+
+function joinRoom(room){
+
+currentRoom=room
+
+document.getElementById("messages").innerHTML=""
+
+socket.emit("join",{
+
+username:username,
+room:room
+
+})
+
+}
 
 document.getElementById("send").onclick=function(){
 
@@ -181,7 +203,8 @@ let text=document.getElementById("msg").value
 socket.emit("chat message",{
 
 user:username,
-msg:text
+msg:text,
+room:currentRoom
 
 })
 
