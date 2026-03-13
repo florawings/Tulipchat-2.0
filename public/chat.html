@@ -15,21 +15,17 @@
 
 <div class="topbar">
 
-<div class="logo">🌷 Tulip Chat</div>
+🌷 Tulip Chat
 
-<div class="top-right">
-
-<span id="username"></span>
+<span id="user"></span>
 
 <button onclick="logout()">Logout</button>
 
 </div>
 
-</div>
+<div id="chatbox"></div>
 
-<div id="chat"></div>
-
-<div class="inputbox">
+<div class="inputbar">
 
 <input id="msg" placeholder="Type message">
 
@@ -43,20 +39,22 @@ const socket = io()
 
 let user = localStorage.getItem("user")
 
-document.getElementById("username").innerText=user
+document.getElementById("user").innerText=user
 
 socket.emit("join",user)
 
 socket.on("msg",(m)=>{
 
 let div=document.createElement("div")
+
 div.className="message"
+
 div.innerText=m
 
-document.getElementById("chat").appendChild(div)
+document.getElementById("chatbox").appendChild(div)
 
-document.getElementById("chat").scrollTop=
-document.getElementById("chat").scrollHeight
+document.getElementById("chatbox").scrollTop=
+document.getElementById("chatbox").scrollHeight
 
 })
 
@@ -64,7 +62,7 @@ function send(){
 
 let text=document.getElementById("msg").value
 
-if(text.trim()==="") return
+if(text=="") return
 
 socket.emit("chat",{user,text})
 
@@ -76,7 +74,7 @@ function logout(){
 
 localStorage.removeItem("user")
 
-window.location="login.html"
+window.location="index.html"
 
 }
 
