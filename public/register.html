@@ -1,23 +1,42 @@
 <!DOCTYPE html>
 <html>
-
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div class="box">
+<div class="centerBox">
 
-<h2>Register</h2>
+<h2>Create Account</h2>
 
 <input id="username" placeholder="Username">
 
+<input id="email" placeholder="Email">
+
 <input id="password" type="password" placeholder="Password">
+
+<input id="dob" type="date">
+
+<select id="gender">
+<option value="">Gender</option>
+<option>Male</option>
+<option>Female</option>
+<option>Other</option>
+</select>
+
+<select id="country">
+<option>India</option>
+<option>USA</option>
+<option>UK</option>
+<option>Canada</option>
+<option>Australia</option>
+</select>
 
 <button onclick="register()">Register</button>
 
-<a href="index.html">Back to Login</a>
+<p><a href="index.html">Back to Login</a></p>
 
 </div>
 
@@ -25,19 +44,37 @@
 
 function register(){
 
-let user=document.getElementById("username").value
-let pass=document.getElementById("password").value
+let data = {
 
-if(user=="" || pass==""){
-alert("Fill all fields")
-return
+username:document.getElementById("username").value,
+email:document.getElementById("email").value,
+password:document.getElementById("password").value,
+dob:document.getElementById("dob").value,
+gender:document.getElementById("gender").value,
+country:document.getElementById("country").value
+
 }
 
-alert("Registered successfully")
+fetch("/register",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify(data)
+})
+.then(r=>r.json())
+.then(d=>{
 
-localStorage.setItem("user",user)
+if(d.ok){
 
-window.location="chat.html"
+alert("Account created")
+window.location="index.html"
+
+}else{
+
+alert("Registration failed")
+
+}
+
+})
 
 }
 
