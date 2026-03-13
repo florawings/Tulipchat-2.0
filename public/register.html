@@ -2,9 +2,7 @@
 <html>
 
 <head>
-
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 </head>
 
 <body>
@@ -53,12 +51,7 @@ headers:{
 },
 
 body:JSON.stringify({
-username,
-password,
-email,
-dob,
-gender,
-country
+username,password,email,dob,gender,country
 })
 
 })
@@ -67,8 +60,7 @@ let data=await r.json()
 
 if(data.ok){
 
-alert("Registration successful")
-
+alert("Registered")
 location="index.html"
 
 }else{
