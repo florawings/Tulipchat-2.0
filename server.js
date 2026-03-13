@@ -1,34 +1,32 @@
-const express = require("express")
-const http = require("http")
-const { Server } = require("socket.io")
+const express = require("express");
+const app = express();
+const http = require("http").createServer(app);
+const io = require("socket.io")(http);
 
-const app = express()
-const server = http.createServer(app)
-const io = new Server(server)
-
-app.use(express.static("public"))
-
-let users = {}
+app.use(express.static("public"));
 
 io.on("connection", (socket) => {
 
-    socket.on("join", (username) => {
-        users[socket.id] = username
-        io.emit("message", username + " joined")
-    })
+console.log("User connected");
 
-    socket.on("chat", (msg) => {
-        io.emit("message", users[socket.id] + ": " + msg)
-    })
+socket.on("chat message", (msg) => {
 
-    socket.on("disconnect", () => {
-        if(users[socket.id]){
-            io.emit("message", users[socket.id] + " left")
-        }
-    })
+io.emit("chat message", msg);
 
-})
+});
 
-server.listen(3000, () => {
-    console.log("Server running")
-})
+socket.on("disconnect", () => {
+
+console.log("User disconnected");
+
+});
+
+});
+
+const PORT = process.env.PORT || 3000;
+
+http.listen(PORT, () => {
+
+console.log("Server running on port " + PORT);
+
+});
