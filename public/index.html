@@ -2,48 +2,105 @@
 <html>
 
 <head>
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
 
-<div class="box">
+<div class="overlay">
 
-<h2>Tulip Chat</h2>
+<div class="landing">
 
-<input id="username" placeholder="Username">
+<h1 class="logo">🌷 Tulip Chat</h1>
 
-<button onclick="login()">Login</button>
+<p class="tag">
+Make new friends and enjoy chatting with people around the world
+</p>
 
-<button onclick="guest()">Guest Login</button>
+<button class="loginBtn" onclick="openLogin()">Login</button>
 
-<a href="register.html">New User Register</a>
+<button class="guestBtn" onclick="guest()">Guest Login</button>
+
+<p class="registerLink">
+New here? <a href="register.html">Register now</a>
+</p>
 
 </div>
 
+</div>
+
+
+<!-- LOGIN MODAL -->
+
+<div id="loginModal" class="modal">
+
+<div class="modalBox">
+
+<span class="close" onclick="closeLogin()">✕</span>
+
+<h2>Login</h2>
+
+<input id="username" placeholder="Username or Email">
+
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
+</div>
+
+</div>
+
+
+
 <script>
+
+function openLogin(){
+document.getElementById("loginModal").style.display="flex"
+}
+
+function closeLogin(){
+document.getElementById("loginModal").style.display="none"
+}
+
 
 function login(){
 
-let user=document.getElementById("username").value
+let u=document.getElementById("username").value
+let p=document.getElementById("password").value
 
-if(user==""){
-alert("Enter username")
-return
-}
+fetch("/login",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({username:u,password:p})
+})
+.then(r=>r.json())
+.then(d=>{
 
-localStorage.setItem("user",user)
+if(d.ok){
 
+localStorage.setItem("user",u)
 window.location="chat.html"
 
+}else{
+
+alert("Wrong login")
+
 }
+
+})
+
+}
+
 
 function guest(){
 
-let guest="Guest"+Math.floor(Math.random()*1000)
+let name="Guest"+Math.floor(Math.random()*1000)
 
-localStorage.setItem("user",guest)
+localStorage.setItem("user",name)
 
 window.location="chat.html"
 
@@ -52,4 +109,5 @@ window.location="chat.html"
 </script>
 
 </body>
+
 </html>
