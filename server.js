@@ -4,25 +4,74 @@ const app = express()
 const http = require("http").createServer(app)
 const io = require("socket.io")(http)
 
-app.use(express.static("public"))
+const multer = require("multer")
 
-let users = {}
+app.use(express.static("public"))
+app.use("/uploads",express.static("uploads"))
+
+const storage = multer.diskStorage({
+destination:"uploads/",
+filename:(req,file,cb)=>{
+cb(null,Date.now()+"-"+file.originalname)
+}
+})
+
+const upload = multer({storage})
+
+app.post("/upload",upload.single("image"),(req,res)=>{
+
+res.json({
+url:"/uploads/"+req.file.filename
+})
+
+})
+
+let users={}
+let registered={}
 
 io.on("connection",(socket)=>{
 
-socket.on("join",(data)=>{
+socket.on("register",(data)=>{
 
-users[data.username] = {
-socket: socket.id,
-room: data.room,
-lastSeen: Date.now()
+if(registered[data.email]){
+
+socket.emit("registerError","User exists")
+return
 }
+
+registered[data.email]=data.password
+
+socket.emit("registerSuccess")
+
+})
+
+socket.on("login",(data)=>{
+
+if(!registered[data.email]){
+
+socket.emit("loginError","User not registered")
+return
+}
+
+if(registered[data.email]!==data.password){
+
+socket.emit("loginError","Wrong password")
+return
+}
+
+users[data.email]=socket.id
+
+socket.emit("loginSuccess")
+
+})
+
+socket.on("join",(data)=>{
 
 socket.join(data.room)
 
 io.to(data.room).emit("chat message",{
 user:"SYSTEM",
-msg:data.username + " joined the room"
+msg:data.user+" joined room"
 })
 
 })
@@ -33,15 +82,13 @@ io.to(data.room).emit("chat message",data)
 
 })
 
-socket.on("disconnect",()=>{
+socket.on("private message",(data)=>{
 
-for(let u in users){
+let target=users[data.to]
 
-if(users[u].socket === socket.id){
+if(target){
 
-users[u].lastSeen = Date.now()
-
-}
+io.to(target).emit("private message",data)
 
 }
 
