@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -10,35 +11,33 @@
 
 <h2>Register</h2>
 
-<input id="email" placeholder="Email">
+<input id="username" placeholder="Username">
 
 <input id="password" type="password" placeholder="Password">
 
 <button onclick="register()">Register</button>
 
+<a href="index.html">Back to Login</a>
+
 </div>
 
 <script>
 
-async function register(){
+function register(){
 
-let email=document.getElementById("email").value
-let password=document.getElementById("password").value
+let user=document.getElementById("username").value
+let pass=document.getElementById("password").value
 
-let res=await fetch("/register",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({email,password})
-})
-
-let data=await res.json()
-
-if(data.status==="ok"){
-alert("Registered")
-window.location="login.html"
-}else{
-alert("User already exists")
+if(user=="" || pass==""){
+alert("Fill all fields")
+return
 }
+
+alert("Registered successfully")
+
+localStorage.setItem("user",user)
+
+window.location="chat.html"
 
 }
 
