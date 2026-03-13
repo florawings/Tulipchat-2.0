@@ -1,18 +1,178 @@
-socket.emit("join", username);
+<!DOCTYPE html>
+<html>
+<head>
 
-socket.on("users", function(list){
-document.getElementById("users").innerText =
-"Online: " + list.join(", ");
+<title>Chat</title>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#eee;
+}
+
+#top{
+background:black;
+color:white;
+padding:15px;
+display:flex;
+justify-content:space-between;
+}
+
+#users{
+background:#222;
+color:white;
+padding:8px;
+font-size:14px;
+}
+
+#typing{
+font-size:13px;
+color:gray;
+padding-left:10px;
+}
+
+#messages{
+height:70vh;
+overflow:auto;
+padding:10px;
+}
+
+.msg{
+background:#ddd;
+padding:8px;
+margin:5px 0;
+border-radius:5px;
+}
+
+#sendbox{
+position:fixed;
+bottom:0;
+width:100%;
+display:flex;
+}
+
+#msg{
+flex:1;
+padding:12px;
+border:none;
+}
+
+#send{
+background:#4CAF50;
+color:white;
+border:none;
+padding:12px 20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="top">
+
+<div id="user"></div>
+
+<button onclick="logout()">Logout</button>
+
+</div>
+
+<div id="users"></div>
+
+<div id="messages"></div>
+
+<div id="typing"></div>
+
+<div id="sendbox">
+
+<input id="msg" placeholder="Type message">
+
+<button id="send">Send</button>
+
+</div>
+
+<script>
+
+const socket = io();
+
+const username = localStorage.getItem("username");
+
+if(!username){
+window.location.href="login.html";
+}
+
+document.getElementById("user").innerText="User: "+username;
+
+socket.emit("join",username);
+
+const messages=document.getElementById("messages");
+
+document.getElementById("send").onclick=function(){
+
+let text=document.getElementById("msg").value;
+
+if(text.trim()=="") return;
+
+socket.emit("chat message",{
+user:username,
+msg:text
 });
 
-document.getElementById("msg").addEventListener("input", ()=>{
-socket.emit("typing", username);
+document.getElementById("msg").value="";
+}
+
+socket.on("chat message",(data)=>{
+
+let div=document.createElement("div");
+
+div.className="msg";
+
+div.innerText=data.user+" : "+data.msg;
+
+messages.appendChild(div);
+
+messages.scrollTop=messages.scrollHeight;
+
 });
 
-socket.on("typing", function(name){
-document.getElementById("typing").innerText =
-name + " is typing...";
+socket.on("users",(list)=>{
+
+document.getElementById("users").innerText=
+"Online: "+list.join(", ");
+
+});
+
+document.getElementById("msg").addEventListener("input",()=>{
+
+socket.emit("typing",username);
+
+});
+
+socket.on("typing",(name)=>{
+
+document.getElementById("typing").innerText=
+name+" is typing...";
+
 setTimeout(()=>{
 document.getElementById("typing").innerText="";
 },1500);
+
 });
+
+function logout(){
+
+localStorage.removeItem("username");
+
+window.location.href="login.html";
+
+}
+
+</script>
+
+</body>
+</html>
