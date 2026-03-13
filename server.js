@@ -14,9 +14,12 @@ socket.on("join",(data)=>{
 
 socket.join(data.room)
 
-users[data.username] = socket.id
+users[socket.id] = data.username
 
-io.emit("users",Object.keys(users))
+io.to(data.room).emit("chat message",{
+user:"SYSTEM",
+msg:data.username + " joined the room"
+})
 
 })
 
@@ -28,20 +31,16 @@ io.to(data.room).emit("chat message",data)
 
 socket.on("disconnect",()=>{
 
-for(let name in users){
+let username = users[socket.id]
 
-if(users[name]==socket.id){
+delete users[socket.id]
 
-delete users[name]
-
-}
-
-}
-
-io.emit("users",Object.keys(users))
+io.emit("users",Object.values(users))
 
 })
 
 })
 
-http.listen(process.env.PORT || 3000)
+http.listen(process.env.PORT || 3000,()=>{
+console.log("Server running")
+})
