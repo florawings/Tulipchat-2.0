@@ -1,108 +1,55 @@
-<!DOCTYPE html><html><head>
-<title>Tulip Chat</title>
-<meta name="viewport" content="width=device-width, initial-scale=1"><script src="/socket.io/socket.io.js"></script><style>
+<!DOCTYPE html>
+<html>
 
-/* PAGE */
+<head>
+
+<title>Tulip Chat</title>
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<script src="/socket.io/socket.io.js"></script>
+
+<style>
 
 body{
 margin:0;
-font-family:Segoe UI, Arial;
-
+font-family:Arial;
 background:#0f172a;
-
-height:100vh;
-display:flex;
-flex-direction:column;
+color:white;
 }
-
-/* TOP BAR */
 
 #topbar{
 background:#020617;
-color:white;
-padding:12px;
-
+padding:10px;
 display:flex;
 justify-content:space-between;
-align-items:center;
-
-box-shadow:0 2px 10px rgba(0,0,0,0.6);
 }
-
-#icons span{
-margin-left:15px;
-cursor:pointer;
-opacity:0.8;
-}
-
-#icons span:hover{
-opacity:1;
-transform:scale(1.1);
-}
-
-/* MENU */
-
-#menu{
-position:fixed;
-left:-220px;
-top:0;
-
-width:220px;
-height:100%;
-
-background:#020617;
-color:white;
-
-transition:0.3s;
-
-z-index:5;
-}
-
-.menuItem{
-padding:16px;
-border-bottom:1px solid rgba(255,255,255,0.1);
-cursor:pointer;
-}
-
-.menuItem:hover{
-background:#1e293b;
-}
-
-/* MAIN */
 
 #main{
-flex:1;
 display:flex;
+height:90vh;
 }
 
-/* ROOMS */
-
 #rooms{
-width:140px;
+width:120px;
 background:#020617;
-color:white;
 }
 
 .room{
-padding:14px;
+padding:12px;
 cursor:pointer;
-border-bottom:1px solid rgba(255,255,255,0.08);
+border-bottom:1px solid #111;
 }
 
 .room:hover{
 background:#1e293b;
 }
 
-/* CHAT */
-
 #chat{
 flex:1;
 display:flex;
 flex-direction:column;
-background:#111827;
 }
-
-/* MESSAGE AREA */
 
 #messages{
 flex:1;
@@ -110,130 +57,110 @@ overflow:auto;
 padding:15px;
 }
 
-/* MESSAGE */
-
 .msg{
 background:#1e293b;
-color:white;
-
-padding:10px 14px;
-border-radius:14px;
-
-margin-bottom:10px;
-
-max-width:70%;
-
-box-shadow:0 4px 10px rgba(0,0,0,0.5);
-
-animation:fade 0.3s;
+padding:10px;
+border-radius:10px;
+margin-bottom:8px;
 }
-
-@keyframes fade{
-from{opacity:0;transform:translateY(10px);}
-to{opacity:1;}
-}
-
-/* SEND */
 
 #sendbox{
 display:flex;
-background:#020617;
 padding:8px;
+background:#020617;
 }
 
 #msg{
 flex:1;
+padding:10px;
 border:none;
-
-padding:12px;
-
-border-radius:20px;
-
-background:#1e293b;
-color:white;
-}
-
-#msg:focus{
-outline:none;
+border-radius:10px;
 }
 
 #send{
+padding:10px;
 background:#22c55e;
-color:white;
-
 border:none;
-
-padding:10px 18px;
-
-border-radius:20px;
-
-margin-left:8px;
-
-cursor:pointer;
-font-weight:bold;
+color:white;
+margin-left:5px;
+border-radius:10px;
 }
-
-#send:hover{
-background:#16a34a;
-}
-
-/* USERS */
 
 #users{
-width:140px;
+width:130px;
 background:#020617;
-color:white;
 }
 
 .user{
-padding:10px;
-border-bottom:1px solid rgba(255,255,255,0.08);
+padding:8px;
+border-bottom:1px solid #111;
 }
 
-/* TOAST */
-
-#toast{
-position:fixed;
-bottom:20px;
-left:50%;
-transform:translateX(-50%);
-
-background:#22c55e;
-color:white;
-
-padding:10px 20px;
-
-border-radius:20px;
-
-display:none;
+#search{
+width:100%;
+padding:6px;
+border:none;
 }
 
-</style></head><body><!-- MENU --><div id="menu"><div class="menuItem">Profile</div>
-<div class="menuItem">Friends</div>
-<div class="menuItem">Settings</div>
-<div class="menuItem">Help</div></div><!-- TOP BAR --><div id="topbar"><div><span onclick="toggleMenu()">☰</span>
-<b style="margin-left:10px">Tulip Chat</b>
+</style>
 
-</div><div id="icons"><span onclick="refreshPage()">🔄</span>
-<span onclick="openMessages()">✉️</span>
-<span onclick="addFriend()">➕</span>
-<span onclick="showNotifications()">🔔</span>
+</head>
 
-<span id="username"></span>
+<body>
 
-</div></div><!-- MAIN --><div id="main"><!-- ROOMS --><div id="rooms"><div class="room" onclick="joinRoom('main')">Main</div>
+<div id="topbar">
+
+<div>Tulip Chat</div>
+
+<div id="username"></div>
+
+</div>
+
+<div id="main">
+
+<div id="rooms">
+
+<div class="room" onclick="joinRoom('main')">Main</div>
 <div class="room" onclick="joinRoom('adult')">Adult</div>
 <div class="room" onclick="joinRoom('quiz')">Quiz</div>
-<div class="room" onclick="joinRoom('marathi')">Marathi</div></div><!-- CHAT --><div id="chat"><div id="messages"></div><div id="sendbox"><input id="msg" placeholder="Type message"><button id="send">Send</button>
+<div class="room" onclick="joinRoom('marathi')">Marathi</div>
 
-</div></div><!-- USERS --><div id="users"><div style="padding:10px;font-weight:bold">Online</div><div id="userlist"></div></div></div><div id="toast"></div><script>
+</div>
+
+<div id="chat">
+
+<div id="messages"></div>
+
+<div id="sendbox">
+
+<input id="msg" placeholder="Type message">
+
+<button id="send">Send</button>
+
+</div>
+
+</div>
+
+<div id="users">
+
+<input id="search" placeholder="Search">
+
+<div id="userlist"></div>
+
+</div>
+
+</div>
+
+<script>
 
 const socket = io()
 
 let username = localStorage.getItem("username")
 
 if(!username){
+
 location="index.html"
+
 }
 
 document.getElementById("username").innerText=username
@@ -242,17 +169,15 @@ let room="main"
 
 socket.emit("join",{username,room})
 
-function joinRoom(newRoom){
+function joinRoom(r){
 
-room=newRoom
+room=r
 
 document.getElementById("messages").innerHTML=""
 
 socket.emit("join",{username,room})
 
 }
-
-/* SEND MESSAGE */
 
 document.getElementById("send").onclick=function(){
 
@@ -266,8 +191,6 @@ document.getElementById("msg").value=""
 
 }
 
-/* RECEIVE MESSAGE */
-
 socket.on("chat message",(data)=>{
 
 let div=document.createElement("div")
@@ -280,52 +203,28 @@ document.getElementById("messages").appendChild(div)
 
 })
 
-/* MENU */
+/* SEARCH */
 
-function toggleMenu(){
+document.getElementById("search").onkeyup=function(){
 
-let menu=document.getElementById("menu")
+let v=this.value.toLowerCase()
 
-if(menu.style.left=="0px"){
-menu.style.left="-220px"
+let users=document.querySelectorAll(".user")
+
+users.forEach(u=>{
+
+if(u.innerText.toLowerCase().includes(v)){
+u.style.display="block"
 }else{
-menu.style.left="0px"
+u.style.display="none"
 }
 
-}
-
-/* TOAST */
-
-function showToast(text){
-
-let toast=document.getElementById("toast")
-
-toast.innerText=text
-
-toast.style.display="block"
-
-setTimeout(()=>{
-toast.style.display="none"
-},2000)
+})
 
 }
 
-/* ICONS */
+</script>
 
-function refreshPage(){
-location.reload()
-}
+</body>
 
-function openMessages(){
-showToast("Private messages coming soon")
-}
-
-function addFriend(){
-showToast("Friend system coming soon")
-}
-
-function showNotifications(){
-showToast("No notifications")
-}
-
-</script></body></html>
+</html>
