@@ -1,90 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
-<style>
-
-body{
-font-family:sans-serif;
-background:#0b1d3a;
-color:white;
-text-align:center;
-padding-top:120px;
-}
-
-input{
-width:80%;
-padding:12px;
-margin:10px;
-}
-
-button{
-width:85%;
-padding:12px;
-margin:5px;
-}
-
-</style>
-
 </head>
 
 <body>
 
-<h2>🌷 Tulip Chat</h2>
+<h2>Tulip Chat</h2>
 
-<input id="user" placeholder="Username">
+<input id="name" placeholder="Enter name">
 
-<input id="pass" type="password" placeholder="Password">
-
-<button onclick="login()">Login</button>
-
-<button onclick="guest()">Guest Login</button>
-
-<p>
-<a href="register.html">Register</a>
-</p>
+<button onclick="join()">Join Chat</button>
 
 <script>
 
-async function login(){
+function join(){
 
-let username=user.value
-let password=pass.value
-
-let r=await fetch("/login",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-username,password
-})
-
-})
-
-let data=await r.json()
-
-if(data.ok){
-
-localStorage.setItem("user",username)
-location="chat.html"
-
-}else{
-
-alert("Login failed")
-
-}
-
-}
-
-function guest(){
-
-let name="Guest"+Math.floor(Math.random()*1000)
+let name = document.getElementById("name").value
 
 localStorage.setItem("user",name)
 
