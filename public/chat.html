@@ -3,106 +3,8 @@
 
 <head>
 
-<title>Tulip Chat</title>
-
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
+<link rel="stylesheet" href="style.css">
 <script src="/socket.io/socket.io.js"></script>
-
-<style>
-
-body{
-margin:0;
-font-family:Arial;
-background:#0f172a;
-color:white;
-}
-
-#topbar{
-background:#020617;
-padding:10px;
-display:flex;
-justify-content:space-between;
-}
-
-#main{
-display:flex;
-height:90vh;
-}
-
-#rooms{
-width:120px;
-background:#020617;
-}
-
-.room{
-padding:12px;
-cursor:pointer;
-border-bottom:1px solid #111;
-}
-
-.room:hover{
-background:#1e293b;
-}
-
-#chat{
-flex:1;
-display:flex;
-flex-direction:column;
-}
-
-#messages{
-flex:1;
-overflow:auto;
-padding:15px;
-}
-
-.msg{
-background:#1e293b;
-padding:10px;
-border-radius:10px;
-margin-bottom:8px;
-}
-
-#sendbox{
-display:flex;
-padding:8px;
-background:#020617;
-}
-
-#msg{
-flex:1;
-padding:10px;
-border:none;
-border-radius:10px;
-}
-
-#send{
-padding:10px;
-background:#22c55e;
-border:none;
-color:white;
-margin-left:5px;
-border-radius:10px;
-}
-
-#users{
-width:130px;
-background:#020617;
-}
-
-.user{
-padding:8px;
-border-bottom:1px solid #111;
-}
-
-#search{
-width:100%;
-padding:6px;
-border:none;
-}
-
-</style>
 
 </head>
 
@@ -110,9 +12,10 @@ border:none;
 
 <div id="topbar">
 
-<div>Tulip Chat</div>
+Tulip Chat
 
-<div id="username"></div>
+<span onclick="location.reload()">🔄</span>
+<span onclick="alert('Notifications')">🔔</span>
 
 </div>
 
@@ -120,10 +23,8 @@ border:none;
 
 <div id="rooms">
 
-<div class="room" onclick="joinRoom('main')">Main</div>
-<div class="room" onclick="joinRoom('adult')">Adult</div>
-<div class="room" onclick="joinRoom('quiz')">Quiz</div>
-<div class="room" onclick="joinRoom('marathi')">Marathi</div>
+<div onclick="joinRoom('main')">Main</div>
+<div onclick="joinRoom('adult')">Adult</div>
 
 </div>
 
@@ -131,21 +32,11 @@ border:none;
 
 <div id="messages"></div>
 
-<div id="sendbox">
+<input id="msg">
 
-<input id="msg" placeholder="Type message">
+<button onclick="send()">Send</button>
 
-<button id="send">Send</button>
-
-</div>
-
-</div>
-
-<div id="users">
-
-<input id="search" placeholder="Search">
-
-<div id="userlist"></div>
+<input type="file" id="img">
 
 </div>
 
@@ -153,41 +44,31 @@ border:none;
 
 <script>
 
-const socket = io()
+const socket=io()
 
-let username = localStorage.getItem("username")
-
-if(!username){
-
-location="index.html"
-
-}
-
-document.getElementById("username").innerText=username
+let user=localStorage.getItem("user")
 
 let room="main"
 
-socket.emit("join",{username,room})
+socket.emit("join",{room,user})
 
 function joinRoom(r){
 
 room=r
 
-document.getElementById("messages").innerHTML=""
-
-socket.emit("join",{username,room})
-
 }
 
-document.getElementById("send").onclick=function(){
+function send(){
 
-let text=document.getElementById("msg").value
+let msg=document.getElementById("msg").value
 
-if(text=="") return
+socket.emit("chat message",{
 
-socket.emit("chat message",{user:username,msg:text,room})
+user:user,
+msg:msg,
+room:room
 
-document.getElementById("msg").value=""
+})
 
 }
 
@@ -195,36 +76,13 @@ socket.on("chat message",(data)=>{
 
 let div=document.createElement("div")
 
-div.className="msg"
-
-div.innerText=data.user+" : "+data.msg
+div.innerHTML="<b>"+data.user+"</b>: "+data.msg
 
 document.getElementById("messages").appendChild(div)
 
 })
 
-/* SEARCH */
-
-document.getElementById("search").onkeyup=function(){
-
-let v=this.value.toLowerCase()
-
-let users=document.querySelectorAll(".user")
-
-users.forEach(u=>{
-
-if(u.innerText.toLowerCase().includes(v)){
-u.style.display="block"
-}else{
-u.style.display="none"
-}
-
-})
-
-}
-
 </script>
 
 </body>
-
 </html>
