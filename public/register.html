@@ -2,6 +2,7 @@
 <html>
 
 <head>
+
 <title>Register</title>
 
 <style>
@@ -19,13 +20,13 @@ height:100vh;
 background:white;
 padding:30px;
 border-radius:10px;
-width:250px;
+width:260px;
 }
 
-input{
+input,select{
 width:100%;
 padding:10px;
-margin:5px 0;
+margin:6px 0;
 }
 
 button{
@@ -34,6 +35,7 @@ padding:10px;
 background:#22c55e;
 border:none;
 color:white;
+font-size:16px;
 }
 
 </style>
@@ -44,13 +46,24 @@ color:white;
 
 <div class="box">
 
-<h3>Register</h3>
+<h3>Create Account</h3>
 
 <input id="user" placeholder="Username">
 
+<input id="email" placeholder="Email">
+
+<input id="dob" type="date">
+
+<select id="gender">
+<option value="">Select Gender</option>
+<option>Male</option>
+<option>Female</option>
+<option>Other</option>
+</select>
+
 <input id="pass" type="password" placeholder="Password">
 
-<button onclick="register()">Create Account</button>
+<button onclick="register()">Register</button>
 
 </div>
 
@@ -58,12 +71,38 @@ color:white;
 
 function register(){
 
-let u=document.getElementById("user").value
-let p=document.getElementById("pass").value
+let username=document.getElementById("user").value
+let email=document.getElementById("email").value
+let dob=document.getElementById("dob").value
+let gender=document.getElementById("gender").value
+let password=document.getElementById("pass").value
+
+if(!username || !email || !dob || !gender || !password){
+
+alert("Fill all fields")
+
+return
+
+}
 
 let users=JSON.parse(localStorage.getItem("users")||"{}")
 
-users[u]=p
+if(users[username]){
+
+alert("Username already exists")
+
+return
+
+}
+
+users[username]={
+
+email:email,
+dob:dob,
+gender:gender,
+password:password
+
+}
 
 localStorage.setItem("users",JSON.stringify(users))
 
