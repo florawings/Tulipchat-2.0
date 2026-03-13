@@ -10,20 +10,17 @@
 <style>
 
 body{
-font-family:Arial;
 margin:0;
+font-family:Arial;
 background:#eee;
 }
 
-#users{
-background:#222;
+#top{
+background:black;
 color:white;
-padding:10px;
-}
-
-.user{
-cursor:pointer;
-padding:5px;
+padding:15px;
+display:flex;
+justify-content:space-between;
 }
 
 #messages{
@@ -34,29 +31,29 @@ padding:10px;
 
 .msg{
 background:#ddd;
-margin:5px;
 padding:8px;
+margin:5px 0;
 border-radius:5px;
 }
 
 #sendbox{
-display:flex;
 position:fixed;
 bottom:0;
 width:100%;
+display:flex;
 }
 
 #msg{
 flex:1;
-padding:10px;
+padding:12px;
 border:none;
 }
 
 #send{
-background:green;
+background:#22c55e;
 color:white;
 border:none;
-padding:10px 20px;
+padding:12px 20px;
 }
 
 </style>
@@ -65,7 +62,13 @@ padding:10px 20px;
 
 <body>
 
-<div id="users"></div>
+<div id="top">
+
+<div id="user"></div>
+
+<button onclick="logout()">Logout</button>
+
+</div>
 
 <div id="messages"></div>
 
@@ -79,83 +82,47 @@ padding:10px 20px;
 
 <script>
 
-const socket = io();
+const socket = io()
 
-let username = localStorage.getItem("username");
+let username=localStorage.getItem("username")
 
 if(!username){
-location="login.html";
-}
 
-let currentChat="";
-
-socket.emit("join",username);
-
-socket.on("users",(list)=>{
-
-let div=document.getElementById("users");
-
-div.innerHTML="";
-
-list.forEach(u=>{
-
-if(u!=username){
-
-let d=document.createElement("div");
-
-d.className="user";
-
-d.innerText=u;
-
-d.onclick=function(){
-
-currentChat=u;
-
-};
-
-div.appendChild(d);
+location="index.html"
 
 }
 
-});
+document.getElementById("user").innerText="User: "+username
 
-});
+socket.emit("join",username)
 
 document.getElementById("send").onclick=function(){
 
-let text=document.getElementById("msg").value;
+let text=document.getElementById("msg").value
 
-if(currentChat=="") return;
+socket.emit("chat message",{user:username,msg:text})
 
-socket.emit("private message",{
+document.getElementById("msg").value=""
 
-from:username,
-to:currentChat,
-msg:text
+}
 
-});
+socket.on("chat message",(data)=>{
 
-addMsg(username,text);
+let div=document.createElement("div")
 
-document.getElementById("msg").value="";
+div.className="msg"
 
-};
+div.innerText=data.user+" : "+data.msg
 
-socket.on("private message",(data)=>{
+document.getElementById("messages").appendChild(div)
 
-addMsg(data.from,data.msg);
+})
 
-});
+function logout(){
 
-function addMsg(user,msg){
+localStorage.removeItem("username")
 
-let div=document.createElement("div");
-
-div.className="msg";
-
-div.innerText=user+" : "+msg;
-
-document.getElementById("messages").appendChild(div);
+location="index.html"
 
 }
 
