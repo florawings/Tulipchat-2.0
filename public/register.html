@@ -1,74 +1,67 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<link rel="stylesheet" href="style.css">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 </head>
 
 <body>
 
-<div class="box">
-
 <h2>Register</h2>
 
-<input id="username" placeholder="Username">
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
+<input id="user" placeholder="Username"><br>
+<input id="pass" type="password" placeholder="Password"><br>
+<input id="email" placeholder="Email"><br>
 
-<input id="dob" type="date">
+<label>DOB</label>
+<input id="dob" type="date"><br>
 
 <select id="gender">
 <option>Male</option>
 <option>Female</option>
 <option>Other</option>
-</select>
+</select><br>
 
-<input id="country" placeholder="Country">
+<input id="country" placeholder="Country"><br>
 
 <button onclick="register()">Register</button>
 
-<p><a href="index.html">Back</a></p>
-
-</div>
-
 <script>
 
-function register(){
+async function register(){
 
-let data={
+let username=user.value
+let password=pass.value
+let email=email.value
+let dob=dob.value
+let gender=gender.value
+let country=country.value
 
-username:username.value,
-email:email.value,
-password:password.value,
-dob:dob.value,
-gender:gender.value,
-country:country.value
-
-}
-
-fetch("/register",{
+let r=await fetch("/register",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
-body:JSON.stringify(data)
+body:JSON.stringify({username,password,email,dob,gender,country})
 })
-.then(r=>r.json())
-.then(d=>{
 
-if(d.ok){
+let data=await r.json()
 
-alert("Account created")
-window.location="index.html"
+if(data.ok){
+
+alert("Registration success")
+location="index.html"
 
 }else{
 
-alert("Error")
+alert(data.msg)
 
 }
-
-})
 
 }
 
 </script>
 
 </body>
+
 </html>
