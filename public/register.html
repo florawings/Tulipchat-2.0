@@ -1,55 +1,23 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-
-<link rel="stylesheet" href="style.css">
-<script src="/socket.io/socket.io.js"></script>
-
-</head>
-
-<body>
-
-<div class="box">
-
-<h2>Register</h2>
-
-<input id="email" placeholder="Email">
-
-<input id="pass" placeholder="Password">
-
-<button onclick="register()">Register</button>
-
-</div>
-
 <script>
-
-const socket=io()
-
-function register(){
+async function register(){
 
 let email=document.getElementById("email").value
-let password=document.getElementById("pass").value
+let password=document.getElementById("password").value
 
-socket.emit("register",{email,password})
+let res=await fetch("/register",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({email,password})
+})
 
+let data=await res.json()
+
+if(data.status==="ok"){
+alert("Registered")
+window.location="login.html"
+}else{
+alert("User already exists")
 }
 
-socket.on("registerSuccess",()=>{
-
-alert("Registered")
-
-location="login.html"
-
-})
-
-socket.on("registerError",(msg)=>{
-
-alert(msg)
-
-})
-
+}
 </script>
-
-</body>
-</html>
