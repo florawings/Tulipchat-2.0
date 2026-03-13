@@ -1,22 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="style.css">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+margin:0;
+font-family:sans-serif;
+background:url("https://images.unsplash.com/photo-1529156069898-49953e39b3ac") center/cover;
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.card{
+background:white;
+padding:30px;
+border-radius:10px;
+width:300px;
+text-align:center;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:5px;
+font-size:16px;
+}
+
+.login{background:#4caf50;color:white;}
+.guest{background:black;color:white;}
+.register{background:#2196f3;color:white;}
+
+input{
+width:100%;
+padding:10px;
+margin-top:10px;
+}
+
+</style>
+
 </head>
 
 <body>
 
-<div class="box">
+<div class="card">
 
 <h2>🌷 Tulip Chat</h2>
 
-<input id="username" placeholder="Username">
-<input id="password" type="password" placeholder="Password">
+<input id="user" placeholder="Username">
 
-<button onclick="login()">Login</button>
-<button onclick="guest()">Guest Login</button>
+<input id="pass" type="password" placeholder="Password">
 
-<p><a href="register.html">Register</a></p>
+<button class="login" onclick="login()">Login</button>
+
+<button class="guest" onclick="guest()">Guest Login</button>
+
+<button class="register" onclick="window.location='register.html'">Register</button>
 
 </div>
 
@@ -24,37 +69,19 @@
 
 function login(){
 
-let u=document.getElementById("username").value
-let p=document.getElementById("password").value
-
-fetch("/login",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({username:u,password:p})
-})
-.then(r=>r.json())
-.then(d=>{
-
-if(d.ok){
+let u=document.getElementById("user").value
 
 localStorage.setItem("user",u)
+
 window.location="chat.html"
-
-}else{
-
-alert("Login failed")
-
-}
-
-})
 
 }
 
 function guest(){
 
-let name="Guest"+Math.floor(Math.random()*1000)
+let g="Guest"+Math.floor(Math.random()*999)
 
-localStorage.setItem("user",name)
+localStorage.setItem("user",g)
 
 window.location="chat.html"
 
