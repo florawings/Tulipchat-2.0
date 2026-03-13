@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -12,7 +11,7 @@ font-family:sans-serif;
 background:#0b1d3a;
 color:white;
 text-align:center;
-padding-top:100px;
+padding-top:120px;
 }
 
 input{
@@ -25,7 +24,6 @@ button{
 width:85%;
 padding:12px;
 margin:5px;
-font-size:16px;
 }
 
 </style>
@@ -52,8 +50,8 @@ font-size:16px;
 
 async function login(){
 
-let username=document.getElementById("user").value
-let password=document.getElementById("pass").value
+let username=user.value
+let password=pass.value
 
 let r=await fetch("/login",{
 
@@ -64,8 +62,7 @@ headers:{
 },
 
 body:JSON.stringify({
-username,
-password
+username,password
 })
 
 })
@@ -98,5 +95,4 @@ location="chat.html"
 </script>
 
 </body>
-
 </html>
