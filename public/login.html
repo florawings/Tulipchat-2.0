@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Login</title>
+
+<style>
+
+body{
+background:#0d1b2a;
+font-family:Arial;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+color:white;
+}
+
+.box{
+background:white;
+color:black;
+padding:30px;
+border-radius:10px;
+width:260px;
+text-align:center;
+}
+
+input{
+width:100%;
+padding:10px;
+margin-top:10px;
+}
+
+button{
+width:100%;
+padding:10px;
+margin-top:10px;
+background:#4CAF50;
+border:none;
+color:white;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>Login</h2>
+
+<input id="name" placeholder="Username">
+
+<button onclick="enterChat()">Enter Chat</button>
+
+</div>
+
+<script>
+
+function enterChat(){
+
+let name=document.getElementById("name").value
+
+localStorage.setItem("username",name)
+
+location.href="/chat.html"
+
+}
+
+</script>
+
+</body>
+</html>
