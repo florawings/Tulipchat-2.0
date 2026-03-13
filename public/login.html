@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
 </head>
 
@@ -8,43 +10,42 @@
 
 <div class="box">
 
-<h2>Login</h2>
+<h2>Tulip Chat</h2>
 
-<input id="email" placeholder="Email">
-
-<input id="password" type="password" placeholder="Password">
+<input id="username" placeholder="Username">
 
 <button onclick="login()">Login</button>
 
-<a href="register.html">Register</a>
+<button onclick="guest()">Guest Login</button>
+
+<a href="register.html">New User Register</a>
 
 </div>
 
 <script>
 
-async function login(){
+function login(){
 
-let email=document.getElementById("email").value
-let password=document.getElementById("password").value
+let user=document.getElementById("username").value
 
-let res=await fetch("/login",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({email,password})
-})
+if(user==""){
+alert("Enter username")
+return
+}
 
-let data=await res.json()
+localStorage.setItem("user",user)
 
-if(data.status==="ok"){
-
-localStorage.setItem("user",email)
 window.location="chat.html"
 
-}else{
-
-alert("Wrong login")
-
 }
+
+function guest(){
+
+let guest="Guest"+Math.floor(Math.random()*1000)
+
+localStorage.setItem("user",guest)
+
+window.location="chat.html"
 
 }
 
