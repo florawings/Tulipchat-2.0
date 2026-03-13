@@ -1,44 +1,39 @@
 <!DOCTYPE html>
 <html>
-<head>
 
+<head>
 <title>Register</title>
 
 <style>
 
 body{
-background:#0d1b2a;
 font-family:Arial;
+background:#111827;
 display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
-color:white;
 }
 
 .box{
 background:white;
-color:black;
 padding:30px;
 border-radius:10px;
-width:260px;
-text-align:center;
+width:250px;
 }
 
 input{
 width:100%;
 padding:10px;
-margin-top:10px;
+margin:5px 0;
 }
 
 button{
 width:100%;
 padding:10px;
-margin-top:10px;
-background:#2196F3;
+background:#22c55e;
 border:none;
 color:white;
-cursor:pointer;
 }
 
 </style>
@@ -49,13 +44,13 @@ cursor:pointer;
 
 <div class="box">
 
-<h2>Create Account</h2>
+<h3>Register</h3>
 
-<input id="name" placeholder="Username">
+<input id="user" placeholder="Username">
 
 <input id="pass" type="password" placeholder="Password">
 
-<button onclick="register()">Register</button>
+<button onclick="register()">Create Account</button>
 
 </div>
 
@@ -63,23 +58,23 @@ cursor:pointer;
 
 function register(){
 
-let name=document.getElementById("name").value
-let pass=document.getElementById("pass").value
+let u=document.getElementById("user").value
+let p=document.getElementById("pass").value
 
-if(pass.length < 6){
-alert("Password must be at least 6 characters")
-return
-}
+let users=JSON.parse(localStorage.getItem("users")||"{}")
 
-localStorage.setItem("username",name)
+users[u]=p
+
+localStorage.setItem("users",JSON.stringify(users))
 
 alert("Account created")
 
-location.href="/chat.html"
+location="login.html"
 
 }
 
 </script>
 
 </body>
+
 </html>
