@@ -1,44 +1,50 @@
 body{
 
-background:#0f172a;
+background:#0b1b3b;
 color:white;
-font-family:Arial;
+font-family:sans-serif;
 
 }
 
 .box{
 
-width:250px;
+width:260px;
 margin:auto;
 margin-top:150px;
-
-background:#020617;
+background:#07142c;
 padding:20px;
 
 }
 
-#topbar{
+input{
 
-background:black;
-padding:10px;
-
-}
-
-#main{
-
-display:flex;
+width:100%;
+margin:5px 0;
+padding:8px;
 
 }
 
-#rooms{
+button{
 
-width:120px;
-background:#020617;
+width:100%;
+padding:8px;
+background:#22c55e;
+border:none;
 
 }
 
 #chat{
 
-flex:1;
+height:400px;
+overflow:auto;
+background:#07142c;
+margin:10px;
+
+}
+
+.top{
+
+background:black;
+padding:10px;
 
 }
