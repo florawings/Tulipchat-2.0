@@ -31,9 +31,7 @@ socket.on("private message",(data)=>{
 let target = users[data.to]
 
 if(target){
-
 io.to(target).emit("private message",data)
-
 }
 
 })
@@ -47,13 +45,9 @@ socket.broadcast.emit("typing",username)
 socket.on("disconnect",()=>{
 
 for(let name in users){
-
 if(users[name] == socket.id){
-
 delete users[name]
-
 }
-
 }
 
 io.emit("users",Object.keys(users))
@@ -65,7 +59,5 @@ console.log("User disconnected")
 })
 
 http.listen(process.env.PORT || 3000,()=>{
-
 console.log("Server running")
-
 })
