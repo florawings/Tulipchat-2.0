@@ -12,41 +12,25 @@
 body{
 margin:0;
 font-family:sans-serif;
-background:#0f1b3d;
-color:white;
-height:100vh;
+background:#e5e5e5;
 display:flex;
 flex-direction:column;
+height:100vh;
 }
 
 .header{
+
+background:#111;
+color:white;
 display:flex;
-justify-content:space-between;
 align-items:center;
-background:#07142c;
-padding:12px;
+justify-content:space-between;
+padding:10px;
+
 }
 
-.menu{
-cursor:pointer;
-font-size:22px;
-}
-
-.icons span{
-margin-left:12px;
-cursor:pointer;
-font-size:18px;
-}
-
-.container{
-flex:1;
-display:flex;
-}
-
-.chatArea{
-flex:3;
-display:flex;
-flex-direction:column;
+.header span{
+margin-left:10px;
 }
 
 #chatbox{
@@ -55,66 +39,63 @@ overflow-y:auto;
 padding:10px;
 }
 
-.message{
-background:#1e293b;
-padding:8px 12px;
-border-radius:8px;
-margin-bottom:8px;
-max-width:80%;
+.msg{
+display:flex;
+margin-bottom:12px;
 }
 
-.system{
-background:#334155;
+.avatar{
+
+width:40px;
+height:40px;
+background:#ccc;
+border-radius:50%;
+margin-right:10px;
+
+}
+
+.msgcontent{
+
+background:white;
+padding:8px 12px;
+border-radius:8px;
+
+}
+
+.username{
+font-weight:bold;
+font-size:14px;
+}
+
+.time{
+font-size:10px;
+color:#777;
 }
 
 .inputbar{
+
 display:flex;
-padding:10px;
-background:#07142c;
+align-items:center;
+background:white;
+padding:8px;
+
 }
 
 .inputbar input{
+
 flex:1;
-padding:10px;
 border:none;
-border-radius:5px;
+padding:10px;
+
 }
 
 .inputbar button{
-margin-left:6px;
-padding:10px 14px;
-background:#22c55e;
-border:none;
+
+background:black;
 color:white;
-border-radius:5px;
-}
-
-.users{
-flex:1;
-background:#020617;
+border:none;
 padding:10px;
-overflow-y:auto;
-}
 
-.user{
-margin-bottom:8px;
-}
-
-.sidemenu{
-position:fixed;
-left:-200px;
-top:0;
-height:100%;
-width:200px;
-background:#020617;
-padding:20px;
-transition:0.3s;
-}
-
-.sidemenu a{
-display:block;
-margin-bottom:15px;
-cursor:pointer;
 }
 
 </style>
@@ -125,80 +106,68 @@ cursor:pointer;
 
 <div class="header">
 
-<div class="menu" onclick="toggleMenu()">☰</div>
+<span>☰</span>
 
-<div>🌷 Tulip Chat</div>
+<span>🌷 Tulip Chat</span>
 
-<div class="icons">
+<div>
 
-<span onclick="openMessages()">💬</span>
-
-<span onclick="openFriends()">👥</span>
-
-<span onclick="showNotifications()">🔔</span>
-
-<span onclick="refreshChat()">🔄</span>
+<span>💬</span>
+<span>👥</span>
+<span>🔔</span>
 
 </div>
 
 </div>
 
-
-<div id="sideMenu" class="sidemenu">
-
-<a onclick="refreshChat()">Refresh</a>
-
-<a onclick="logout()">Logout</a>
-
-</div>
-
-
-<div class="container">
-
-
-<div class="chatArea">
 
 <div id="chatbox"></div>
 
+
 <div class="inputbar">
 
-<input id="msg" placeholder="Type message">
+<span>➕</span>
 
-<button onclick="send()">Send</button>
+<input id="msg" placeholder="Type here...">
 
-</div>
+<span>😊</span>
 
-</div>
+<span>🎤</span>
 
-
-<div class="users">
-
-<b>Online Users</b>
-
-<div id="userlist"></div>
-
-</div>
-
+<button onclick="send()">➤</button>
 
 </div>
 
 
 <script>
 
-const socket = io()
+const socket=io()
 
-let user = localStorage.getItem("user")
+let user=localStorage.getItem("user")
 
 socket.emit("join",user)
 
-
 socket.on("msg",(m)=>{
+
+let time=new Date().toLocaleTimeString()
 
 let div=document.createElement("div")
 
-div.className="message"
+div.className="msg"
 
-div.innerText=m
+div.innerHTML=`
+
+<div class="avatar"></div>
+
+<div>
+
+<div class="username">${m}</div>
+
+<div class="time">${time}</div>
+
+</div>
+
+`
 
 chatbox.appendChild(div)
 
@@ -206,102 +175,15 @@ chatbox.scrollTop=chatbox.scrollHeight
 
 })
 
-
-socket.on("system",(m)=>{
-
-let div=document.createElement("div")
-
-div.className="message system"
-
-div.innerText=m
-
-chatbox.appendChild(div)
-
-})
-
-
-socket.on("users",(list)=>{
-
-userlist.innerHTML=""
-
-list.forEach(u=>{
-
-let div=document.createElement("div")
-
-div.className="user"
-
-div.innerText=u
-
-userlist.appendChild(div)
-
-})
-
-})
-
-
 function send(){
 
 let text=msg.value
 
-if(text==="") return
+if(text==="")return
 
 socket.emit("chat",{user,text})
 
 msg.value=""
-
-}
-
-
-function toggleMenu(){
-
-let menu=document.getElementById("sideMenu")
-
-if(menu.style.left=="0px"){
-
-menu.style.left="-200px"
-
-}else{
-
-menu.style.left="0px"
-
-}
-
-}
-
-
-function openMessages(){
-
-alert("Private messages coming soon")
-
-}
-
-
-function openFriends(){
-
-alert("Friend request system coming soon")
-
-}
-
-
-function showNotifications(){
-
-alert("No new notifications")
-
-}
-
-
-function refreshChat(){
-
-location.reload()
-
-}
-
-
-function logout(){
-
-localStorage.removeItem("user")
-
-window.location="index.html"
 
 }
 
