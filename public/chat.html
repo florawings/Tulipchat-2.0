@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Tulip Chat</title>
+<style>
+body{
+font-family: Arial;
+background:#f2f2f2;
+margin:0;
+}
+
+#chatbox{
+height:80vh;
+overflow:auto;
+padding:10px;
+background:white;
+}
+
+#msg{
+width:80%;
+padding:10px;
+}
+
+button{
+padding:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="chatbox"></div>
+
+<input id="msg" placeholder="Type message...">
+<button onclick="send()">Send</button>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+
+const socket = io();
+
+function send(){
+
+let msg = document.getElementById("msg").value;
+
+socket.emit("chat message",msg);
+
+document.getElementById("msg").value="";
+
+}
+
+socket.on("chat message",function(msg){
+
+let div=document.createElement("div");
+
+div.innerText=msg;
+
+document.getElementById("chatbox").appendChild(div);
+
+});
+
+</script>
+
+</body>
+</html>
