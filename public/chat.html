@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <title>Chat</title>
@@ -9,30 +10,20 @@
 <style>
 
 body{
-margin:0;
 font-family:Arial;
+margin:0;
 background:#eee;
-}
-
-#top{
-background:black;
-color:white;
-padding:15px;
-display:flex;
-justify-content:space-between;
 }
 
 #users{
 background:#222;
 color:white;
-padding:8px;
-font-size:14px;
+padding:10px;
 }
 
-#typing{
-font-size:13px;
-color:gray;
-padding-left:10px;
+.user{
+cursor:pointer;
+padding:5px;
 }
 
 #messages{
@@ -43,29 +34,29 @@ padding:10px;
 
 .msg{
 background:#ddd;
+margin:5px;
 padding:8px;
-margin:5px 0;
 border-radius:5px;
 }
 
 #sendbox{
+display:flex;
 position:fixed;
 bottom:0;
 width:100%;
-display:flex;
 }
 
 #msg{
 flex:1;
-padding:12px;
+padding:10px;
 border:none;
 }
 
 #send{
-background:#4CAF50;
+background:green;
 color:white;
 border:none;
-padding:12px 20px;
+padding:10px 20px;
 }
 
 </style>
@@ -74,23 +65,13 @@ padding:12px 20px;
 
 <body>
 
-<div id="top">
-
-<div id="user"></div>
-
-<button onclick="logout()">Logout</button>
-
-</div>
-
 <div id="users"></div>
 
 <div id="messages"></div>
 
-<div id="typing"></div>
-
 <div id="sendbox">
 
-<input id="msg" placeholder="Type message">
+<input id="msg">
 
 <button id="send">Send</button>
 
@@ -100,79 +81,86 @@ padding:12px 20px;
 
 const socket = io();
 
-const username = localStorage.getItem("username");
+let username = localStorage.getItem("username");
 
 if(!username){
-window.location.href="login.html";
+location="login.html";
 }
 
-document.getElementById("user").innerText="User: "+username;
+let currentChat="";
 
 socket.emit("join",username);
 
-const messages=document.getElementById("messages");
+socket.on("users",(list)=>{
+
+let div=document.getElementById("users");
+
+div.innerHTML="";
+
+list.forEach(u=>{
+
+if(u!=username){
+
+let d=document.createElement("div");
+
+d.className="user";
+
+d.innerText=u;
+
+d.onclick=function(){
+
+currentChat=u;
+
+};
+
+div.appendChild(d);
+
+}
+
+});
+
+});
 
 document.getElementById("send").onclick=function(){
 
 let text=document.getElementById("msg").value;
 
-if(text.trim()=="") return;
+if(currentChat=="") return;
 
-socket.emit("chat message",{
-user:username,
+socket.emit("private message",{
+
+from:username,
+to:currentChat,
 msg:text
+
 });
 
-document.getElementById("msg").value="";
-}
+addMsg(username,text);
 
-socket.on("chat message",(data)=>{
+document.getElementById("msg").value="";
+
+};
+
+socket.on("private message",(data)=>{
+
+addMsg(data.from,data.msg);
+
+});
+
+function addMsg(user,msg){
 
 let div=document.createElement("div");
 
 div.className="msg";
 
-div.innerText=data.user+" : "+data.msg;
+div.innerText=user+" : "+msg;
 
-messages.appendChild(div);
-
-messages.scrollTop=messages.scrollHeight;
-
-});
-
-socket.on("users",(list)=>{
-
-document.getElementById("users").innerText=
-"Online: "+list.join(", ");
-
-});
-
-document.getElementById("msg").addEventListener("input",()=>{
-
-socket.emit("typing",username);
-
-});
-
-socket.on("typing",(name)=>{
-
-document.getElementById("typing").innerText=
-name+" is typing...";
-
-setTimeout(()=>{
-document.getElementById("typing").innerText="";
-},1500);
-
-});
-
-function logout(){
-
-localStorage.removeItem("username");
-
-window.location.href="login.html";
+document.getElementById("messages").appendChild(div);
 
 }
 
 </script>
 
 </body>
+
 </html>
