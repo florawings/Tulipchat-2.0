@@ -1,36 +1,71 @@
-const express = require("express");
-const app = express();
-const http = require("http").createServer(app);
-const io = require("socket.io")(http);
+const express = require("express")
+const app = express()
 
-app.use(express.static("public"));
+const http = require("http").createServer(app)
+const io = require("socket.io")(http)
 
-const onlineUsers = {};
+app.use(express.static("public"))
 
-io.on("connection", (socket) => {
+let users = {}
 
-console.log("User connected");
+io.on("connection",(socket)=>{
 
-socket.on("join", (username) => {
-onlineUsers[socket.id] = username;
-io.emit("users", Object.values(onlineUsers));
-});
+console.log("User connected")
 
-socket.on("chat message", (data) => {
-io.emit("chat message", data);
-});
+socket.on("join",(username)=>{
 
-socket.on("typing", (username) => {
-socket.broadcast.emit("typing", username);
-});
+users[username] = socket.id
 
-socket.on("disconnect", () => {
-delete onlineUsers[socket.id];
-io.emit("users", Object.values(onlineUsers));
-});
+io.emit("users",Object.keys(users))
 
-});
+})
 
-http.listen(process.env.PORT || 3000, () => {
-console.log("Server running");
-});
+socket.on("chat message",(data)=>{
+
+io.emit("chat message",data)
+
+})
+
+socket.on("private message",(data)=>{
+
+let target = users[data.to]
+
+if(target){
+
+io.to(target).emit("private message",data)
+
+}
+
+})
+
+socket.on("typing",(username)=>{
+
+socket.broadcast.emit("typing",username)
+
+})
+
+socket.on("disconnect",()=>{
+
+for(let name in users){
+
+if(users[name] == socket.id){
+
+delete users[name]
+
+}
+
+}
+
+io.emit("users",Object.keys(users))
+
+console.log("User disconnected")
+
+})
+
+})
+
+http.listen(process.env.PORT || 3000,()=>{
+
+console.log("Server running")
+
+})
