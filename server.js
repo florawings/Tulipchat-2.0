@@ -1,47 +1,50 @@
 const express = require("express")
 const app = express()
-const http = require("http").createServer(app)
-const io = require("socket.io")(http)
+const path = require("path")
 
-app.use(express.static("public"))
 app.use(express.json())
+app.use(express.static("public"))
 
-let users=[]
-let accounts=[]
-
+let users = []
 
 app.post("/register",(req,res)=>{
 
 let {username,password,email,dob,gender,country}=req.body
 
-let birth=new Date(dob)
-let today=new Date()
-
-let age=today.getFullYear()-birth.getFullYear()
-let m=today.getMonth()-birth.getMonth()
-
-if(m<0 || (m===0 && today.getDate()<birth.getDate())) age--
-
-if(age<18){
-return res.json({ok:false,msg:"Only 18+ allowed"})
+if(!username || !password || !email || !dob){
+return res.json({ok:false,msg:"Fill all fields"})
 }
 
-if(accounts.find(u=>u.username===username)){
+let age = new Date().getFullYear() - new Date(dob).getFullYear()
+
+if(age < 18){
+return res.json({ok:false,msg:"Only 18+ users allowed"})
+}
+
+let exist = users.find(u=>u.username==username)
+
+if(exist){
 return res.json({ok:false,msg:"Username already exists"})
 }
 
-accounts.push({username,password,email,dob,gender,country})
+users.push({
+username,
+password,
+email,
+dob,
+gender,
+country
+})
 
 res.json({ok:true})
 
 })
 
-
 app.post("/login",(req,res)=>{
 
 let {username,password}=req.body
 
-let user=accounts.find(u=>u.username===username && u.password===password)
+let user = users.find(u=>u.username==username && u.password==password)
 
 if(!user){
 return res.json({ok:false})
@@ -51,40 +54,4 @@ res.json({ok:true})
 
 })
 
-
-io.on("connection",(socket)=>{
-
-socket.on("join",(user)=>{
-
-socket.username=user
-users.push(user)
-
-io.emit("system","SYSTEM : "+user+" joined")
-io.emit("users",users)
-
-})
-
-
-socket.on("chat",(data)=>{
-
-io.emit("msg",data.user+" : "+data.text)
-
-})
-
-
-socket.on("disconnect",()=>{
-
-users=users.filter(u=>u!==socket.username)
-
-io.emit("users",users)
-
-})
-
-})
-
-
-http.listen(3000,()=>{
-
-console.log("Server running")
-
-})
+app.listen(3000,()=>console.log("Server running"))
