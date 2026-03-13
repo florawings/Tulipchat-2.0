@@ -12,9 +12,13 @@ io.on("connection",(socket)=>{
 
 socket.on("join",(data)=>{
 
-socket.join(data.room)
+users[data.username] = {
+socket: socket.id,
+room: data.room,
+lastSeen: Date.now()
+}
 
-users[socket.id] = data.username
+socket.join(data.room)
 
 io.to(data.room).emit("chat message",{
 user:"SYSTEM",
@@ -31,16 +35,18 @@ io.to(data.room).emit("chat message",data)
 
 socket.on("disconnect",()=>{
 
-let username = users[socket.id]
+for(let u in users){
 
-delete users[socket.id]
+if(users[u].socket === socket.id){
 
-io.emit("users",Object.values(users))
+users[u].lastSeen = Date.now()
+
+}
+
+}
 
 })
 
 })
 
-http.listen(process.env.PORT || 3000,()=>{
-console.log("Server running")
-})
+http.listen(3000)
