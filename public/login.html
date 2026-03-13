@@ -1,49 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
-<title>Tulip Chat</title>
-
-<style>
-
-body{
-font-family:Arial;
-background:#0f172a;
-color:white;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-}
-
-.box{
-background:#020617;
-padding:30px;
-border-radius:10px;
-width:260px;
-text-align:center;
-}
-
-input{
-width:100%;
-padding:10px;
-margin-top:10px;
-border:none;
-border-radius:5px;
-}
-
-button{
-margin-top:10px;
-width:100%;
-padding:10px;
-background:#22c55e;
-border:none;
-color:white;
-border-radius:5px;
-cursor:pointer;
-}
-
-</style>
+<link rel="stylesheet" href="style.css">
+<script src="/socket.io/socket.io.js"></script>
 
 </head>
 
@@ -51,39 +12,44 @@ cursor:pointer;
 
 <div class="box">
 
-<h2>Tulip Chat</h2>
+<h2>Login</h2>
 
-<input id="username" placeholder="Username">
+<input id="email" placeholder="Email">
+
+<input id="pass" placeholder="Password" type="password">
 
 <button onclick="login()">Login</button>
 
-<button onclick="guest()">Guest Login</button>
+<a href="register.html">Register</a>
 
 </div>
 
 <script>
 
+const socket=io()
+
 function login(){
 
-let u=document.getElementById("username").value
+let email=document.getElementById("email").value
+let password=document.getElementById("pass").value
 
-if(u=="") return
-
-localStorage.setItem("username",u)
-
-location="chat.html"
+socket.emit("login",{email,password})
 
 }
 
-function guest(){
+socket.on("loginSuccess",()=>{
 
-let u="Guest"+Math.floor(Math.random()*9999)
-
-localStorage.setItem("username",u)
+localStorage.setItem("user",email)
 
 location="chat.html"
 
-}
+})
+
+socket.on("loginError",(msg)=>{
+
+alert(msg)
+
+})
 
 </script>
 
