@@ -4,50 +4,149 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<link rel="stylesheet" href="style.css">
-
 <script src="/socket.io/socket.io.js"></script>
+
+<style>
+
+body{
+margin:0;
+font-family:sans-serif;
+background:#0f1b3d;
+color:white;
+height:100vh;
+display:flex;
+flex-direction:column;
+}
+
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+background:#07142c;
+padding:10px;
+}
+
+.leftmenu{
+font-size:20px;
+cursor:pointer;
+}
+
+.icons span{
+margin-left:10px;
+cursor:pointer;
+}
+
+.container{
+flex:1;
+display:flex;
+}
+
+.chatArea{
+flex:3;
+display:flex;
+flex-direction:column;
+}
+
+#chatbox{
+flex:1;
+overflow-y:auto;
+padding:10px;
+}
+
+.message{
+margin-bottom:10px;
+background:#1e293b;
+padding:8px 12px;
+border-radius:8px;
+max-width:70%;
+}
+
+.inputbar{
+display:flex;
+padding:10px;
+background:#07142c;
+}
+
+.inputbar input{
+flex:1;
+padding:10px;
+border:none;
+border-radius:5px;
+}
+
+.inputbar button{
+margin-left:5px;
+padding:10px;
+border:none;
+background:#22c55e;
+color:white;
+border-radius:5px;
+}
+
+.users{
+flex:1;
+background:#020617;
+padding:10px;
+overflow-y:auto;
+}
+
+.user{
+margin-bottom:8px;
+}
+
+.rank1{color:#22c55e;}
+.rank2{color:#3b82f6;}
+.rank3{color:#f59e0b;}
+
+</style>
 
 </head>
 
 <body>
 
+<div class="header">
 
-<div class="topbar">
+<div class="leftmenu">☰</div>
 
-<div class="menu">☰</div>
+<div>🌷 Tulip Chat</div>
 
 <div class="icons">
 
-<span>🔄</span>
-<span>✉️</span>
-<span>👤➕</span>
+<span>💬</span>
+<span>👥</span>
 <span>🔔</span>
 
 </div>
 
-<div class="profile">🙂</div>
+</div>
+
+
+<div class="container">
+
+
+<div class="chatArea">
+
+<div id="chatbox"></div>
+
+<div class="inputbar">
+
+<input id="msg" placeholder="Type message">
+
+<button onclick="send()">Send</button>
+
+</div>
 
 </div>
 
 
+<div class="users">
 
-<div id="chatbox"></div>
+<b>Online Users</b>
 
+<div id="userlist"></div>
 
+</div>
 
-<div class="inputbar">
-
-<span>➕</span>
-
-<input id="msg" placeholder="Type here...">
-
-<span>😊</span>
-
-<span>🎤</span>
-
-<button onclick="send()">➤</button>
 
 </div>
 
@@ -61,25 +160,13 @@ let user = localStorage.getItem("user")
 
 socket.emit("join",user)
 
-socket.on("msg",(data)=>{
+socket.on("msg",(m)=>{
 
 let div=document.createElement("div")
 
 div.className="message"
 
-div.innerHTML=`
-
-<div class="avatar"></div>
-
-<div class="content">
-
-<div class="name">${data.user}</div>
-
-<div class="text">${data.text}</div>
-
-</div>
-
-`
+div.innerText=m
 
 chatbox.appendChild(div)
 
@@ -88,11 +175,30 @@ chatbox.scrollTop=chatbox.scrollHeight
 })
 
 
+socket.on("users",(list)=>{
+
+userlist.innerHTML=""
+
+list.forEach((u,i)=>{
+
+let div=document.createElement("div")
+
+div.className="user rank"+((i%3)+1)
+
+div.innerText=u
+
+userlist.appendChild(div)
+
+})
+
+})
+
+
 function send(){
 
 let text=msg.value
 
-if(text==="") return
+if(text==="")return
 
 socket.emit("chat",{user,text})
 
