@@ -23,11 +23,12 @@ justify-content:space-between;
 .chat{
 height:70vh;
 overflow:auto;
+background:#eee;
 padding:10px;
 }
 
 input{
-width:70%;
+width:75%;
 padding:10px;
 }
 
@@ -49,8 +50,8 @@ padding:10px;
 
 <div>
 
-<span onclick="msg()">💬</span>
-<span onclick="friends()">👥</span>
+<span onclick="privateMsg()">💬</span>
+<span onclick="users()">👥</span>
 <span onclick="bell()">🔔</span>
 
 </div>
@@ -67,41 +68,116 @@ padding:10px;
 
 let user=localStorage.getItem("user")
 
-function send(){
+async function send(){
 
 let msg=text.value
 
-let div=document.createElement("div")
+await fetch("/send",{
 
-div.innerHTML="<b>"+user+":</b> "+msg
+method:"POST",
 
-chat.appendChild(div)
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+user,msg
+})
+
+})
 
 text.value=""
 
 }
 
-function menu(){
+async function load(){
 
-alert("Menu coming soon")
+let r=await fetch("/messages")
+
+let data=await r.json()
+
+chat.innerHTML=""
+
+data.forEach(m=>{
+
+let div=document.createElement("div")
+
+div.innerHTML="<b>"+m.user+":</b> "+m.msg
+
+chat.appendChild(div)
+
+})
 
 }
 
-function msg(){
+setInterval(load,2000)
 
-alert("Private message coming soon")
+function privateMsg(){
 
-}
+let to=prompt("Send message to:")
 
-function friends(){
+let msg=prompt("Message:")
 
-alert("Friend system coming soon")
+fetch("/private",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+from:user,
+to,
+msg
+})
+
+})
 
 }
 
 function bell(){
 
+fetch("/notifications/"+user)
+
+.then(r=>r.json())
+
+.then(data=>{
+
+if(data.length==0){
 alert("No notifications")
+return
+}
+
+let txt="Notifications:\n"
+
+data.forEach(n=>{
+txt+=n.text+"\n"
+})
+
+alert(txt)
+
+})
+
+}
+
+function users(){
+
+alert("Online users system next update")
+
+}
+
+function menu(){
+
+let c=prompt("1 Logout")
+
+if(c=="1"){
+
+localStorage.clear()
+
+location="index.html"
+
+}
 
 }
 
