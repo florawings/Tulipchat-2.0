@@ -3,7 +3,7 @@
 
 <head>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 </head>
 
@@ -12,16 +12,21 @@
 <h2>Register</h2>
 
 <input id="user" placeholder="Username"><br>
+
 <input id="pass" type="password" placeholder="Password"><br>
+
 <input id="email" placeholder="Email"><br>
 
-<label>DOB</label>
+<label>DOB</label><br>
+
 <input id="dob" type="date"><br>
 
 <select id="gender">
+
 <option>Male</option>
 <option>Female</option>
 <option>Other</option>
+
 </select><br>
 
 <input id="country" placeholder="Country"><br>
@@ -40,16 +45,30 @@ let gender=gender.value
 let country=country.value
 
 let r=await fetch("/register",{
+
 method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({username,password,email,dob,gender,country})
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+username,
+password,
+email,
+dob,
+gender,
+country
+})
+
 })
 
 let data=await r.json()
 
 if(data.ok){
 
-alert("Registration success")
+alert("Registration successful")
+
 location="index.html"
 
 }else{
