@@ -1,57 +1,23 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-
-<link rel="stylesheet" href="style.css">
-<script src="/socket.io/socket.io.js"></script>
-
-</head>
-
-<body>
-
-<div class="box">
-
-<h2>Login</h2>
-
-<input id="email" placeholder="Email">
-
-<input id="pass" placeholder="Password" type="password">
-
-<button onclick="login()">Login</button>
-
-<a href="register.html">Register</a>
-
-</div>
-
 <script>
-
-const socket=io()
-
-function login(){
+async function login(){
 
 let email=document.getElementById("email").value
-let password=document.getElementById("pass").value
+let password=document.getElementById("password").value
 
-socket.emit("login",{email,password})
+let res=await fetch("/login",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({email,password})
+})
 
+let data=await res.json()
+
+if(data.status==="ok"){
+localStorage.setItem("user",email)
+window.location="chat.html"
+}else{
+alert("Wrong login")
 }
 
-socket.on("loginSuccess",()=>{
-
-localStorage.setItem("user",email)
-
-location="chat.html"
-
-})
-
-socket.on("loginError",(msg)=>{
-
-alert(msg)
-
-})
-
+}
 </script>
-
-</body>
-</html>
