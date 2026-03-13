@@ -1,27 +1,43 @@
 const express = require("express")
 const app = express()
 
-const http = require("http").createServer(app)
-const io = require("socket.io")(http)
+app.use(express.json())
 
-app.use(express.static("public"))
+let users = []
 
-io.on("connection",(socket)=>{
+app.post("/register",(req,res)=>{
 
-console.log("User connected")
+const {username,email,password,dob,gender,country} = req.body
 
-socket.on("chat",(data)=>{
-io.emit("msg",data.user + " : " + data.text)
+if(!email || !password){
+return res.json({ok:false})
+}
+
+users.push({
+username,
+email,
+password,
+dob,
+gender,
+country
 })
 
-socket.on("join",(user)=>{
-io.emit("msg","SYSTEM : "+user+" joined")
-})
+res.json({ok:true})
 
 })
 
-const PORT = process.env.PORT || 3000
+app.post("/login",(req,res)=>{
 
-http.listen(PORT,()=>{
-console.log("Server running on " + PORT)
+const {username,password} = req.body
+
+let user = users.find(u=>u.username==username && u.password==password)
+
+if(user){
+res.json({ok:true})
+}else{
+res.json({ok:false})
+}
+
 })
+
+app.listen(3000)
