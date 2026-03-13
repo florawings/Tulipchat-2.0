@@ -2,23 +2,28 @@
 <html>
 
 <head>
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Tulip Chat Login</title>
+
 <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
 
 <div class="box">
 
-<h2>Tulip Chat</h2>
+<h2>Login</h2>
 
 <input id="username" placeholder="Username">
 
+<input id="password" type="password" placeholder="Password">
+
 <button onclick="login()">Login</button>
 
-<button onclick="guest()">Guest Login</button>
-
-<a href="register.html">New User Register</a>
+<a href="register.html">Create New Account</a>
 
 </div>
 
@@ -27,10 +32,14 @@
 function login(){
 
 let user=document.getElementById("username").value
+let pass=document.getElementById("password").value
 
-if(user==""){
-alert("Enter username")
+if(user=="" || pass==""){
+
+alert("Enter username and password")
+
 return
+
 }
 
 localStorage.setItem("user",user)
@@ -39,17 +48,8 @@ window.location="chat.html"
 
 }
 
-function guest(){
-
-let guest="Guest"+Math.floor(Math.random()*1000)
-
-localStorage.setItem("user",guest)
-
-window.location="chat.html"
-
-}
-
 </script>
 
 </body>
+
 </html>
