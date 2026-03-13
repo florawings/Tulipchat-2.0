@@ -1,23 +1,33 @@
 const express = require("express")
+const path = require("path")
+
 const app = express()
 
 app.use(express.json())
-app.use(express.static("public"))
+app.use(express.static(path.join(__dirname,"public")))
 
-let users=[]
-let messages=[]
-let privateMessages=[]
-let notifications=[]
+let messages = []
 
-app.post("/register",(req,res)=>{
+app.get("/messages",(req,res)=>{
+res.json(messages)
+})
 
-let {username,password,email,dob,gender,country}=req.body
+app.post("/send",(req,res)=>{
 
-if(!username || !password || !email || !dob){
-return res.json({ok:false,msg:"Fill all fields"})
-}
+let {user,msg} = req.body
 
-let age=new Date().getFullYear()-new Date(dob).getFullYear()
+messages.push({
+user,
+msg,
+time:Date.now()
+})
 
-if(age<18){
-return res.json
+res.json({ok:true})
+
+})
+
+const PORT = process.env.PORT || 3000
+
+app.listen(PORT,()=>{
+console.log("Server running on port "+PORT)
+})
