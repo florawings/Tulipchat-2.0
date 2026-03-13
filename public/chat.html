@@ -3,78 +3,40 @@
 
 <head>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
 <link rel="stylesheet" href="style.css">
-
 <script src="/socket.io/socket.io.js"></script>
 
 </head>
 
 <body>
 
-<div class="topbar">
-
-🌷 Tulip Chat
-
-<span id="user"></span>
-
-<button onclick="logout()">Logout</button>
-
-</div>
+<h3>🌷 Tulip Chat</h3>
 
 <div id="chatbox"></div>
 
-<div class="inputbar">
-
-<input id="msg" placeholder="Type message">
-
+<input id="msg">
 <button onclick="send()">Send</button>
-
-</div>
 
 <script>
 
-const socket = io()
+const socket=io()
 
-let user = localStorage.getItem("user")
-
-document.getElementById("user").innerText=user
+let user=localStorage.getItem("user")
 
 socket.emit("join",user)
 
 socket.on("msg",(m)=>{
 
 let div=document.createElement("div")
-
-div.className="message"
-
 div.innerText=m
-
-document.getElementById("chatbox").appendChild(div)
-
-document.getElementById("chatbox").scrollTop=
-document.getElementById("chatbox").scrollHeight
+chatbox.appendChild(div)
 
 })
 
 function send(){
 
-let text=document.getElementById("msg").value
-
-if(text=="") return
-
-socket.emit("chat",{user,text})
-
-document.getElementById("msg").value=""
-
-}
-
-function logout(){
-
-localStorage.removeItem("user")
-
-window.location="index.html"
+socket.emit("chat",{user,text:msg.value})
+msg.value=""
 
 }
 
