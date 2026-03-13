@@ -4,6 +4,7 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <script src="/socket.io/socket.io.js"></script>
 
 <style>
@@ -23,17 +24,18 @@ display:flex;
 justify-content:space-between;
 align-items:center;
 background:#07142c;
-padding:10px;
+padding:12px;
 }
 
-.leftmenu{
-font-size:20px;
+.menu{
 cursor:pointer;
+font-size:22px;
 }
 
 .icons span{
-margin-left:10px;
+margin-left:12px;
 cursor:pointer;
+font-size:18px;
 }
 
 .container{
@@ -54,11 +56,15 @@ padding:10px;
 }
 
 .message{
-margin-bottom:10px;
 background:#1e293b;
 padding:8px 12px;
 border-radius:8px;
-max-width:70%;
+margin-bottom:8px;
+max-width:80%;
+}
+
+.system{
+background:#334155;
 }
 
 .inputbar{
@@ -75,10 +81,10 @@ border-radius:5px;
 }
 
 .inputbar button{
-margin-left:5px;
-padding:10px;
-border:none;
+margin-left:6px;
+padding:10px 14px;
 background:#22c55e;
+border:none;
 color:white;
 border-radius:5px;
 }
@@ -94,9 +100,22 @@ overflow-y:auto;
 margin-bottom:8px;
 }
 
-.rank1{color:#22c55e;}
-.rank2{color:#3b82f6;}
-.rank3{color:#f59e0b;}
+.sidemenu{
+position:fixed;
+left:-200px;
+top:0;
+height:100%;
+width:200px;
+background:#020617;
+padding:20px;
+transition:0.3s;
+}
+
+.sidemenu a{
+display:block;
+margin-bottom:15px;
+cursor:pointer;
+}
 
 </style>
 
@@ -106,17 +125,30 @@ margin-bottom:8px;
 
 <div class="header">
 
-<div class="leftmenu">☰</div>
+<div class="menu" onclick="toggleMenu()">☰</div>
 
 <div>🌷 Tulip Chat</div>
 
 <div class="icons">
 
-<span>💬</span>
-<span>👥</span>
-<span>🔔</span>
+<span onclick="openMessages()">💬</span>
+
+<span onclick="openFriends()">👥</span>
+
+<span onclick="showNotifications()">🔔</span>
+
+<span onclick="refreshChat()">🔄</span>
 
 </div>
+
+</div>
+
+
+<div id="sideMenu" class="sidemenu">
+
+<a onclick="refreshChat()">Refresh</a>
+
+<a onclick="logout()">Logout</a>
 
 </div>
 
@@ -151,7 +183,6 @@ margin-bottom:8px;
 </div>
 
 
-
 <script>
 
 const socket = io()
@@ -159,6 +190,7 @@ const socket = io()
 let user = localStorage.getItem("user")
 
 socket.emit("join",user)
+
 
 socket.on("msg",(m)=>{
 
@@ -175,15 +207,28 @@ chatbox.scrollTop=chatbox.scrollHeight
 })
 
 
+socket.on("system",(m)=>{
+
+let div=document.createElement("div")
+
+div.className="message system"
+
+div.innerText=m
+
+chatbox.appendChild(div)
+
+})
+
+
 socket.on("users",(list)=>{
 
 userlist.innerHTML=""
 
-list.forEach((u,i)=>{
+list.forEach(u=>{
 
 let div=document.createElement("div")
 
-div.className="user rank"+((i%3)+1)
+div.className="user"
 
 div.innerText=u
 
@@ -198,11 +243,65 @@ function send(){
 
 let text=msg.value
 
-if(text==="")return
+if(text==="") return
 
 socket.emit("chat",{user,text})
 
 msg.value=""
+
+}
+
+
+function toggleMenu(){
+
+let menu=document.getElementById("sideMenu")
+
+if(menu.style.left=="0px"){
+
+menu.style.left="-200px"
+
+}else{
+
+menu.style.left="0px"
+
+}
+
+}
+
+
+function openMessages(){
+
+alert("Private messages coming soon")
+
+}
+
+
+function openFriends(){
+
+alert("Friend request system coming soon")
+
+}
+
+
+function showNotifications(){
+
+alert("No new notifications")
+
+}
+
+
+function refreshChat(){
+
+location.reload()
+
+}
+
+
+function logout(){
+
+localStorage.removeItem("user")
+
+window.location="index.html"
 
 }
 
