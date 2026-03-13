@@ -1,20 +1,84 @@
-<script>
-async function login(){
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
+<!DOCTYPE html>
+<html>
 
-  const res = await fetch("/api/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password })
-  });
+<head>
+<title>Login</title>
 
-  const data = await res.json();
-  if(data.ok){
-    localStorage.setItem("username", username);
-    window.location.href = "/chat.html";
-  } else {
-    alert("Wrong username or password");
-  }
+<style>
+
+body{
+font-family:Arial;
+background:#111827;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
 }
+
+.box{
+background:white;
+padding:30px;
+border-radius:10px;
+width:250px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin:5px 0;
+}
+
+button{
+width:100%;
+padding:10px;
+background:#22c55e;
+border:none;
+color:white;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h3>Login</h3>
+
+<input id="user" placeholder="Username">
+
+<input id="pass" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
+</div>
+
+<script>
+
+function login(){
+
+let u=document.getElementById("user").value
+let p=document.getElementById("pass").value
+
+let saved=JSON.parse(localStorage.getItem("users")||"{}")
+
+if(saved[u] && saved[u]==p){
+
+localStorage.setItem("username",u)
+
+location="chat.html"
+
+}else{
+
+alert("Wrong login")
+
+}
+
+}
+
 </script>
+
+</body>
+
+</html>
