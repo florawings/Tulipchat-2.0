@@ -1,4 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>Register</h2>
+
+<input id="email" placeholder="Email">
+
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="register()">Register</button>
+
+</div>
+
 <script>
+
 async function register(){
 
 let email=document.getElementById("email").value
@@ -20,4 +41,8 @@ alert("User already exists")
 }
 
 }
+
 </script>
+
+</body>
+</html>
