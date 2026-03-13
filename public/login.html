@@ -2,6 +2,7 @@
 <html>
 
 <head>
+
 <title>Login</title>
 
 <style>
@@ -19,13 +20,14 @@ height:100vh;
 background:white;
 padding:30px;
 border-radius:10px;
-width:250px;
+width:260px;
+text-align:center;
 }
 
 input{
 width:100%;
 padding:10px;
-margin:5px 0;
+margin:8px 0;
 }
 
 button{
@@ -34,6 +36,18 @@ padding:10px;
 background:#22c55e;
 border:none;
 color:white;
+font-size:16px;
+cursor:pointer;
+}
+
+.link{
+margin-top:10px;
+font-size:14px;
+}
+
+a{
+color:#2563eb;
+text-decoration:none;
 }
 
 </style>
@@ -44,7 +58,7 @@ color:white;
 
 <div class="box">
 
-<h3>Login</h3>
+<h2>Login</h2>
 
 <input id="user" placeholder="Username">
 
@@ -52,26 +66,39 @@ color:white;
 
 <button onclick="login()">Login</button>
 
+<div class="link">
+New user? <a href="register.html">Register</a>
+</div>
+
 </div>
 
 <script>
 
 function login(){
 
-let u=document.getElementById("user").value
-let p=document.getElementById("pass").value
+let username=document.getElementById("user").value
+let password=document.getElementById("pass").value
 
-let saved=JSON.parse(localStorage.getItem("users")||"{}")
+if(!username || !password){
 
-if(saved[u] && saved[u]==p){
+alert("Enter username and password")
+return
 
-localStorage.setItem("username",u)
+}
+
+let users=JSON.parse(localStorage.getItem("users")||"{}")
+
+if(users[username] && users[username].password==password){
+
+localStorage.setItem("username",username)
+
+alert("Login successful")
 
 location="chat.html"
 
 }else{
 
-alert("Wrong login")
+alert("Wrong username or password")
 
 }
 
