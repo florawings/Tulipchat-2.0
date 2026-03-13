@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html>
-<head>
 
+<head>
 <title>Tulip Chat</title>
 
 <style>
 
 body{
-background:#0d1b2a;
-color:white;
 font-family:Arial;
+background:#0f172a;
 display:flex;
 justify-content:center;
 align-items:center;
@@ -18,20 +17,20 @@ height:100vh;
 
 .box{
 background:white;
-color:black;
-padding:40px;
+padding:30px;
 border-radius:10px;
 text-align:center;
-width:260px;
+width:250px;
 }
 
 button{
 width:100%;
+margin:8px 0;
 padding:10px;
-margin-top:10px;
 border:none;
-background:#4CAF50;
+background:#22c55e;
 color:white;
+font-size:16px;
 cursor:pointer;
 }
 
@@ -45,15 +44,30 @@ cursor:pointer;
 
 <h2>Tulip Chat</h2>
 
-<button onclick="location.href='/login.html'">
-Login
-</button>
+<button onclick="location='login.html'">Login</button>
 
-<button onclick="location.href='/register.html'">
-Register
-</button>
+<button onclick="guest()">Guest</button>
+
+<button onclick="location='register.html'">New User Registration</button>
 
 </div>
 
+<script>
+
+function guest(){
+
+let name = prompt("Enter guest name")
+
+if(!name) return
+
+localStorage.setItem("username",name)
+
+location="chat.html"
+
+}
+
+</script>
+
 </body>
+
 </html>
