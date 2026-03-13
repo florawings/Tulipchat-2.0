@@ -3,39 +3,99 @@
 
 <head>
 
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <link rel="stylesheet" href="style.css">
+
 <script src="/socket.io/socket.io.js"></script>
 
 </head>
 
 <body>
 
-<h3>🌷 Tulip Chat</h3>
+
+<div class="topbar">
+
+<div class="menu">☰</div>
+
+<div class="icons">
+
+<span>🔄</span>
+<span>✉️</span>
+<span>👤➕</span>
+<span>🔔</span>
+
+</div>
+
+<div class="profile">🙂</div>
+
+</div>
+
+
 
 <div id="chatbox"></div>
 
-<input id="msg">
-<button onclick="send()">Send</button>
+
+
+<div class="inputbar">
+
+<span>➕</span>
+
+<input id="msg" placeholder="Type here...">
+
+<span>😊</span>
+
+<span>🎤</span>
+
+<button onclick="send()">➤</button>
+
+</div>
+
+
 
 <script>
 
-const socket=io()
+const socket = io()
 
-let user=localStorage.getItem("user")
+let user = localStorage.getItem("user")
 
 socket.emit("join",user)
 
-socket.on("msg",(m)=>{
+socket.on("msg",(data)=>{
 
 let div=document.createElement("div")
-div.innerText=m
+
+div.className="message"
+
+div.innerHTML=`
+
+<div class="avatar"></div>
+
+<div class="content">
+
+<div class="name">${data.user}</div>
+
+<div class="text">${data.text}</div>
+
+</div>
+
+`
+
 chatbox.appendChild(div)
+
+chatbox.scrollTop=chatbox.scrollHeight
 
 })
 
+
 function send(){
 
-socket.emit("chat",{user,text:msg.value})
+let text=msg.value
+
+if(text==="") return
+
+socket.emit("chat",{user,text})
+
 msg.value=""
 
 }
