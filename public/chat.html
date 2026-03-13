@@ -1,134 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
+socket.emit("join", username);
 
-<title>Tulip Chat</title>
-
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<style>
-
-body{
-font-family: Arial;
-margin:0;
-background:#f2f2f2;
-}
-
-#chatbox{
-height:80vh;
-overflow:auto;
-padding:10px;
-background:white;
-}
-
-.message{
-padding:6px;
-margin:4px 0;
-background:#e6e6e6;
-border-radius:5px;
-}
-
-#bottom{
-position:fixed;
-bottom:0;
-width:100%;
-display:flex;
-background:white;
-}
-
-#msg{
-flex:1;
-padding:12px;
-border:none;
-border-top:1px solid #ccc;
-font-size:16px;
-}
-
-button{
-padding:12px;
-border:none;
-background:#4CAF50;
-color:white;
-font-size:16px;
-}
-
-#topbar{
-background:#111;
-color:white;
-padding:10px;
-display:flex;
-justify-content:space-between;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div id="topbar">
-<span id="user"></span>
-<button onclick="logout()">Logout</button>
-</div>
-
-<div id="chatbox"></div>
-
-<div id="bottom">
-<input id="msg" placeholder="Type message...">
-<button onclick="send()">Send</button>
-</div>
-
-<script src="/socket.io/socket.io.js"></script>
-
-<script>
-
-const username = localStorage.getItem("username");
-
-if(!username){
-window.location.href="/login.html";
-}
-
-document.getElementById("user").innerText="User: "+username;
-
-const socket = io();
-
-function send(){
-
-let text=document.getElementById("msg").value;
-
-if(text==="") return;
-
-socket.emit("chat message",{
-user:username,
-text:text
+socket.on("users", function(list){
+document.getElementById("users").innerText =
+"Online: " + list.join(", ");
 });
 
-document.getElementById("msg").value="";
-}
-
-socket.on("chat message",function(data){
-
-let div=document.createElement("div");
-
-div.className="message";
-
-div.innerText=data.user+" : "+data.text;
-
-document.getElementById("chatbox").appendChild(div);
-
-document.getElementById("chatbox").scrollTop=999999;
-
+document.getElementById("msg").addEventListener("input", ()=>{
+socket.emit("typing", username);
 });
 
-function logout(){
-
-localStorage.removeItem("username");
-
-window.location.href="/login.html";
-
-}
-
-</script>
-
-</body>
-</html>
+socket.on("typing", function(name){
+document.getElementById("typing").innerText =
+name + " is typing...";
+setTimeout(()=>{
+document.getElementById("typing").innerText="";
+},1500);
+});
