@@ -1,7 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>Tulip Chat</h2>
+
+<input id="username" placeholder="Username">
+
+<button onclick="login()">Login</button>
+
+<button onclick="guest()">Guest Login</button>
+
+<a href="register.html">New User Register</a>
+
+</div>
+
 <script>
-if(localStorage.getItem("user")){
-window.location="chat.html"
-}else{
-window.location="login.html"
+
+function login(){
+
+let user=document.getElementById("username").value
+
+if(user==""){
+alert("Enter username")
+return
 }
+
+localStorage.setItem("user",user)
+
+window.location="chat.html"
+
+}
+
+function guest(){
+
+let guest="Guest"+Math.floor(Math.random()*1000)
+
+localStorage.setItem("user",guest)
+
+window.location="chat.html"
+
+}
+
 </script>
+
+</body>
+</html>
