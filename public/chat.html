@@ -1,15 +1,7 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html><head><title>Tulip Chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"><script src="/socket.io/socket.io.js"></script><style>
 
-<head>
-
-<title>Tulip Chat</title>
-
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<script src="/socket.io/socket.io.js"></script>
-
-<style>
+/* PAGE */
 
 body{
 margin:0;
@@ -18,59 +10,63 @@ font-family:Arial;
 background-image:url("https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17");
 background-size:cover;
 background-position:center;
-background-attachment:fixed;
 
 height:100vh;
 display:flex;
 flex-direction:column;
 }
 
-/* top bar */
+/* TOP BAR */
 
 #topbar{
 background:#111;
 color:white;
-padding:12px;
+padding:10px;
+
 display:flex;
 justify-content:space-between;
+align-items:center;
 }
 
-/* main layout */
+#icons span{
+margin-left:15px;
+cursor:pointer;
+font-size:18px;
+}
+
+/* MAIN LAYOUT */
 
 #main{
 flex:1;
 display:flex;
-overflow:hidden;
 }
 
-/* rooms */
+/* ROOMS */
 
 #rooms{
 width:120px;
 background:white;
-overflow:auto;
+border-right:1px solid #ddd;
 }
 
 .room{
 padding:12px;
 border-bottom:1px solid #eee;
 cursor:pointer;
-font-size:14px;
 }
 
 .room:hover{
 background:#f3f3f3;
 }
 
-/* chat area */
+/* CHAT AREA */
 
 #chat{
 flex:1;
 display:flex;
 flex-direction:column;
 
-background:rgba(255,255,255,0.85);
-backdrop-filter:blur(6px);
+background:rgba(255,255,255,0.9);
 }
 
 #messages{
@@ -79,19 +75,18 @@ overflow:auto;
 padding:12px;
 }
 
-/* message bubble */
+/* MESSAGE */
 
 .msg{
 background:white;
 padding:10px;
 border-radius:10px;
 margin-bottom:8px;
-max-width:80%;
 
 box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
 
-/* send box */
+/* SEND BOX */
 
 #sendbox{
 display:flex;
@@ -110,22 +105,22 @@ background:#f1f1f1;
 
 #send{
 background:#22c55e;
-border:none;
 color:white;
-padding:8px 16px;
+border:none;
+
+padding:8px 18px;
 border-radius:20px;
 margin-left:6px;
+
 cursor:pointer;
 }
 
-/* online users */
+/* USERS */
 
 #users{
-width:110px;
+width:120px;
 background:white;
-overflow:auto;
 border-left:1px solid #ddd;
-font-size:13px;
 }
 
 .user{
@@ -133,65 +128,26 @@ padding:10px;
 border-bottom:1px solid #eee;
 }
 
-</style>
+</style></head><body><!-- TOP BAR --><div id="topbar"><div><span onclick="toggleMenu()">☰</span>
+<b style="margin-left:10px">Tulip Chat</b>
 
-</head>
+</div><div id="icons"><span onclick="refreshPage()">🔄</span>
+<span onclick="openMessages()">✉️</span>
+<span onclick="addFriend()">➕</span>
+<span onclick="showNotifications()">🔔</span>
 
-<body>
+<span id="username"></span>
 
-<div id="topbar">
-
-<div>Tulip Chat</div>
-
-<div id="user"></div>
-
-</div>
-
-<div id="main">
-
-<div id="rooms">
-
-<div class="room" onclick="joinRoom('main')">Main</div>
-
+</div></div><!-- MAIN --><div id="main"><!-- ROOMS --><div id="rooms"><div class="room" onclick="joinRoom('main')">Main</div>
 <div class="room" onclick="joinRoom('adult')">Adult</div>
-
 <div class="room" onclick="joinRoom('quiz')">Quiz</div>
+<div class="room" onclick="joinRoom('marathi')">Marathi</div></div><!-- CHAT --><div id="chat"><div id="messages"></div><div id="sendbox"><input id="msg" placeholder="Type message"><button id="send">Send</button>
 
-<div class="room" onclick="joinRoom('marathi')">Marathi</div>
-
-</div>
-
-<div id="chat">
-
-<div id="messages"></div>
-
-<div id="sendbox">
-
-<input id="msg" placeholder="Type message">
-
-<button id="send">Send</button>
-
-</div>
-
-</div>
-
-<div id="users">
-
-<div style="padding:10px;font-weight:bold">Online</div>
-
-<div id="userlist"></div>
-
-</div>
-
-</div>
-
-<script>
+</div></div><!-- USERS --><div id="users"><div style="padding:10px;font-weight:bold">Online</div><div id="userlist"></div></div></div><script>
 
 const socket = io()
 
 let username = localStorage.getItem("username")
-
-let currentRoom="main"
 
 if(!username){
 
@@ -199,41 +155,39 @@ location="index.html"
 
 }
 
-document.getElementById("user").innerText=username
+document.getElementById("username").innerText=username
 
-socket.emit("join",{
-username:username,
-room:currentRoom
-})
+let room="main"
 
-function joinRoom(room){
+socket.emit("join",{username,room})
 
-currentRoom=room
+/* ROOM CHANGE */
+
+function joinRoom(newRoom){
+
+room=newRoom
 
 document.getElementById("messages").innerHTML=""
 
-socket.emit("join",{
-username:username,
-room:room
-})
+socket.emit("join",{username,room})
 
 }
+
+/* SEND MESSAGE */
 
 document.getElementById("send").onclick=function(){
 
 let text=document.getElementById("msg").value
 
-if(!text) return
+if(text=="") return
 
-socket.emit("chat message",{
-user:username,
-msg:text,
-room:currentRoom
-})
+socket.emit("chat message",{user:username,msg:text,room})
 
 document.getElementById("msg").value=""
 
 }
+
+/* RECEIVE MESSAGE */
 
 socket.on("chat message",(data)=>{
 
@@ -247,8 +201,26 @@ document.getElementById("messages").appendChild(div)
 
 })
 
-</script>
+/* TOPBAR ACTIONS */
 
-</body>
+function refreshPage(){
+location.reload()
+}
 
-</html>
+function openMessages(){
+alert("Private messages coming soon")
+}
+
+function addFriend(){
+alert("Friend system coming soon")
+}
+
+function showNotifications(){
+alert("No notifications")
+}
+
+function toggleMenu(){
+alert("Menu coming soon")
+}
+
+</script></body></html>
