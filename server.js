@@ -14,16 +14,13 @@ let users = {}
 
 io.on("connection",(socket)=>{
 
-socket.on("join",(data)=>{
+socket.on("join",(name)=>{
 
-users[socket.id] = {
-name: data.name,
-avatar: data.avatar
-}
+users[socket.id] = name
 
 io.emit("online",users)
 
-io.emit("system",data.name+" joined the chat")
+io.emit("system", name + " joined the chat")
 
 })
 
@@ -39,12 +36,6 @@ io.emit("image",data)
 
 })
 
-socket.on("typing",(name)=>{
-
-socket.broadcast.emit("typing",name)
-
-})
-
 socket.on("dm",(data)=>{
 
 io.to(data.to).emit("dm",data)
@@ -53,14 +44,14 @@ io.to(data.to).emit("dm",data)
 
 socket.on("disconnect",()=>{
 
-let user = users[socket.id]
+let name = users[socket.id]
 
 delete users[socket.id]
 
 io.emit("online",users)
 
-if(user){
-io.emit("system",user.name+" left the chat")
+if(name){
+io.emit("system", name + " left the chat")
 }
 
 })
@@ -68,5 +59,7 @@ io.emit("system",user.name+" left the chat")
 })
 
 server.listen(PORT,()=>{
+
 console.log("Server running")
+
 })
