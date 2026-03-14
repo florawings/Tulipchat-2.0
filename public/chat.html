@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>Tulip Chat</title>
 
@@ -12,7 +11,7 @@
 body{
 margin:0;
 font-family:Arial;
-background:#f1f1f1;
+background:#f2f2f2;
 }
 
 header{
@@ -21,51 +20,61 @@ color:white;
 padding:12px;
 display:flex;
 justify-content:space-between;
-align-items:center;
-font-size:18px;
 }
 
-#menu button{
-background:white;
-border:none;
-padding:6px 10px;
-margin-left:5px;
-border-radius:5px;
+#users{
+position:fixed;
+left:0;
+top:50px;
+bottom:0;
+width:120px;
+background:black;
+color:white;
+overflow:auto;
 }
 
 #chat{
-height:75vh;
-overflow:auto;
+margin-left:120px;
 padding:10px;
+height:80vh;
+overflow:auto;
 }
 
 .msg{
 background:white;
-padding:10px;
-margin:6px 0;
-border-radius:8px;
+padding:8px;
+margin:5px;
+border-radius:6px;
+}
+
+.system{
+background:#ddd;
 }
 
 .bottom{
 position:fixed;
 bottom:0;
-width:100%;
+left:120px;
+right:0;
 display:flex;
-background:white;
-border-top:1px solid #ccc;
 }
 
 .bottom input{
 flex:1;
-padding:12px;
+padding:10px;
 border:none;
 }
 
-.bottom button{
+button{
 border:none;
-padding:12px;
+padding:10px;
 background:#ff2d7a;
 color:white;
+}
+
+img{
+max-width:150px;
+border-radius:6px;
 }
 
 </style>
@@ -78,29 +87,21 @@ color:white;
 
 <span>🌷 Tulip Chat</span>
 
-<div id="menu">
-
-<button onclick="showUsers()">👥</button>
-
-<button onclick="showDM()">💬</button>
-
-<button onclick="logout()">🚪</button>
-
-</div>
-
 </header>
+
+<div id="users"></div>
 
 <div id="chat"></div>
 
 <div class="bottom">
 
-<button onclick="emoji()">😀</button>
-
 <input id="msg" placeholder="message">
 
 <button onclick="send()">Send</button>
 
-<button onclick="image()">📷</button>
+<input type="file" id="imgInput" hidden>
+
+<button onclick="upload()">📷</button>
 
 <button onclick="gif()">GIF</button>
 
@@ -110,63 +111,164 @@ color:white;
 
 <script>
 
-const socket=io()
+const socket = io()
 
-let name=localStorage.getItem("name")
+let name = localStorage.getItem("name")
+
+if(!name){
+
+name = prompt("Enter name")
+
+localStorage.setItem("name",name)
+
+}
 
 socket.emit("join",name)
 
-socket.on("msg",(data)=>{
+socket.on("system",(text)=>{
 
-let div=document.createElement("div")
+addMessage("System: "+text,"system")
+
+})
+
+socket.on("message",(data)=>{
+
+addMessage(data.name+": "+data.text)
+
+})
+
+socket.on("image",(data)=>{
+
+let div = document.createElement("div")
 
 div.className="msg"
 
-div.innerText=data.name+": "+data.text
+div.innerHTML = data.name + "<br><img src='"+data.url+"'>"
 
-document.getElementById("chat").appendChild(div)
+chat.appendChild(div)
+
+})
+
+socket.on("gif",(data)=>{
+
+let div = document.createElement("div")
+
+div.className="msg"
+
+div.innerHTML = data.name + "<br><img src='"+data.url+"'>"
+
+chat.appendChild(div)
+
+})
+
+socket.on("dm",(data)=>{
+
+addMessage("DM from "+data.from+": "+data.text)
+
+})
+
+socket.on("users",(list)=>{
+
+users.innerHTML=""
+
+for(let id in list){
+
+let u=document.createElement("div")
+
+u.innerText=list[id]
+
+u.onclick=()=>{
+
+let msg=prompt("DM message")
+
+socket.emit("dm",{
+
+to:id,
+
+name:name,
+
+text:msg
+
+})
+
+}
+
+users.appendChild(u)
+
+}
 
 })
 
 function send(){
 
-let text=document.getElementById("msg").value
+let text=msg.value
 
-socket.emit("msg",{
+socket.emit("message",{
+
 name:name,
+
 text:text
+
 })
 
-document.getElementById("msg").value=""
+msg.value=""
 
 }
 
-function logout(){
+function upload(){
 
-localStorage.clear()
-
-location.href="/"
+imgInput.click()
 
 }
 
-function showUsers(){
-alert("Online users feature")
+imgInput.onchange=function(){
+
+let file=this.files[0]
+
+let reader=new FileReader()
+
+reader.onload=function(){
+
+socket.emit("image",{
+
+name:name,
+
+url:reader.result
+
+})
+
 }
 
-function showDM(){
-alert("DM inbox feature")
-}
+reader.readAsDataURL(file)
 
-function emoji(){
-document.getElementById("msg").value+="😀"
-}
-
-function image(){
-alert("Upload image feature")
 }
 
 function gif(){
-alert("GIF feature")
+
+let url=prompt("Paste GIF link")
+
+socket.emit("gif",{
+
+name:name,
+
+url:url
+
+})
+
+}
+
+function addMessage(text,type){
+
+let div=document.createElement("div")
+
+div.className="msg "+(type||"")
+
+div.innerText=text
+
+chat.appendChild(div)
+
+chat.scrollTop=chat.scrollHeight
+
 }
 
 </script>
