@@ -4,7 +4,6 @@
 <head>
 
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>Tulip Chat</title>
 
 <style>
@@ -21,125 +20,59 @@ flex-direction:column;
 /* TOP BAR */
 
 .topbar{
-
 background:black;
 color:white;
 padding:12px;
 display:flex;
-align-items:center;
 justify-content:space-between;
-
+align-items:center;
 }
 
 .logo{
-
 font-size:18px;
 font-weight:bold;
-
 }
-
-.icons{
-
-font-size:18px;
-
-}
-
-.icons span{
-
-margin-left:12px;
-cursor:pointer;
-
-}
-
 
 /* CHAT AREA */
 
 .chat{
-
 flex:1;
 overflow-y:auto;
 padding:10px;
-
 }
 
 .msg{
-
-display:flex;
 margin-bottom:15px;
-
 }
 
-.avatar{
-
-width:40px;
-height:40px;
-border-radius:50%;
-background:#ccc;
-margin-right:10px;
-
-}
-
-.text{
-
+.bubble{
 background:white;
-padding:8px 12px;
+padding:10px;
 border-radius:8px;
-max-width:70%;
-
-}
-
-.name{
-
-font-weight:bold;
-font-size:14px;
-
-}
-
-.time{
-
-font-size:11px;
-color:#888;
-
+max-width:80%;
 }
 
 /* INPUT AREA */
 
 .inputbar{
-
-background:white;
-padding:10px;
 display:flex;
 align-items:center;
-
+background:white;
+padding:8px;
 }
 
 .inputbar input{
-
 flex:1;
 padding:10px;
 border-radius:20px;
 border:1px solid #ccc;
-margin:0 8px;
-
+margin:0 5px;
 }
 
-.inputbar button{
-
-background:black;
-color:white;
-border:none;
-padding:10px 12px;
-border-radius:8px;
-cursor:pointer;
-
-}
-
-.iconbtn{
-
+.btn{
 font-size:20px;
 cursor:pointer;
-margin:0 4px;
-
+margin:0 5px;
 }
 
 </style>
@@ -148,89 +81,45 @@ margin:0 4px;
 
 <body>
 
-
-<!-- TOP BAR -->
-
 <div class="topbar">
 
 <div>☰</div>
-
 <div class="logo">🌷 Tulip Chat</div>
-
-<div class="icons">
-
-<span>💬</span>
-<span>👥</span>
-<span>🔔</span>
-
-</div>
+<div>🔔</div>
 
 </div>
 
 
 
-<!-- CHAT AREA -->
-
-<div class="chat" id="chat">
-
-<div class="msg">
-
-<div class="avatar"></div>
-
-<div>
-
-<div class="name">Rahul</div>
-
-<div class="text">Hello everyone</div>
-
-<div class="time">10:00</div>
-
-</div>
-
-</div>
+<div class="chat" id="chat"></div>
 
 
-
-<div class="msg">
-
-<div class="avatar"></div>
-
-<div>
-
-<div class="name">Neha</div>
-
-<div class="text">Hi Ravi</div>
-
-<div class="time">10:01</div>
-
-</div>
-
-</div>
-
-
-</div>
-
-
-
-<!-- INPUT BAR -->
 
 <div class="inputbar">
 
-<span class="iconbtn">➕</span>
+<span class="btn" onclick="uploadImage()">🖼</span>
 
-<span class="iconbtn">🙂</span>
+<span class="btn" onclick="sendGIF()">🎞</span>
+
+<span class="btn" onclick="youtube()">▶</span>
+
+<span class="btn" onclick="uploadVideo()">🎥</span>
 
 <input id="msgInput" placeholder="Type message...">
 
-<span class="iconbtn">🎤</span>
-
-<button onclick="sendMsg()">➤</button>
+<span class="btn" onclick="sendMsg()">➤</span>
 
 </div>
 
 
+<input type="file" id="imgFile" accept="image/*" style="display:none">
+
+<input type="file" id="videoFile" accept="video/*" style="display:none">
+
 
 <script>
+
+/* TEXT MESSAGE */
 
 function sendMsg(){
 
@@ -240,27 +129,11 @@ if(input.value=="") return
 
 let chat=document.getElementById("chat")
 
-let msg=document.createElement("div")
-
-msg.className="msg"
-
-msg.innerHTML=`
-
-<div class="avatar"></div>
-
-<div>
-
-<div class="name">You</div>
-
-<div class="text">${input.value}</div>
-
-<div class="time">now</div>
-
+chat.innerHTML+=`
+<div class="msg">
+<div class="bubble">${input.value}</div>
 </div>
-
 `
-
-chat.appendChild(msg)
 
 input.value=""
 
@@ -268,8 +141,111 @@ chat.scrollTop=chat.scrollHeight
 
 }
 
-</script>
 
+
+/* IMAGE SHARE */
+
+function uploadImage(){
+
+let file=document.getElementById("imgFile")
+
+file.click()
+
+file.onchange=function(){
+
+let reader=new FileReader()
+
+reader.onload=function(e){
+
+let chat=document.getElementById("chat")
+
+chat.innerHTML+=`
+<div class="msg">
+<img src="${e.target.result}" width="200">
+</div>
+`
+
+}
+
+reader.readAsDataURL(file.files[0])
+
+}
+
+}
+
+
+
+/* GIF SHARE */
+
+function sendGIF(){
+
+let url=prompt("Paste GIF URL")
+
+if(!url) return
+
+let chat=document.getElementById("chat")
+
+chat.innerHTML+=`
+<div class="msg">
+<img src="${url}" width="200">
+</div>
+`
+
+}
+
+
+
+/* YOUTUBE VIDEO */
+
+function youtube(){
+
+let link=prompt("Paste YouTube link")
+
+if(!link) return
+
+let id=link.split("v=")[1]
+
+let embed="https://www.youtube.com/embed/"+id
+
+let chat=document.getElementById("chat")
+
+chat.innerHTML+=`
+<iframe width="250" height="150"
+src="${embed}"
+frameborder="0"
+allowfullscreen>
+</iframe>
+`
+
+}
+
+
+
+/* VIDEO SHARE */
+
+function uploadVideo(){
+
+let file=document.getElementById("videoFile")
+
+file.click()
+
+file.onchange=function(){
+
+let url=URL.createObjectURL(file.files[0])
+
+let chat=document.getElementById("chat")
+
+chat.innerHTML+=`
+<video width="250" controls>
+<source src="${url}">
+</video>
+`
+
+}
+
+}
+
+</script>
 
 </body>
 </html>
