@@ -1,73 +1,25 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tulip Chat</title><script src="/socket.io/socket.io.js"></script><style>
+<!DOCTYPE html><html>
+<head><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tulip Chat</title><style>
 
 body{
 margin:0;
 font-family:Arial;
-background:#e6e6e6;
-height:100vh;
-display:flex;
-flex-direction:column;
-overflow:hidden;
+background:#ececec;
 }
+
+/* TOP BAR */
 
 .topbar{
 background:black;
 color:white;
-padding:10px;
+padding:12px;
 display:flex;
 justify-content:space-between;
 align-items:center;
 }
 
-.logo{
-font-weight:bold;
-}
-
-.chat{
-flex:1;
-overflow-y:auto;
-padding:10px;
-}
-
-.msg{
-margin-bottom:12px;
-}
-
-.bubble{
-background:white;
-padding:10px;
-border-radius:8px;
-display:inline-block;
-max-width:80%;
-}
-
-.tag{
-font-size:11px;
-color:gray;
-margin-left:6px;
-}
-
-.inputbar{
-display:flex;
-align-items:center;
-background:white;
-padding:8px;
-}
-
-.inputbar input{
-flex:1;
-padding:10px;
-border-radius:20px;
-border:1px solid #ccc;
-margin:0 5px;
-}
-
-.btn{
-font-size:18px;
-cursor:pointer;
-margin:0 5px;
-}
+/* MENU */
 
 .menu{
 position:fixed;
@@ -76,165 +28,241 @@ top:0;
 width:260px;
 height:100%;
 background:white;
-box-shadow:2px 0 10px rgba(0,0,0,0.3);
 transition:0.3s;
-z-index:100;
-overflow:auto;
+z-index:10;
 }
 
 .menu.show{
 left:0;
 }
 
-.menu-header{
-padding:20px;
-background:#f3f3f3;
-font-weight:bold;
-}
-
-.menu-item{
+.menu div{
 padding:15px;
 border-bottom:1px solid #eee;
 cursor:pointer;
 }
 
-.friends{
+/* USERS */
+
+.users{
 position:fixed;
-right:-260px;
-bottom:0;
-width:260px;
-height:60%;
-background:white;
-box-shadow:-2px 0 10px rgba(0,0,0,0.3);
+right:-220px;
+top:0;
+width:220px;
+height:100%;
+background:#111;
+color:white;
 transition:0.3s;
-z-index:100;
-overflow:auto;
-border-top-left-radius:10px;
 }
 
-.friends.show{
+.users.show{
 right:0;
 }
 
-.friends-header{
-padding:15px;
-background:#f3f3f3;
-font-weight:bold;
-}
-
-.friendbtn{
-position:fixed;
-bottom:10px;
-right:10px;
-background:black;
-color:white;
-padding:10px 15px;
-border-radius:10px;
-font-size:18px;
-cursor:pointer;
-z-index:200;
-}
-
-.room{
+.userItem{
 padding:10px;
-border-bottom:1px solid #ddd;
+border-bottom:1px solid #333;
 cursor:pointer;
 }
 
-.room:hover{
-background:#eee;
+/* CHAT */
+
+.chat{
+height:70vh;
+overflow:auto;
+padding:10px;
 }
 
-</style></head><body><div class="menu" id="menu"><div class="menu-header">
-🌷 Tulip Chat
-</div><div id="roomList"></div><div class="menu-item" onclick="createRoom()">➕ Create Room</div></div><div class="friends" id="friends"><div class="friends-header">
-👥 Friends
-</div><div id="friendsList" style="padding:10px"><div>👨 Rahul 🟢</div>
-<div>👩 Neha 🟢</div></div></div><div class="topbar"><div onclick="toggleMenu()">☰</div><div class="logo">🌷 Tulip Chat</div><div>🔔</div></div><div class="chat" id="chat"></div><div class="inputbar"><span class="btn" onclick="uploadImage()">🖼</span>
-<span class="btn" onclick="sendGIF()">🎞</span>
-<span class="btn" onclick="youtube()">▶</span>
-<span class="btn" onclick="uploadVideo()">🎥</span>
-<span class="btn" onclick="voiceTyping()">🎤</span>
+.msg{
+background:white;
+padding:8px;
+margin-bottom:6px;
+border-radius:5px;
+}
 
-<input id="msgInput" placeholder="Type message"><span class="btn" onclick="sendMsg()">➤</span>
+/* INPUT */
 
-</div><div class="friendbtn" onclick="toggleFriends()">≡</div><input type="file" id="imgFile" accept="image/*" style="display:none">
-<input type="file" id="videoFile" accept="video/*" style="display:none"><script>
+.inputbar{
+display:flex;
+padding:8px;
+background:white;
+position:fixed;
+bottom:0;
+width:100%;
+}
 
-let socket = io()
+.inputbar input{
+flex:1;
+padding:10px;
+}
 
-let username = localStorage.getItem("name")
-let type = localStorage.getItem("type")
+.inputbar button{
+padding:10px;
+margin-left:4px;
+}
 
-let currentRoom="general"
+/* PANELS */
 
-socket.emit("join",{name:username,type:type})
+.panel{
+position:fixed;
+bottom:120px;
+left:10px;
+background:white;
+padding:10px;
+border:1px solid #ccc;
+display:none;
+}
+
+</style></head><body><div class="topbar"><div onclick="toggleMenu()">☰</div><div>🌷 Tulip Chat</div><div onclick="toggleUsers()">👥</div></div><!-- MENU --><div class="menu" id="menu"><div onclick="joinRoom('public')">🌐 Public Chat</div><div onclick="createRoom()">➕ Create Room</div><div onclick="openNews()">📰 News Board</div><div onclick="openLeaderboard()">🏆 Leaderboard</div></div><!-- USERS --><div class="users" id="users"><h3 style="padding:10px">Online</h3><div id="userList"></div></div><!-- CHAT --><div class="chat" id="chat"></div><!-- INPUT --><div class="inputbar"><input id="msgInput" placeholder="Type message"><button onclick="sendMsg()">Send</button>
+
+<button onclick="sendImage()">📷</button>
+
+<button onclick="sendGif()">GIF</button>
+
+</div><!-- OWNER PANEL --><div class="panel" id="ownerPanel"><b>Owner Tools</b>
+
+<br><br>
+
+<button onclick="kickUser()">Kick</button>
+
+<button onclick="banUser()">Ban</button>
+
+<button onclick="muteUser()">Mute</button>
+
+<button onclick="promoteUser()">Promote</button>
+
+</div><script>
+
+let username=localStorage.getItem("name")
+
+if(!username){
+
+username=prompt("Enter username")
+
+localStorage.setItem("name",username)
+
+}
+
+let role="user"
+
+let room="public"
+
+let dmUser=null
+
+let coins=0
+
+let banned=[]
+
+let muted=[]
+
+let users=["Rahul","Neha","Aman","Ravi"]
 
 
+/* OWNER LOGIN */
+
+if(username==="Lord_lucifer"){
+
+let p=prompt("Owner password")
+
+if(p==="766521"){
+
+role="owner"
+
+document.getElementById("ownerPanel").style.display="block"
+
+}
+
+}
+
+
+/* MENU */
 
 function toggleMenu(){
+
 menu.classList.toggle("show")
-}
 
-function toggleFriends(){
-friends.classList.toggle("show")
 }
 
 
+/* USERS PANEL */
+
+function toggleUsers(){
+
+document.getElementById("users").classList.toggle("show")
+
+}
+
+
+/* MESSAGE */
 
 function sendMsg(){
 
-let input=document.getElementById("msgInput")
+let text=msgInput.value
 
-if(input.value==="") return
+if(!text) return
 
-socket.emit("message",{
-room:currentRoom,
-text:input.value
-})
+if(muted.includes(username)){
 
-input.value=""
+alert("You are muted")
+
+return
+
+}
+
+if(dmUser){
+
+addMsg("DM "+username+" → "+dmUser+": "+text)
+
+}else{
+
+addMsg(username+": "+text)
+
+}
+
+coins++
+
+msgInput.value=""
 
 }
 
 
+/* IMAGE */
 
-socket.on("message",(data)=>{
+function sendImage(){
 
-let badge=""
+let url=prompt("Image URL")
 
-if(data.role==="owner"){
-badge="👑 Owner"
+addMsg(username+": <img src='"+url+"' width='200'>")
+
 }
 
-if(data.role==="superadmin"){
-badge="⭐ Admin"
+
+/* GIF */
+
+function sendGif(){
+
+let url=prompt("GIF URL")
+
+addMsg(username+": <img src='"+url+"' width='200'>")
+
 }
 
-if(data.role==="user"){
-badge="✔ User"
-}
 
-if(data.role==="guest"){
-badge="👻 Guest"
-}
+/* ADD MESSAGE */
+
+function addMsg(text){
 
 chat.innerHTML+=`
 
 <div class="msg">
 
-<div class="bubble">
-
-<b>${data.user}</b>
-<span class="tag">${badge}</span>
+${text}
 
 <br>
 
-${data.text}
+<button onclick="deleteMsg(this)">Delete</button>
 
-<button onclick="kick('${data.user}')">Kick</button>
-
-</div>
+<button onclick="reportMsg()">Report</button>
 
 </div>
 
@@ -242,159 +270,136 @@ ${data.text}
 
 chat.scrollTop=chat.scrollHeight
 
-})
-
-
-
-function kick(name){
-socket.emit("kick",name)
 }
 
 
+/* DELETE */
 
-socket.on("rooms",(rooms)=>{
+function deleteMsg(btn){
 
-roomList.innerHTML=""
-
-rooms.forEach(r=>{
-
-roomList.innerHTML+=`
-<div class="room" onclick="joinRoom('${r}')">
-${r}
-</div>
-`
-
-})
-
-})
-
-
-
-function joinRoom(room){
-
-currentRoom=room
-
-chat.innerHTML=""
-
-socket.emit("joinRoom",room)
+btn.parentElement.remove()
 
 }
 
 
+/* REPORT */
+
+function reportMsg(){
+
+alert("Message reported")
+
+}
+
+
+/* ROOMS */
 
 function createRoom(){
 
-let room=prompt("Room name")
+let r=prompt("Room name")
 
-if(!room) return
-
-socket.emit("createRoom",room)
+alert("Room '"+r+"' created")
 
 }
 
 
+/* JOIN ROOM */
 
-/* MEDIA FEATURES */
+function joinRoom(r){
 
-function uploadImage(){
+room=r
 
-let file=imgFile
+chat.innerHTML=""
 
-file.click()
-
-file.onchange=function(){
-
-let reader=new FileReader()
-
-reader.onload=function(e){
-
-chat.innerHTML+=`
-<div class="msg">
-<img src="${e.target.result}" width="200">
-</div>
-`
-
-}
-
-reader.readAsDataURL(file.files[0])
-
-}
+addMsg("Joined room: "+r)
 
 }
 
 
+/* USER LIST */
 
-function sendGIF(){
+function refreshUsers(){
 
-let url=prompt("Paste GIF URL")
+let html=""
 
-if(!url) return
+users.forEach(u=>{
 
-chat.innerHTML+=`
-<div class="msg">
-<img src="${url}" width="200">
-</div>
-`
+html+=`<div class="userItem" onclick="openDM('${u}')">${u}</div>`
+
+})
+
+userList.innerHTML=html
+
+}
+
+refreshUsers()
+
+
+/* DM */
+
+function openDM(u){
+
+dmUser=u
+
+chat.innerHTML=""
+
+addMsg("Private chat with "+u)
 
 }
 
 
+/* OWNER TOOLS */
 
-function youtube(){
+function kickUser(){
 
-let link=prompt("YouTube link")
+let u=prompt("User")
 
-if(!link) return
+alert(u+" kicked")
 
-let id=link.split("v=")[1]
+}
 
-chat.innerHTML+=`
-<iframe width="250" height="150"
-src="https://www.youtube.com/embed/${id}"
-frameborder="0"
-allowfullscreen>
-</iframe>
-`
+function banUser(){
+
+let u=prompt("User")
+
+banned.push(u)
+
+alert(u+" banned")
+
+}
+
+function muteUser(){
+
+let u=prompt("User")
+
+muted.push(u)
+
+alert(u+" muted")
+
+}
+
+function promoteUser(){
+
+let u=prompt("User")
+
+alert(u+" promoted to superadmin")
 
 }
 
 
+/* NEWS */
 
-function uploadVideo(){
+function openNews(){
 
-let file=videoFile
-
-file.click()
-
-file.onchange=function(){
-
-let url=URL.createObjectURL(file.files[0])
-
-chat.innerHTML+=`
-<video width="250" controls>
-<source src="${url}">
-</video>
-`
-
-}
+alert("Community news board")
 
 }
 
 
+/* LEADERBOARD */
 
-function voiceTyping(){
+function openLeaderboard(){
 
-let speech=new webkitSpeechRecognition()
-
-speech.lang="en-US"
-
-speech.start()
-
-speech.onresult=function(event){
-
-msgInput.value=event.results[0][0].transcript
-
-}
+alert("Your TulipCoins: "+coins)
 
 }
 
