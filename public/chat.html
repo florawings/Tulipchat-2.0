@@ -1,116 +1,44 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Tulip Chat</title>
 
 <style>
+
 body{
+font-family:Arial;
 margin:0;
-font-family:sans-serif;
+background:#eee;
 }
 
-.header{
+.top{
 background:black;
 color:white;
-padding:12px;
+padding:15px;
 text-align:center;
+font-size:20px;
 }
 
-.chat{
-height:70vh;
-overflow:auto;
-background:#eee;
-padding:10px;
-}
-
-.inputBox{
-position:fixed;
-bottom:0;
-width:100%;
-background:#fff;
-padding:10px;
-}
-
-input{
-width:70%;
-padding:10px;
-}
-
-button{
-padding:10px;
-}
 </style>
+
 </head>
 
 <body>
 
-<div class="header">
-🌷 Tulip Chat
-</div>
+<div class="top">🌷 Tulip Chat</div>
 
-<div id="chat" class="chat"></div>
-
-<div class="inputBox">
-<input id="text" placeholder="Type message">
-<button onclick="send()">Send</button>
-</div>
+<h3 id="welcome"></h3>
 
 <script>
 
-let user = localStorage.getItem("user")
+let user=localStorage.getItem("user")
 
-async function send(){
-
-let msg = document.getElementById("text").value
-
-if(msg.trim()=="") return
-
-await fetch("/send",{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-user,
-msg
-})
-})
-
-document.getElementById("text").value=""
-
-load()
-
-}
-
-async function load(){
-
-let r = await fetch("/messages")
-
-let data = await r.json()
-
-let chat = document.getElementById("chat")
-
-chat.innerHTML=""
-
-data.forEach(m=>{
-
-let div = document.createElement("div")
-
-div.innerHTML="<b>"+m.user+":</b> "+m.msg
-
-chat.appendChild(div)
-
-})
-
-chat.scrollTop = chat.scrollHeight
-
-}
-
-setInterval(load,2000)
-
-load()
+document.getElementById("welcome").innerText="Welcome "+user
 
 </script>
 
 </body>
+
 </html>
