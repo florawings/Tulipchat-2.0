@@ -6,7 +6,7 @@ const io = require("socket.io")(http)
 
 const path = require("path")
 
-app.use(express.static(path.join(__dirname,"public")))
+app.use(express.static("public"))
 
 let users = {}
 
@@ -14,9 +14,9 @@ io.on("connection",(socket)=>{
 
 socket.on("join",(name)=>{
 
-users[socket.id] = name
+users[socket.id]=name
 
-io.emit("system", name+" joined the chat")
+io.emit("system",name+" joined the chat")
 
 io.emit("users",users)
 
@@ -24,55 +24,25 @@ io.emit("users",users)
 
 socket.on("message",(data)=>{
 
-io.emit("message",{
-name:data.name,
-text:data.text
-})
+io.emit("message",data)
 
 })
 
 socket.on("image",(data)=>{
 
-io.emit("image",{
-name:data.name,
-url:data.url
-})
+io.emit("image",data)
 
 })
 
 socket.on("gif",(data)=>{
 
-io.emit("gif",{
-name:data.name,
-url:data.url
-})
-
-})
-
-socket.on("dm",(data)=>{
-
-io.to(data.to).emit("dm",{
-name:data.name,
-text:data.text
-})
-
-})
-
-socket.on("typing",(data)=>{
-
-io.to(data.to).emit("typing",data.name)
-
-})
-
-socket.on("seen",(data)=>{
-
-io.to(data.to).emit("seen",data.name)
+io.emit("gif",data)
 
 })
 
 socket.on("disconnect",()=>{
 
-let name = users[socket.id]
+let name=users[socket.id]
 
 if(name){
 
@@ -83,5 +53,15 @@ delete users[socket.id]
 io.emit("users",users)
 
 }
+
+})
+
+})
+
+const PORT = process.env.PORT || 10000
+
+http.listen(PORT,()=>{
+
+console.log("Server running on port "+PORT)
 
 })
