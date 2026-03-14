@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>Tulip Chat</title>
 
 <style>
@@ -67,7 +65,6 @@ border-radius:6px;
 }
 
 #usersBox{
-
 display:none;
 position:fixed;
 top:70px;
@@ -77,7 +74,6 @@ color:white;
 padding:15px;
 border-radius:8px;
 width:200px;
-
 }
 
 </style>
@@ -87,16 +83,11 @@ width:200px;
 <body>
 
 <header>
-
 <span>🌷 Tulip Chat</span>
-
 <div>
-
 <button onclick="toggleUsers()">👥</button>
 <button onclick="logout()">Logout</button>
-
 </div>
-
 </header>
 
 <div id="usersBox"></div>
@@ -133,18 +124,11 @@ localStorage.setItem("name",name)
 let gender = localStorage.getItem("gender")
 
 if(!gender){
-gender = prompt("Enter gender")
+gender = prompt("Male or Female")
 localStorage.setItem("gender",gender)
 }
 
-socket.on("connect",()=>{
-
-socket.emit("join",{
-name:name,
-gender:gender
-})
-
-})
+socket.emit("join",{name,gender})
 
 function send(){
 
@@ -152,10 +136,7 @@ let text = msg.value
 
 if(!text) return
 
-socket.emit("message",{
-name:name,
-text:text
-})
+socket.emit("message",{name,text})
 
 msg.value=""
 
@@ -188,24 +169,13 @@ formData.append("file",file.files[0])
 
 let xhr=new XMLHttpRequest()
 
-xhr.open("POST","/upload",true)
-
-xhr.upload.onprogress=function(e){
-
-let percent=Math.round((e.loaded/e.total)*100)
-
-addMsg("Uploading Image "+percent+"%",true)
-
-}
+xhr.open("POST","/upload")
 
 xhr.onload=function(){
 
 let data=JSON.parse(xhr.responseText)
 
-socket.emit("image",{
-name:name,
-url:data.url
-})
+socket.emit("image",{name,url:data.url})
 
 }
 
@@ -224,24 +194,13 @@ formData.append("file",giffile.files[0])
 
 let xhr=new XMLHttpRequest()
 
-xhr.open("POST","/upload",true)
-
-xhr.upload.onprogress=function(e){
-
-let percent=Math.round((e.loaded/e.total)*100)
-
-addMsg("Uploading GIF "+percent+"%",true)
-
-}
+xhr.open("POST","/upload")
 
 xhr.onload=function(){
 
 let data=JSON.parse(xhr.responseText)
 
-socket.emit("gif",{
-name:name,
-url:data.url
-})
+socket.emit("gif",{name,url:data.url})
 
 }
 
@@ -317,5 +276,4 @@ box.appendChild(div)
 </script>
 
 </body>
-
 </html>
