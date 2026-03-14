@@ -6,20 +6,20 @@ const io = require("socket.io")(http)
 app.use(express.json())
 app.use(express.static("public"))
 
-let users = []        // registered users
-let onlineUsers = {}  // online users
+let users=[]
+let onlineUsers={}
+let rooms=["general"]
+
+const OWNER_NAME="owner"
 
 
 // REGISTER
+
 app.post("/register",(req,res)=>{
 
-let {username,password,country} = req.body
+let {username,password,country}=req.body
 
-if(!username || !password){
-return res.json({status:"error"})
-}
-
-let exist = users.find(u=>u.username===username)
+let exist=users.find(u=>u.username===username)
 
 if(exist){
 return res.json({status:"user_exists"})
@@ -28,7 +28,8 @@ return res.json({status:"user_exists"})
 users.push({
 username,
 password,
-country
+country,
+role:"user"
 })
 
 res.json({status:"registered"})
@@ -37,11 +38,12 @@ res.json({status:"registered"})
 
 
 // LOGIN
+
 app.post("/login",(req,res)=>{
 
-let {username,password} = req.body
+let {username,password}=req.body
 
-let user = users.find(
+let user=users.find(
 u=>u.username===username && u.password===password
 )
 
@@ -49,42 +51,136 @@ if(!user){
 return res.json({status:"invalid"})
 }
 
-res.json({status:"success"})
+res.json({
+status:"success",
+role:user.role
+})
 
 })
 
 
-// SOCKET CHAT
+
+// SOCKET
+
 io.on("connection",(socket)=>{
+
 
 socket.on("join",(data)=>{
 
+let role="guest"
+
+if(data.type==="registered"){
+
+let user=users.find(u=>u.username===data.name)
+
+if(user){
+role=user.role
+}
+
+}
+
+if(data.name===OWNER_NAME){
+role="owner"
+}
+
 onlineUsers[socket.id]={
 name:data.name,
-type:data.type
+role
 }
+
+socket.join("general")
+
+io.emit("system",data.name+" joined chat")
 
 })
 
-socket.on("message",(msg)=>{
+
+
+
+// MESSAGE
+
+socket.on("message",(data)=>{
 
 let user=onlineUsers[socket.id]
 
 if(!user) return
 
-io.emit("message",{
+io.to(data.room).emit("message",{
 user:user.name,
-type:user.type,
-text:msg
+role:user.role,
+text:data.text
 })
 
 })
 
-socket.on("disconnect",()=>{
-delete onlineUsers[socket.id]
-})
+
+
+
+// CREATE ROOM
+
+socket.on("createRoom",(room)=>{
+
+let user=onlineUsers[socket.id]
+
+if(user.role!=="owner") return
+
+if(!rooms.includes(room)){
+
+rooms.push(room)
+
+io.emit("rooms",rooms)
+
+}
 
 })
+
+
+
+
+// KICK USER
+
+socket.on("kick",(target)=>{
+
+let user=onlineUsers[socket.id]
+
+if(user.role!=="owner" && user.role!=="superadmin") return
+
+for(let id in onlineUsers){
+
+if(onlineUsers[id].name===target){
+
+io.to(id).emit("system","You were kicked")
+
+io.sockets.sockets.get(id).disconnect()
+
+}
+
+}
+
+})
+
+
+
+
+// PROMOTE USER
+
+socket.on("promote",(target)=>{
+
+let user=onlineUsers[socket.id]
+
+if(user.role!=="owner") return
+
+let u=users.find(x=>x.username===target)
+
+if(u){
+u.role="superadmin"
+}
+
+})
+
+
+})
+
 
 
 http.listen(3000,()=>{
