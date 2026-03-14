@@ -3,7 +3,7 @@
 
 <head>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>Tulip Chat</title>
 
@@ -19,30 +19,20 @@ header{
 background:#ff2d7a;
 color:white;
 padding:12px;
-}
-
-#users{
-position:fixed;
-left:0;
-top:50px;
-bottom:0;
-width:120px;
-background:black;
-color:white;
-overflow:auto;
+display:flex;
+justify-content:space-between;
 }
 
 #chat{
-margin-left:120px;
 padding:10px;
-height:80vh;
+height:70vh;
 overflow:auto;
 }
 
 .msg{
 background:white;
-padding:10px;
 margin:5px;
+padding:10px;
 border-radius:6px;
 }
 
@@ -50,15 +40,10 @@ border-radius:6px;
 background:#ddd;
 }
 
-img{
-max-width:200px;
-border-radius:6px;
-}
-
 .bottom{
 position:fixed;
 bottom:0;
-left:120px;
+left:0;
 right:0;
 display:flex;
 }
@@ -70,10 +55,30 @@ border:none;
 }
 
 button{
-border:none;
 padding:12px;
+border:none;
 background:#ff2d7a;
 color:white;
+}
+
+#userPopup{
+
+display:none;
+position:fixed;
+top:60px;
+right:10px;
+background:white;
+border:1px solid #ccc;
+width:200px;
+height:300px;
+overflow:auto;
+padding:10px;
+
+}
+
+img{
+max-width:200px;
+border-radius:6px;
 }
 
 </style>
@@ -82,11 +87,19 @@ color:white;
 
 <body>
 
-<header>🌷 Tulip Chat</header>
+<header>
 
-<div id="users"></div>
+<span>🌷 Tulip Chat</span>
+
+<button onclick="toggleUsers()">👥</button>
+
+</header>
+
+<div id="userPopup"></div>
 
 <div id="chat"></div>
+
+<div id="typing"></div>
 
 <div class="bottom">
 
@@ -98,7 +111,7 @@ color:white;
 
 <button onclick="upload()">📷</button>
 
-<button onclick="gif()">GIF</button>
+<button onclick="sendGIF()">GIF</button>
 
 </div>
 
@@ -120,47 +133,13 @@ localStorage.setItem("name",name)
 
 socket.emit("join",name)
 
-socket.on("chat",(data)=>{
-
-if(data.type=="join" || data.type=="left"){
-
-addText(data.text,true)
-
-}
-
-if(data.type=="text"){
-
-addText(data.name+": "+data.text)
-
-}
-
-if(data.type=="image" || data.type=="gif"){
-
-addImage(data.name,data.url)
-
-}
-
-})
-
-socket.on("users",(list)=>{
-
-users.innerHTML=""
-
-for(let id in list){
-
-let div=document.createElement("div")
-
-div.innerText=list[id]
-
-users.appendChild(div)
-
-}
-
-})
+let currentDM = null
 
 function send(){
 
 let text=msg.value
+
+if(!text) return
 
 socket.emit("message",{
 
@@ -172,6 +151,30 @@ text:text
 msg.value=""
 
 }
+
+socket.on("message",(data)=>{
+
+addMsg(data.name+": "+data.text)
+
+})
+
+socket.on("system",(text)=>{
+
+addMsg(text,true)
+
+})
+
+socket.on("image",(data)=>{
+
+addImage(data.name,data.url)
+
+})
+
+socket.on("gif",(data)=>{
+
+addImage(data.name,data.url)
+
+})
 
 function upload(){
 
@@ -198,9 +201,9 @@ reader.readAsDataURL(file.files[0])
 
 }
 
-function gif(){
+function sendGIF(){
 
-let url=prompt("Paste GIF link")
+let url=prompt("Paste GIF URL")
 
 socket.emit("gif",{
 
@@ -211,7 +214,7 @@ url:url
 
 }
 
-function addText(text,system){
+function addMsg(text,system){
 
 let div=document.createElement("div")
 
@@ -227,19 +230,105 @@ chat.scrollTop=chat.scrollHeight
 
 }
 
-function addImage(name,url){
+function addImage(user,url){
 
 let div=document.createElement("div")
 
 div.className="msg"
 
-div.innerHTML=name+"<br><img src='"+url+"'>"
+div.innerHTML=user+"<br><img src='"+url+"'>"
 
 chat.appendChild(div)
 
 chat.scrollTop=chat.scrollHeight
 
 }
+
+socket.on("users",(list)=>{
+
+let box=document.getElementById("userPopup")
+
+box.innerHTML=""
+
+for(let id in list){
+
+let div=document.createElement("div")
+
+div.innerText=list[id]
+
+div.onclick=function(){
+
+startDM(id,list[id])
+
+}
+
+box.appendChild(div)
+
+}
+
+})
+
+function toggleUsers(){
+
+let box=document.getElementById("userPopup")
+
+box.style.display = box.style.display=="block" ? "none":"block"
+
+}
+
+function startDM(id,user){
+
+currentDM=id
+
+alert("DM started with "+user)
+
+}
+
+msg.oninput=function(){
+
+if(currentDM){
+
+socket.emit("typing",{
+
+to:currentDM,
+name:name
+
+})
+
+}
+
+}
+
+socket.on("typing",(user)=>{
+
+typing.innerText=user+" typing..."
+
+setTimeout(()=>{
+
+typing.innerText=""
+
+},2000)
+
+})
+
+socket.on("dm",(data)=>{
+
+addMsg("(DM) "+data.name+": "+data.text)
+
+socket.emit("seen",{
+
+to:currentDM,
+name:name
+
+})
+
+})
+
+socket.on("seen",(user)=>{
+
+console.log("Seen by "+user)
+
+})
 
 </script>
 
