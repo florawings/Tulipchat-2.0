@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>Tulip Chat</title>
 
 <style>
@@ -21,6 +19,7 @@ color:white;
 padding:12px;
 display:flex;
 justify-content:space-between;
+align-items:center;
 }
 
 #chat{
@@ -34,6 +33,7 @@ background:white;
 padding:10px;
 margin:6px;
 border-radius:6px;
+max-width:90%;
 }
 
 .system{
@@ -59,15 +59,16 @@ border:none;
 padding:12px;
 background:#ff2d7a;
 color:white;
+cursor:pointer;
 }
 
 img{
-max-width:200px;
+max-width:220px;
 border-radius:6px;
+margin-top:5px;
 }
 
 #usersBox{
-
 display:none;
 position:fixed;
 top:70px;
@@ -79,11 +80,15 @@ border-radius:8px;
 width:200px;
 max-height:300px;
 overflow:auto;
+}
 
+#uploadStatus{
+padding:5px;
+font-size:13px;
+color:#444;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -93,16 +98,15 @@ overflow:auto;
 <span>🌷 Tulip Chat</span>
 
 <div>
-
 <button onclick="toggleUsers()">👥</button>
-
 <button onclick="logout()">Logout</button>
-
 </div>
 
 </header>
 
 <div id="usersBox"></div>
+
+<div id="uploadStatus"></div>
 
 <div id="chat"></div>
 
@@ -113,11 +117,9 @@ overflow:auto;
 <button onclick="send()">Send</button>
 
 <input type="file" id="file" hidden>
-
 <button onclick="upload()">📷</button>
 
 <input type="file" id="giffile" accept="image/gif" hidden>
-
 <button onclick="gifUpload()">GIF</button>
 
 </div>
@@ -131,29 +133,27 @@ const socket = io()
 let name = localStorage.getItem("name")
 
 if(!name){
-
 name = prompt("Enter name")
-
 localStorage.setItem("name",name)
-
 }
 
 let gender = localStorage.getItem("gender")
 
 if(!gender){
-
 gender = prompt("Enter gender (male/female)")
-
 localStorage.setItem("gender",gender)
-
 }
 
-socket.emit("join",{
+socket.on("connect",()=>{
 
+socket.emit("join",{
 name:name,
 gender:gender
+})
 
 })
+
+/* MESSAGE SEND */
 
 function send(){
 
@@ -162,105 +162,119 @@ let text = msg.value
 if(!text) return
 
 socket.emit("message",{
-
 name:name,
 text:text
-
 })
 
 msg.value=""
 
 }
 
+/* RECEIVE MESSAGE */
+
 socket.on("message",(data)=>{
-
 addMsg(data.name+": "+data.text)
-
 })
+
+/* SYSTEM MESSAGE */
 
 socket.on("system",(text)=>{
-
 addMsg(text,true)
-
 })
+
+/* IMAGE */
 
 socket.on("image",(data)=>{
-
 addImage(data.name,data.url)
-
 })
+
+/* GIF */
 
 socket.on("gif",(data)=>{
-
 addImage(data.name,data.url)
+})
+
+/* HISTORY */
+
+socket.on("history",(msgs)=>{
+
+msgs.forEach(msg=>{
+
+if(msg.type==="text"){
+addMsg(msg.data.name+": "+msg.data.text)
+}
+
+if(msg.type==="image"){
+addImage(msg.data.name,msg.data.url)
+}
+
+if(msg.type==="gif"){
+addImage(msg.data.name,msg.data.url)
+}
 
 })
+
+})
+
+/* IMAGE UPLOAD */
 
 function upload(){
-
 file.click()
-
 }
 
-file.onchange=function(){
+file.onchange=async function(){
 
-let reader = new FileReader()
+let formData=new FormData()
+formData.append("file",file.files[0])
 
-reader.onprogress=function(e){
+uploadStatus.innerText="Uploading..."
 
-let percent = Math.round((e.loaded/e.total)*100)
+let res=await fetch("/upload",{
+method:"POST",
+body:formData
+})
 
-addMsg("Uploading image "+percent+"%",true)
+let data=await res.json()
 
-}
-
-reader.onload=function(){
+uploadStatus.innerText="Upload complete ✔"
 
 socket.emit("image",{
-
 name:name,
-url:reader.result
-
+url:data.url
 })
 
 }
 
-reader.readAsDataURL(file.files[0])
-
-}
+/* GIF UPLOAD */
 
 function gifUpload(){
-
 giffile.click()
-
 }
 
-giffile.onchange=function(){
+giffile.onchange=async function(){
 
-let reader = new FileReader()
+let formData=new FormData()
+formData.append("file",giffile.files[0])
 
-reader.onprogress=function(e){
+uploadStatus.innerText="Uploading GIF..."
 
-let percent = Math.round((e.loaded/e.total)*100)
+let res=await fetch("/upload",{
+method:"POST",
+body:formData
+})
 
-addMsg("Uploading GIF "+percent+"%",true)
+let data=await res.json()
 
-}
-
-reader.onload=function(){
+uploadStatus.innerText="GIF sent ✔"
 
 socket.emit("gif",{
-
 name:name,
-url:reader.result
-
+url:data.url
 })
 
 }
 
-reader.readAsDataURL(giffile.files[0])
-
-}
+/* LOGOUT */
 
 function logout(){
 
@@ -271,6 +285,8 @@ localStorage.clear()
 location.reload()
 
 }
+
+/* ADD TEXT */
 
 function addMsg(text,system){
 
@@ -288,6 +304,8 @@ chat.scrollTop=chat.scrollHeight
 
 }
 
+/* ADD IMAGE */
+
 function addImage(user,url){
 
 let div=document.createElement("div")
@@ -301,6 +319,8 @@ chat.appendChild(div)
 chat.scrollTop=chat.scrollHeight
 
 }
+
+/* ONLINE USERS */
 
 function toggleUsers(){
 
@@ -316,22 +336,18 @@ let box=document.getElementById("usersBox")
 
 box.innerHTML="<b>Online Users</b><hr>"
 
-for(let id in list){
-
-let user=list[id]
+Object.values(list).forEach(user=>{
 
 let div=document.createElement("div")
-
 div.innerText=user.name+" ("+user.gender+")"
-
 box.appendChild(div)
-
-}
 
 })
 
-</script>
+})
 
-</body>
+/* AUTO REFRESH EVERY 10 SEC */
 
-</html>
+setInterval(()=>{
+location.reload()
+},
