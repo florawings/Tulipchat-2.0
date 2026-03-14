@@ -26,26 +26,17 @@ padding:12px;
 font-size:18px;
 }
 
-/* CONTACT OWNER BAR */
-
-.ownerBar{
-background:#fff3cd;
-padding:8px;
-text-align:center;
-font-size:14px;
-}
-
 /* LAYOUT */
 
 .container{
 display:flex;
-height:calc(100vh - 100px);
+height:calc(100vh - 60px);
 }
 
 /* USERS */
 
 .users{
-width:22%;
+width:25%;
 background:black;
 color:white;
 padding:10px;
@@ -53,18 +44,9 @@ overflow:auto;
 }
 
 .user{
-display:flex;
-align-items:center;
 padding:8px;
 border-bottom:1px solid #333;
 cursor:pointer;
-}
-
-.user img{
-width:30px;
-height:30px;
-border-radius:50%;
-margin-right:6px;
 }
 
 /* CHAT */
@@ -88,24 +70,11 @@ padding:10px;
 margin-bottom:8px;
 border-radius:8px;
 max-width:80%;
-position:relative;
 }
 
 .msg img{
-max-width:220px;
+max-width:200px;
 border-radius:8px;
-margin-top:5px;
-}
-
-/* DELETE */
-
-.delete{
-position:absolute;
-top:5px;
-right:5px;
-font-size:12px;
-cursor:pointer;
-color:red;
 }
 
 /* INPUT */
@@ -122,34 +91,18 @@ right:0;
 
 .input input{
 flex:1;
-padding:12px;
-font-size:16px;
-border-radius:6px;
-border:1px solid #ccc;
+padding:10px;
 }
 
 .input button{
-padding:12px 14px;
-margin-left:6px;
-font-size:16px;
+margin-left:5px;
+padding:10px;
 border:none;
 border-radius:6px;
 }
 
 .send{background:#ff2e93;color:white;}
 .cam{background:#2196f3;color:white;}
-.gif{background:#ff9800;color:white;}
-
-.adBtn{
-position:fixed;
-bottom:70px;
-right:10px;
-background:#ff2e93;
-color:white;
-padding:10px;
-border:none;
-border-radius:8px;
-}
 
 </style>
 
@@ -158,12 +111,6 @@ border-radius:8px;
 <body>
 
 <div class="top">🌷 Tulip Chat</div>
-
-<div class="ownerBar">
-Want to promote your product here?
-<b>Contact Owner</b>
-<button onclick="startDM('Ravi')">Message Owner</button>
-</div>
 
 <div class="container">
 
@@ -191,138 +138,123 @@ Want to promote your product here?
 
 <button class="cam" onclick="openGallery()">📷</button>
 
-<button class="gif" onclick="sendGif()">GIF</button>
-
 <input type="file" id="imageInput" accept="image/*" style="display:none">
 
 </div>
-
-<button class="adBtn" onclick="startDM('Ravi')">
-📢 Advertise Here
-</button>
 
 <script>
 
 let socket = io()
 
-let name = prompt("Enter name")
+let username = prompt("Enter name")
 
-let avatar = prompt("Profile photo URL (optional)")
+socket.emit("join",{name:username})
 
-let dmUser=null
-
-socket.emit("join",{name:name,avatar:avatar})
+let currentDM = null
+let dmMessages = {}
 
 let messages = document.getElementById("messages")
 
-function add(html,id){
+function add(html){
 
-messages.innerHTML += `
-<div class="msg" id="${id}">
-<span class="delete" onclick="deleteMsg('${id}')">✖</span>
-${html}
-</div>`
-
+messages.innerHTML += "<div class='msg'>"+html+"</div>"
 messages.scrollTop = messages.scrollHeight
 
 }
 
+/* SEND MESSAGE */
+
 function send(){
 
-let text = document.getElementById("msg").value
+let text = msg.value
 if(!text) return
 
-let id="msg"+Date.now()
+if(currentDM){
 
-socket.emit("message",{user:name,text:text,id:id,to:dmUser})
+socket.emit("dm",{
+to:currentDM,
+user:username,
+text:text
+})
 
-add("<b>"+name+"</b>: "+text,id)
+if(!dmMessages[currentDM]){
+dmMessages[currentDM] = []
+}
+
+dmMessages[currentDM].push("<b>You:</b> "+text)
+
+renderDM()
+
+}else{
+
+socket.emit("message",{
+user:username,
+text:text
+})
+
+add("<b>"+username+"</b>: "+text)
+
+}
 
 msg.value=""
 
 }
 
-function deleteMsg(id){
-
-document.getElementById(id)?.remove()
-
-socket.emit("delete",id)
-
-}
-
-/* IMAGE */
-
-function openGallery(){
-document.getElementById("imageInput").click()
-}
-
-document.getElementById("imageInput").addEventListener("change",function(){
-
-let file=this.files[0]
-
-let reader=new FileReader()
-
-reader.onload=function(e){
-
-let id="msg"+Date.now()
-
-socket.emit("image",{user:name,url:e.target.result,id:id,to:dmUser})
-
-add("<b>"+name+"</b><br><img src='"+e.target.result+"'>",id)
-
-}
-
-reader.readAsDataURL(file)
-
-})
-
-/* GIF */
-
-function sendGif(){
-
-let url=prompt("Paste GIF link")
-
-if(!url) return
-
-let id="msg"+Date.now()
-
-socket.emit("image",{user:name,url:url,id:id,to:dmUser})
-
-add("<b>"+name+"</b><br><img src='"+url+"'>",id)
-
-}
-
-/* RECEIVE */
+/* RECEIVE PUBLIC */
 
 socket.on("message",(d)=>{
 
-if(d.user===name) return
+if(currentDM) return
 
-add("<b>"+d.user+"</b>: "+d.text,d.id)
-
-})
-
-socket.on("image",(d)=>{
-
-if(d.user===name) return
-
-add("<b>"+d.user+"</b><br><img src='"+d.url+"'>",d.id)
+add("<b>"+d.user+"</b>: "+d.text)
 
 })
 
-socket.on("delete",(id)=>{
+/* RECEIVE DM */
 
-document.getElementById(id)?.remove()
+socket.on("dm",(d)=>{
+
+if(!dmMessages[d.user]){
+dmMessages[d.user] = []
+}
+
+dmMessages[d.user].push("<b>"+d.user+"</b>: "+d.text)
+
+if(currentDM === d.user){
+renderDM()
+}
 
 })
 
-socket.on("system",(t)=>{
+/* DM OPEN */
 
-add("<i>"+t+"</i>","sys"+Date.now())
+function startDM(user){
 
+currentDM = user
+
+if(!dmMessages[user]){
+dmMessages[user] = []
+}
+
+renderDM()
+
+}
+
+/* RENDER DM */
+
+function renderDM(){
+
+messages.innerHTML=""
+
+let list = dmMessages[currentDM]
+
+list.forEach(m=>{
+messages.innerHTML += "<div class='msg'>"+m+"</div>"
 })
 
-/* USERS */
+}
+
+/* ONLINE USERS */
 
 socket.on("online",(users)=>{
 
@@ -330,18 +262,9 @@ let html=""
 
 for(let id in users){
 
-let avatar = users[id].avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-
-let badge=""
-
-if(users[id].name.toLowerCase()=="ravi"){
-badge=" ⭐ OWNER"
-}
-
 html += `
 <div class="user" onclick="startDM('${users[id].name}')">
-<img src="${avatar}">
-${users[id].name}${badge}
+${users[id].name}
 </div>
 `
 
@@ -351,13 +274,50 @@ document.getElementById("online").innerHTML = html
 
 })
 
-function startDM(user){
+/* IMAGE */
 
-dmUser=user
+function openGallery(){
+imageInput.click()
+}
 
-add("<i>Private chat with "+user+"</i>","sys"+Date.now())
+imageInput.addEventListener("change",function(){
+
+let file=this.files[0]
+
+let reader=new FileReader()
+
+reader.onload=function(e){
+
+let img = "<img src='"+e.target.result+"'>"
+
+if(currentDM){
+
+dmMessages[currentDM].push("<b>You</b><br>"+img)
+
+renderDM()
+
+socket.emit("dm",{
+to:currentDM,
+user:username,
+image:e.target.result
+})
+
+}else{
+
+add("<b>"+username+"</b><br>"+img)
+
+socket.emit("image",{
+user:username,
+url:e.target.result
+})
 
 }
+
+}
+
+reader.readAsDataURL(file)
+
+})
 
 </script>
 
