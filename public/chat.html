@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <title>Tulip Chat</title>
@@ -22,6 +23,8 @@
 
 <div class="container">
 
+<!-- USERS PANEL -->
+
 <div class="users">
 
 <h3>Online</h3>
@@ -29,6 +32,8 @@
 <div id="list"></div>
 
 </div>
+
+<!-- CHAT AREA -->
 
 <div class="chat">
 
@@ -40,7 +45,7 @@
 
 <button onclick="send()">Send</button>
 
-<button onclick="img()">📷</button>
+<button onclick="sendImage()">📷</button>
 
 </div>
 
@@ -50,45 +55,99 @@
 
 <script>
 
-let socket=io()
+/* SOCKET */
 
-let user=localStorage.getItem("user")
+let socket = io()
 
-socket.emit("join",user)
+/* USER */
 
-let messages=document.getElementById("messages")
+let user = localStorage.getItem("user")
 
-function add(t){
+if(!user){
 
-messages.innerHTML+=`<div class=msg>${t}</div>`
+user = prompt("Enter username")
 
-messages.scrollTop=messages.scrollHeight
+localStorage.setItem("user",user)
 
 }
 
-/* send text */
+socket.emit("join",user)
+
+/* DM VARIABLES */
+
+let dmTarget = null
+let dmName = null
+
+/* MESSAGE BOX */
+
+let messages = document.getElementById("messages")
+
+function add(text){
+
+messages.innerHTML += "<div class='msg'>"+text+"</div>"
+
+messages.scrollTop = messages.scrollHeight
+
+}
+
+/* SEND MESSAGE */
 
 function send(){
 
-let m=document.getElementById("msg").value
+let m = document.getElementById("msg").value
 
-socket.emit("message",{user:user,text:m})
+if(!m) return
+
+if(dmTarget){
+
+socket.emit("dm",{
+from:user,
+to:dmTarget,
+text:m
+})
+
+add("<b>You → "+dmName+"</b>: "+m)
+
+}else{
+
+socket.emit("message",{
+user:user,
+text:m
+})
+
+}
 
 msg.value=""
 
 }
 
-/* image */
+/* IMAGE SEND */
 
-function img(){
+function sendImage(){
 
-let url=prompt("Image URL")
+let url = prompt("Image URL")
 
-socket.emit("image",{user:user,url:url})
+if(!url) return
+
+socket.emit("image",{
+user:user,
+url:url
+})
 
 }
 
-/* events */
+/* START DM */
+
+function startDM(id,name){
+
+dmTarget = id
+dmName = name
+
+add("<i>DM started with "+name+"</i>")
+
+}
+
+/* PUBLIC MESSAGE RECEIVE */
 
 socket.on("message",(d)=>{
 
@@ -96,11 +155,15 @@ add("<b>"+d.user+"</b>: "+d.text)
 
 })
 
+/* IMAGE RECEIVE */
+
 socket.on("image",(d)=>{
 
-add("<b>"+d.user+"</b><br><img src='"+d.url+"' width=200>")
+add("<b>"+d.user+"</b><br><img src='"+d.url+"' width='200'>")
 
 })
+
+/* SYSTEM MESSAGE */
 
 socket.on("system",(t)=>{
 
@@ -108,19 +171,29 @@ add("<i>"+t+"</i>")
 
 })
 
-socket.on("online",(u)=>{
+/* DM RECEIVE */
 
-document.getElementById("count").innerText="Online "+u.length
+socket.on("dm",(d)=>{
 
-let html=""
-
-u.forEach(x=>{
-
-html+="<div>"+x+"</div>"
+add("<b>"+d.from+" (DM)</b>: "+d.text)
 
 })
 
-document.getElementById("list").innerHTML=html
+/* ONLINE USERS */
+
+socket.on("online",(u)=>{
+
+document.getElementById("count").innerText="Online "+Object.keys(u).length
+
+let html=""
+
+for(let id in u){
+
+html += `<div onclick="startDM('${id}','${u[id]}')">${u[id]}</div>`
+
+}
+
+document.getElementById("list").innerHTML = html
 
 })
 
