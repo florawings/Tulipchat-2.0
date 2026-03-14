@@ -16,10 +16,7 @@ socket.on("join",(name)=>{
 
 users[socket.id] = name
 
-io.emit("chat",{
-type:"join",
-text:name+" joined the chat"
-})
+io.emit("system", name+" joined the chat")
 
 io.emit("users",users)
 
@@ -27,8 +24,7 @@ io.emit("users",users)
 
 socket.on("message",(data)=>{
 
-io.emit("chat",{
-type:"text",
+io.emit("message",{
 name:data.name,
 text:data.text
 })
@@ -37,8 +33,7 @@ text:data.text
 
 socket.on("image",(data)=>{
 
-io.emit("chat",{
-type:"image",
+io.emit("image",{
 name:data.name,
 url:data.url
 })
@@ -47,11 +42,31 @@ url:data.url
 
 socket.on("gif",(data)=>{
 
-io.emit("chat",{
-type:"gif",
+io.emit("gif",{
 name:data.name,
 url:data.url
 })
+
+})
+
+socket.on("dm",(data)=>{
+
+io.to(data.to).emit("dm",{
+name:data.name,
+text:data.text
+})
+
+})
+
+socket.on("typing",(data)=>{
+
+io.to(data.to).emit("typing",data.name)
+
+})
+
+socket.on("seen",(data)=>{
+
+io.to(data.to).emit("seen",data.name)
 
 })
 
@@ -61,10 +76,7 @@ let name = users[socket.id]
 
 if(name){
 
-io.emit("chat",{
-type:"left",
-text:name+" left the chat"
-})
+io.emit("system",name+" left the chat")
 
 delete users[socket.id]
 
@@ -72,12 +84,4 @@ io.emit("users",users)
 
 }
 
-})
-
-})
-
-const PORT = process.env.PORT || 10000
-
-http.listen(PORT,()=>{
-console.log("server running")
 })
