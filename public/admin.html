@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Owner Panel</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#111;
+color:white;
+text-align:center;
+}
+
+.box{
+margin-top:100px;
+}
+
+button{
+padding:12px 20px;
+margin:10px;
+font-size:18px;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h1>👑 Owner Panel</h1>
+
+<h2 id="ownerName"></h2>
+
+<button onclick="openChat()">Open Chat</button>
+
+<button onclick="createRoom()">Create Room</button>
+
+<button onclick="viewUsers()">View Users</button>
+
+<button onclick="logout()">Logout</button>
+
+</div>
+
+<script>
+
+let name = localStorage.getItem("name")
+
+document.getElementById("ownerName").innerText=name
+
+function openChat(){
+
+location="chat.html"
+
+}
+
+function createRoom(){
+
+alert("Room system coming next")
+
+}
+
+function viewUsers(){
+
+alert("User list system coming next")
+
+}
+
+function logout(){
+
+localStorage.clear()
+
+location="login.html"
+
+}
+
+</script>
+
+</body>
+</html>
