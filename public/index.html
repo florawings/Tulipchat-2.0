@@ -1,30 +1,238 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Tulip Chat</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+background:linear-gradient(135deg,#141e30,#243b55);
+color:white;
+}
+
+.card{
+
+background:white;
+color:black;
+padding:30px;
+width:320px;
+border-radius:10px;
+box-shadow:0 10px 25px rgba(0,0,0,0.3);
+text-align:center;
+
+}
+
+.logo{
+
+font-size:26px;
+font-weight:bold;
+margin-bottom:20px;
+color:#e91e63;
+
+}
+
+input,select{
+
+width:100%;
+padding:10px;
+margin-top:10px;
+border-radius:5px;
+border:1px solid #ccc;
+
+}
+
+button{
+
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:5px;
+font-size:16px;
+cursor:pointer;
+
+}
+
+.login{
+background:#4CAF50;
+color:white;
+}
+
+.guest{
+background:#000;
+color:white;
+}
+
+.register{
+background:#2196F3;
+color:white;
+}
+
+.modal{
+
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.7);
+display:none;
+align-items:center;
+justify-content:center;
+
+}
+
+.modal-content{
+
+background:white;
+color:black;
+padding:30px;
+border-radius:10px;
+width:300px;
+
+}
+
+.close{
+
+float:right;
+cursor:pointer;
+font-size:18px;
+
+}
+
+</style>
+
 </head>
 
 <body>
 
-<h2>Tulip Chat</h2>
+<div class="card">
 
-<input id="name" placeholder="Enter name">
+<div class="logo">🌷 Tulip Chat</div>
 
-<button onclick="join()">Join Chat</button>
+<input id="username" placeholder="Username">
+
+<input id="password" type="password" placeholder="Password">
+
+<button class="login" onclick="login()">Login</button>
+
+<button class="guest" onclick="guest()">Guest Login</button>
+
+<button class="register" onclick="openRegister()">Register</button>
+
+</div>
+
+
+<!-- REGISTER WINDOW -->
+
+<div id="registerModal" class="modal">
+
+<div class="modal-content">
+
+<span class="close" onclick="closeRegister()">✖</span>
+
+<h3>Create Account</h3>
+
+<input id="ruser" placeholder="Username">
+
+<input id="remail" placeholder="Email">
+
+<input id="rpass" type="password" placeholder="Password">
+
+<label>DOB</label>
+
+<input id="rdob" type="date">
+
+<select id="rcountry">
+
+<option value="India">India</option>
+<option value="USA">USA</option>
+<option value="UK">UK</option>
+<option value="Canada">Canada</option>
+<option value="Australia">Australia</option>
+
+</select>
+
+<button onclick="register()">Register</button>
+
+</div>
+
+</div>
+
 
 <script>
 
-function join(){
+function login(){
 
-let name = document.getElementById("name").value
+let user=document.getElementById("username").value
 
-localStorage.setItem("user",name)
+if(user==""){
+alert("Enter username")
+return
+}
 
-location="chat.html"
+localStorage.setItem("user",user)
+
+alert("Login successful")
+
+}
+
+function guest(){
+
+let guest="Guest"+Math.floor(Math.random()*999)
+
+localStorage.setItem("user",guest)
+
+alert("Guest login: "+guest)
+
+}
+
+function openRegister(){
+
+document.getElementById("registerModal").style.display="flex"
+
+}
+
+function closeRegister(){
+
+document.getElementById("registerModal").style.display="none"
+
+}
+
+function register(){
+
+let dob=document.getElementById("rdob").value
+
+let birth=new Date(dob)
+
+let age=new Date().getFullYear()-birth.getFullYear()
+
+if(age<18){
+
+alert("Only 18+ allowed")
+
+return
+
+}
+
+alert("Registration successful")
+
+closeRegister()
 
 }
 
 </script>
 
 </body>
+
 </html>
