@@ -1,57 +1,31 @@
-const express = require("express")
-const bodyParser = require("body-parser")
-const path = require("path")
+<script>
 
-const app = express()
+async function register(){
 
-app.use(bodyParser.json())
-app.use(express.static("public"))
+let username=document.getElementById("username").value
+let password=document.getElementById("password").value
 
-let users = []
-
-// REGISTER
-app.post("/register", (req,res)=>{
-
-const {username,email,password,dob,country} = req.body
-
-const birth = new Date(dob)
-const age = new Date().getFullYear() - birth.getFullYear()
-
-if(age < 18){
-return res.json({success:false,message:"18+ only"})
-}
-
-const exist = users.find(u=>u.username===username)
-
-if(exist){
-return res.json({success:false,message:"Username exists"})
-}
-
-users.push({username,email,password,dob,country})
-
-res.json({success:true})
-
+let res = await fetch("/register",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({username,password})
 })
 
+let data = await res.json()
 
-// LOGIN
-app.post("/login",(req,res)=>{
+if(data.status=="registered"){
 
-const {username,password} = req.body
+alert("Registration successful")
+location="login.html"
 
-const user = users.find(u=>u.username===username && u.password===password)
+}else{
 
-if(!user){
-return res.json({success:false})
+alert("Username already exists")
+
 }
 
-res.json({success:true})
+}
 
-})
-
-
-app.listen(3000,()=>{
-
-console.log("Server running")
-
-})
+</script>
