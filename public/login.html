@@ -3,11 +3,63 @@
 
 <head>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tulip Chat</title>
 
-<title>Tulip Chat Login</title>
+<style>
 
-<link rel="stylesheet" href="style.css">
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(#001a1f,#0f4c5c);
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.box{
+background:white;
+padding:30px;
+border-radius:10px;
+width:300px;
+text-align:center;
+}
+
+input{
+width:100%;
+padding:12px;
+margin:8px 0;
+border-radius:5px;
+border:1px solid #ccc;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:5px;
+font-size:16px;
+cursor:pointer;
+}
+
+.login{
+background:#4caf50;
+color:white;
+}
+
+.guest{
+background:black;
+color:white;
+}
+
+.register{
+background:#3498db;
+color:white;
+}
+
+</style>
 
 </head>
 
@@ -15,41 +67,48 @@
 
 <div class="box">
 
-<h2>Login</h2>
+<h2>🌷 Tulip Chat</h2>
 
-<input id="username" placeholder="Username">
+<input id="username" placeholder="Enter username">
 
-<input id="password" type="password" placeholder="Password">
+<input type="password" placeholder="Password">
 
-<button onclick="login()">Login</button>
+<button class="login" onclick="login()">Login</button>
 
-<a href="register.html">Create New Account</a>
+<button class="guest" onclick="guest()">Guest Login</button>
+
+<button class="register">Register</button>
 
 </div>
+
 
 <script>
 
 function login(){
 
-let user=document.getElementById("username").value
-let pass=document.getElementById("password").value
+let name=document.getElementById("username").value
 
-if(user=="" || pass==""){
+if(!name) return
 
-alert("Enter username and password")
+localStorage.setItem("name",name)
+localStorage.setItem("type","registered")
 
-return
+location="chat.html"
 
 }
 
-localStorage.setItem("user",user)
+function guest(){
 
-window.location="chat.html"
+let name="Guest"+Math.floor(Math.random()*1000)
+
+localStorage.setItem("name",name)
+localStorage.setItem("type","guest")
+
+location="chat.html"
 
 }
 
 </script>
 
 </body>
-
 </html>
