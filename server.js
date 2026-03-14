@@ -3,15 +3,55 @@ const app = express()
 const http = require("http").createServer(app)
 const io = require("socket.io")(http)
 
+app.use(express.json())
 app.use(express.static("public"))
 
-let users = {}
+let users = []   // registered users
+
+/* REGISTER */
+
+app.post("/register",(req,res)=>{
+
+let {username,password} = req.body
+
+let exist = users.find(u=>u.username==username)
+
+if(exist){
+return res.json({status:"user_exists"})
+}
+
+users.push({username,password})
+
+res.json({status:"registered"})
+
+})
+
+/* LOGIN */
+
+app.post("/login",(req,res)=>{
+
+let {username,password} = req.body
+
+let user = users.find(u=>u.username==username && u.password==password)
+
+if(!user){
+return res.json({status:"invalid"})
+}
+
+res.json({status:"success"})
+
+})
+
+
+/* CHAT */
+
+let onlineUsers = {}
 
 io.on("connection",(socket)=>{
 
 socket.on("join",(data)=>{
 
-users[socket.id] = {
+onlineUsers[socket.id] = {
 name:data.name,
 type:data.type
 }
@@ -20,9 +60,7 @@ type:data.type
 
 socket.on("message",(msg)=>{
 
-let user = users[socket.id]
-
-if(!user) return
+let user = onlineUsers[socket.id]
 
 io.emit("message",{
 user:user.name,
@@ -33,7 +71,7 @@ text:msg
 })
 
 socket.on("disconnect",()=>{
-delete users[socket.id]
+delete onlineUsers[socket.id]
 })
 
 })
