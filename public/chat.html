@@ -1,5 +1,4 @@
-<!DOCTYPE html><html><head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tulip Chat</title><script src="/socket.io/socket.io.js"></script><style>
 
 body{
@@ -12,12 +11,10 @@ flex-direction:column;
 overflow:hidden;
 }
 
-/* TOP BAR */
-
 .topbar{
 background:black;
 color:white;
-padding:12px;
+padding:10px;
 display:flex;
 justify-content:space-between;
 align-items:center;
@@ -26,8 +23,6 @@ align-items:center;
 .logo{
 font-weight:bold;
 }
-
-/* CHAT */
 
 .chat{
 flex:1;
@@ -47,15 +42,11 @@ display:inline-block;
 max-width:80%;
 }
 
-/* USER TAG */
-
 .tag{
 font-size:11px;
 color:gray;
 margin-left:6px;
 }
-
-/* INPUT */
 
 .inputbar{
 display:flex;
@@ -73,12 +64,10 @@ margin:0 5px;
 }
 
 .btn{
-font-size:20px;
+font-size:18px;
 cursor:pointer;
 margin:0 5px;
 }
-
-/* LEFT MENU */
 
 .menu{
 position:fixed;
@@ -109,12 +98,6 @@ border-bottom:1px solid #eee;
 cursor:pointer;
 }
 
-.menu-item:hover{
-background:#f0f0f0;
-}
-
-/* FRIENDS PANEL */
-
 .friends{
 position:fixed;
 right:-260px;
@@ -139,8 +122,6 @@ background:#f3f3f3;
 font-weight:bold;
 }
 
-/* FRIEND BUTTON */
-
 .friendbtn{
 position:fixed;
 bottom:10px;
@@ -149,27 +130,27 @@ background:black;
 color:white;
 padding:10px 15px;
 border-radius:10px;
-font-size:20px;
+font-size:18px;
 cursor:pointer;
 z-index:200;
 }
 
-</style></head><body><!-- LEFT MENU --><div class="menu" id="menu"><div class="menu-header">
+.room{
+padding:10px;
+border-bottom:1px solid #ddd;
+cursor:pointer;
+}
+
+.room:hover{
+background:#eee;
+}
+
+</style></head><body><div class="menu" id="menu"><div class="menu-header">
 🌷 Tulip Chat
-</div><div class="menu-item">🏠 Room List</div>
-<div class="menu-item">📰 News Feed</div>
-<div class="menu-item">📈 Promote System</div>
-<div class="menu-item">🎮 Mini Games</div>
-<div class="menu-item">🏆 Leaderboards</div>
-<div class="menu-item">📜 Rules</div>
-<div class="menu-item">💎 Buy VIP</div>
-<div class="menu-item">🎫 Support Ticket</div>
-<div class="menu-item">👤 Profile</div></div><!-- FRIEND LIST --><div class="friends" id="friends"><div class="friends-header">
-👥 Friends List
-</div><div style="padding:10px"><div>👨 Rahul 🟢</div>
-<div>👩 Neha 🟢</div>
-<div>👨 Yash ⚫</div>
-<div>👩 Ananya 🟢</div></div></div><!-- TOP BAR --><div class="topbar"><div onclick="toggleMenu()">☰</div><div class="logo">🌷 Tulip Chat</div><div>🔔</div></div><!-- CHAT AREA --><div class="chat" id="chat"></div><!-- INPUT BAR --><div class="inputbar"><span class="btn" onclick="uploadImage()">🖼</span>
+</div><div id="roomList"></div><div class="menu-item" onclick="createRoom()">➕ Create Room</div></div><div class="friends" id="friends"><div class="friends-header">
+👥 Friends
+</div><div id="friendsList" style="padding:10px"><div>👨 Rahul 🟢</div>
+<div>👩 Neha 🟢</div></div></div><div class="topbar"><div onclick="toggleMenu()">☰</div><div class="logo">🌷 Tulip Chat</div><div>🔔</div></div><div class="chat" id="chat"></div><div class="inputbar"><span class="btn" onclick="uploadImage()">🖼</span>
 <span class="btn" onclick="sendGIF()">🎞</span>
 <span class="btn" onclick="youtube()">▶</span>
 <span class="btn" onclick="uploadVideo()">🎥</span>
@@ -177,61 +158,65 @@ z-index:200;
 
 <input id="msgInput" placeholder="Type message"><span class="btn" onclick="sendMsg()">➤</span>
 
-</div><!-- FRIEND BUTTON --><div class="friendbtn" onclick="toggleFriends()">≡</div><input type="file" id="imgFile" accept="image/*" style="display:none">
+</div><div class="friendbtn" onclick="toggleFriends()">≡</div><input type="file" id="imgFile" accept="image/*" style="display:none">
 <input type="file" id="videoFile" accept="video/*" style="display:none"><script>
-
-/* MENU TOGGLE */
-
-function toggleMenu(){
-document.getElementById("menu").classList.toggle("show")
-}
-
-/* FRIEND LIST TOGGLE */
-
-function toggleFriends(){
-document.getElementById("friends").classList.toggle("show")
-}
-
-
-/* SOCKET */
 
 let socket = io()
 
 let username = localStorage.getItem("name")
 let type = localStorage.getItem("type")
 
+let currentRoom="general"
+
 socket.emit("join",{name:username,type:type})
 
 
-/* SEND MESSAGE */
+
+function toggleMenu(){
+menu.classList.toggle("show")
+}
+
+function toggleFriends(){
+friends.classList.toggle("show")
+}
+
+
 
 function sendMsg(){
 
 let input=document.getElementById("msgInput")
 
-if(input.value=="") return
+if(input.value==="") return
 
-socket.emit("message",input.value)
+socket.emit("message",{
+room:currentRoom,
+text:input.value
+})
 
 input.value=""
 
 }
 
 
-/* RECEIVE MESSAGE */
 
 socket.on("message",(data)=>{
 
-let chat=document.getElementById("chat")
-
 let badge=""
 
-if(data.type=="guest"){
-badge="👻 Guest"
+if(data.role==="owner"){
+badge="👑 Owner"
 }
 
-if(data.type=="registered"){
-badge="✔ Registered"
+if(data.role==="superadmin"){
+badge="⭐ Admin"
+}
+
+if(data.role==="user"){
+badge="✔ User"
+}
+
+if(data.role==="guest"){
+badge="👻 Guest"
 }
 
 chat.innerHTML+=`
@@ -241,12 +226,13 @@ chat.innerHTML+=`
 <div class="bubble">
 
 <b>${data.user}</b>
-
 <span class="tag">${badge}</span>
 
 <br>
 
 ${data.text}
+
+<button onclick="kick('${data.user}')">Kick</button>
 
 </div>
 
@@ -259,11 +245,60 @@ chat.scrollTop=chat.scrollHeight
 })
 
 
-/* IMAGE */
+
+function kick(name){
+socket.emit("kick",name)
+}
+
+
+
+socket.on("rooms",(rooms)=>{
+
+roomList.innerHTML=""
+
+rooms.forEach(r=>{
+
+roomList.innerHTML+=`
+<div class="room" onclick="joinRoom('${r}')">
+${r}
+</div>
+`
+
+})
+
+})
+
+
+
+function joinRoom(room){
+
+currentRoom=room
+
+chat.innerHTML=""
+
+socket.emit("joinRoom",room)
+
+}
+
+
+
+function createRoom(){
+
+let room=prompt("Room name")
+
+if(!room) return
+
+socket.emit("createRoom",room)
+
+}
+
+
+
+/* MEDIA FEATURES */
 
 function uploadImage(){
 
-let file=document.getElementById("imgFile")
+let file=imgFile
 
 file.click()
 
@@ -273,7 +308,7 @@ let reader=new FileReader()
 
 reader.onload=function(e){
 
-document.getElementById("chat").innerHTML+=`
+chat.innerHTML+=`
 <div class="msg">
 <img src="${e.target.result}" width="200">
 </div>
@@ -288,7 +323,6 @@ reader.readAsDataURL(file.files[0])
 }
 
 
-/* GIF */
 
 function sendGIF(){
 
@@ -296,49 +330,39 @@ let url=prompt("Paste GIF URL")
 
 if(!url) return
 
-document.getElementById("chat").innerHTML+=`
-
+chat.innerHTML+=`
 <div class="msg">
-
 <img src="${url}" width="200">
-
 </div>
-
 `
 
 }
 
 
-/* YOUTUBE */
 
 function youtube(){
 
-let link=prompt("Paste YouTube link")
+let link=prompt("YouTube link")
 
 if(!link) return
 
 let id=link.split("v=")[1]
 
-let embed="https://www.youtube.com/embed/"+id
-
-document.getElementById("chat").innerHTML+=`
-
+chat.innerHTML+=`
 <iframe width="250" height="150"
-src="${embed}"
+src="https://www.youtube.com/embed/${id}"
 frameborder="0"
 allowfullscreen>
 </iframe>
-
 `
 
 }
 
 
-/* VIDEO */
 
 function uploadVideo(){
 
-let file=document.getElementById("videoFile")
+let file=videoFile
 
 file.click()
 
@@ -346,14 +370,10 @@ file.onchange=function(){
 
 let url=URL.createObjectURL(file.files[0])
 
-document.getElementById("chat").innerHTML+=`
-
+chat.innerHTML+=`
 <video width="250" controls>
-
 <source src="${url}">
-
 </video>
-
 `
 
 }
@@ -361,7 +381,6 @@ document.getElementById("chat").innerHTML+=`
 }
 
 
-/* VOICE TYPING */
 
 function voiceTyping(){
 
@@ -373,8 +392,7 @@ speech.start()
 
 speech.onresult=function(event){
 
-document.getElementById("msgInput").value=
-event.results[0][0].transcript
+msgInput.value=event.results[0][0].transcript
 
 }
 
