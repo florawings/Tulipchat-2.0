@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <title>Tulip Chat</title>
@@ -11,15 +12,15 @@
 body{
 margin:0;
 font-family:Arial;
-background:#eee;
+background-image:url("https://i.imgur.com/8Km9tLL.jpg");
+background-size:cover;
 }
 
 .top{
-background:black;
+background:#ff4fa3;
 color:white;
 padding:10px;
-display:flex;
-justify-content:space-between;
+font-size:18px;
 }
 
 .container{
@@ -27,32 +28,29 @@ display:flex;
 height:90vh;
 }
 
+/* USERS */
+
 .users{
-width:22%;
+width:18%;
 background:#111;
 color:white;
+padding:10px;
 overflow:auto;
 }
 
-.userItem{
+.user{
 padding:8px;
 border-bottom:1px solid #333;
 cursor:pointer;
-display:flex;
-align-items:center;
 }
 
-.userItem img{
-width:30px;
-height:30px;
-border-radius:50%;
-margin-right:8px;
-}
+/* CHAT */
 
 .chat{
 flex:1;
 display:flex;
 flex-direction:column;
+background:rgba(255,255,255,0.85);
 }
 
 #messages{
@@ -68,14 +66,21 @@ margin-bottom:8px;
 border-radius:8px;
 }
 
+/* INPUT */
+
 .input{
 display:flex;
 padding:8px;
-background:white;
+background:#eee;
 }
 
 .input input{
 flex:1;
+padding:10px;
+}
+
+.input button{
+margin-left:5px;
 padding:10px;
 }
 
@@ -87,9 +92,7 @@ padding:10px;
 
 <div class="top">
 
-<div>🌷 Tulip Chat <span id="count"></span></div>
-
-<div id="dmInfo"></div>
+🌷 Tulip Chat
 
 </div>
 
@@ -97,17 +100,15 @@ padding:10px;
 
 <div class="users">
 
-<h3 style="padding:10px">Online</h3>
+<h3>Online</h3>
 
-<div id="list"></div>
+<div id="online"></div>
 
 </div>
 
 <div class="chat">
 
 <div id="messages"></div>
-
-<div id="typing"></div>
 
 <div class="input">
 
@@ -116,8 +117,6 @@ padding:10px;
 <button onclick="send()">Send</button>
 
 <button onclick="sendImage()">📷</button>
-
-<button onclick="stopDM()">Public</button>
 
 </div>
 
@@ -129,143 +128,6 @@ padding:10px;
 
 let socket = io()
 
-let user = localStorage.getItem("user")
+let username = localStorage.getItem("name")
 
-if(!user){
-
-user = prompt("Enter username")
-localStorage.setItem("user",user)
-
-}
-
-let avatar = localStorage.getItem("avatar")
-
-if(!avatar){
-
-avatar = prompt("Paste profile photo URL")
-localStorage.setItem("avatar",avatar)
-
-}
-
-socket.emit("join",{name:user,avatar:avatar})
-
-let dmTarget=null
-let dmName=null
-
-let messages=document.getElementById("messages")
-
-function add(text){
-
-messages.innerHTML += "<div class='msg'>"+text+"</div>"
-messages.scrollTop = messages.scrollHeight
-
-}
-
-function send(){
-
-let m=document.getElementById("msg").value
-
-if(!m) return
-
-if(dmTarget){
-
-socket.emit("dm",{
-from:user,
-to:dmTarget,
-text:m
-})
-
-add("<b>You → "+dmName+"</b>: "+m)
-
-}else{
-
-socket.emit("message",{
-user:user,
-text:m
-})
-
-}
-
-msg.value=""
-
-}
-
-function sendImage(){
-
-let url=prompt("Image URL")
-
-socket.emit("image",{user:user,url:url})
-
-}
-
-function startDM(id,name){
-
-dmTarget=id
-dmName=name
-
-document.getElementById("dmInfo").innerText="DM: "+name
-
-}
-
-function stopDM(){
-
-dmTarget=null
-dmName=null
-
-document.getElementById("dmInfo").innerText="Public chat"
-
-}
-
-msg.addEventListener("input",()=>{
-
-socket.emit("typing",user)
-
-})
-
-socket.on("typing",(name)=>{
-
-document.getElementById("typing").innerText=name+" typing..."
-
-setTimeout(()=>{
-document.getElementById("typing").innerText=""
-},2000)
-
-})
-
-socket.on("message",(d)=>{
-
-add("<b>"+d.user+"</b>: "+d.text)
-
-})
-
-socket.on("image",(d)=>{
-
-add("<b>"+d.user+"</b><br><img src='"+d.url+"' width='200'>")
-
-})
-
-socket.on("system",(t)=>{
-
-add("<i>"+t+"</i>")
-
-})
-
-socket.on("dm",(d)=>{
-
-add("<b>"+d.from+" (DM)</b>: "+d.text)
-
-})
-
-socket.on("online",(u)=>{
-
-let count = Object.keys(u || {}).length
-
-document.getElementById("count").innerText="Online "+count
-
-let html=""
-
-for(let id in u){
-
-html+=`
-<div class="userItem" onclick="startDM('${id}','${u[id].name}')">
-<img
+if(!username){
