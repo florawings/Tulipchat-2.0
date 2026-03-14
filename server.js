@@ -12,9 +12,9 @@ io.on("connection",(socket)=>{
 
 socket.on("join",(name)=>{
 
-users[socket.id]=name
+users[socket.id] = name
 
-io.emit("system",name+" joined the chat")
+io.emit("system", name+" joined the chat")
 
 io.emit("users",users)
 
@@ -62,6 +62,4 @@ const PORT = process.env.PORT || 10000
 
 http.listen(PORT,()=>{
 
-console.log("Server running on "+PORT)
-
-})
+console.log("Server running on "+PORT
