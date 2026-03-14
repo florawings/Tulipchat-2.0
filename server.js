@@ -4,15 +4,18 @@ const { Server } = require("socket.io")
 
 const app = express()
 const server = http.createServer(app)
-const io = new Server(server)
+
+const io = new Server(server,{
+cors:{origin:"*"}
+})
 
 app.use(express.static("public"))
-
-const PORT = process.env.PORT || 3000
 
 let users = {}
 
 io.on("connection",(socket)=>{
+
+console.log("User connected")
 
 socket.on("join",(data)=>{
 
@@ -48,10 +51,4 @@ if(user){
 io.emit("system", user.name + " left the chat")
 }
 
-})
-
-})
-
-server.listen(PORT,()=>{
-console.log("Server started")
 })
