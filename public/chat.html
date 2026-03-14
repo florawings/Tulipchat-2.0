@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <title>Tulip Chat</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="/socket.io/socket.io.js"></script>
 
@@ -16,6 +17,8 @@ font-family:Arial;
 background:#ffd6ea;
 }
 
+/* HEADER */
+
 .top{
 background:#ff2e93;
 color:white;
@@ -23,10 +26,23 @@ padding:12px;
 font-size:18px;
 }
 
+/* CONTACT OWNER BAR */
+
+.ownerBar{
+background:#fff3cd;
+padding:8px;
+text-align:center;
+font-size:14px;
+}
+
+/* LAYOUT */
+
 .container{
 display:flex;
-height:calc(100vh - 60px);
+height:calc(100vh - 100px);
 }
+
+/* USERS */
 
 .users{
 width:22%;
@@ -39,17 +55,19 @@ overflow:auto;
 .user{
 display:flex;
 align-items:center;
-padding:6px;
+padding:8px;
 border-bottom:1px solid #333;
 cursor:pointer;
 }
 
 .user img{
-width:28px;
-height:28px;
+width:30px;
+height:30px;
 border-radius:50%;
 margin-right:6px;
 }
+
+/* CHAT */
 
 .chat{
 flex:1;
@@ -68,8 +86,29 @@ padding:10px;
 background:#f1f1f1;
 padding:10px;
 margin-bottom:8px;
-border-radius:6px;
+border-radius:8px;
+max-width:80%;
+position:relative;
 }
+
+.msg img{
+max-width:220px;
+border-radius:8px;
+margin-top:5px;
+}
+
+/* DELETE */
+
+.delete{
+position:absolute;
+top:5px;
+right:5px;
+font-size:12px;
+cursor:pointer;
+color:red;
+}
+
+/* INPUT */
 
 .input{
 display:flex;
@@ -101,10 +140,15 @@ border-radius:6px;
 .cam{background:#2196f3;color:white;}
 .gif{background:#ff9800;color:white;}
 
-#preview{
-max-width:150px;
-margin:10px;
-display:none;
+.adBtn{
+position:fixed;
+bottom:70px;
+right:10px;
+background:#ff2e93;
+color:white;
+padding:10px;
+border:none;
+border-radius:8px;
 }
 
 </style>
@@ -115,18 +159,25 @@ display:none;
 
 <div class="top">🌷 Tulip Chat</div>
 
+<div class="ownerBar">
+Want to promote your product here?
+<b>Contact Owner</b>
+<button onclick="startDM('Ravi')">Message Owner</button>
+</div>
+
 <div class="container">
 
 <div class="users">
+
 <h3>Online</h3>
+
 <div id="online"></div>
+
 </div>
 
 <div class="chat">
 
 <div id="messages"></div>
-
-<img id="preview">
 
 </div>
 
@@ -146,24 +197,32 @@ display:none;
 
 </div>
 
+<button class="adBtn" onclick="startDM('Ravi')">
+📢 Advertise Here
+</button>
+
 <script>
 
 let socket = io()
 
 let name = prompt("Enter name")
 
-let avatar = prompt("Paste profile photo URL")
+let avatar = prompt("Profile photo URL (optional)")
+
+let dmUser=null
 
 socket.emit("join",{name:name,avatar:avatar})
 
 let messages = document.getElementById("messages")
-let preview = document.getElementById("preview")
 
-let dmUser = null
+function add(html,id){
 
-function add(text){
+messages.innerHTML += `
+<div class="msg" id="${id}">
+<span class="delete" onclick="deleteMsg('${id}')">✖</span>
+${html}
+</div>`
 
-messages.innerHTML += "<div class='msg'>"+text+"</div>"
 messages.scrollTop = messages.scrollHeight
 
 }
@@ -173,17 +232,25 @@ function send(){
 let text = document.getElementById("msg").value
 if(!text) return
 
-socket.emit("message",{
-user:name,
-text:text,
-to:dmUser
-})
+let id="msg"+Date.now()
+
+socket.emit("message",{user:name,text:text,id:id,to:dmUser})
+
+add("<b>"+name+"</b>: "+text,id)
 
 msg.value=""
 
 }
 
-/* IMAGE FROM GALLERY */
+function deleteMsg(id){
+
+document.getElementById(id)?.remove()
+
+socket.emit("delete",id)
+
+}
+
+/* IMAGE */
 
 function openGallery(){
 document.getElementById("imageInput").click()
@@ -192,20 +259,16 @@ document.getElementById("imageInput").click()
 document.getElementById("imageInput").addEventListener("change",function(){
 
 let file=this.files[0]
-if(!file) return
 
 let reader=new FileReader()
 
 reader.onload=function(e){
 
-preview.src=e.target.result
-preview.style.display="block"
+let id="msg"+Date.now()
 
-socket.emit("image",{
-user:name,
-url:e.target.result,
-to:dmUser
-})
+socket.emit("image",{user:name,url:e.target.result,id:id,to:dmUser})
+
+add("<b>"+name+"</b><br><img src='"+e.target.result+"'>",id)
 
 }
 
@@ -221,43 +284,45 @@ let url=prompt("Paste GIF link")
 
 if(!url) return
 
-socket.emit("image",{
-user:name,
-url:url,
-to:dmUser
-})
+let id="msg"+Date.now()
+
+socket.emit("image",{user:name,url:url,id:id,to:dmUser})
+
+add("<b>"+name+"</b><br><img src='"+url+"'>",id)
 
 }
 
-/* RECEIVE MESSAGE */
+/* RECEIVE */
 
 socket.on("message",(d)=>{
 
-if(d.to && d.to!==name) return
+if(d.user===name) return
 
-add("<b>"+d.user+"</b>: "+d.text)
+add("<b>"+d.user+"</b>: "+d.text,d.id)
 
 })
-
-/* RECEIVE IMAGE */
 
 socket.on("image",(d)=>{
 
-if(d.to && d.to!==name) return
+if(d.user===name) return
 
-add("<b>"+d.user+"</b><br><img src='"+d.url+"' width='200'>")
+add("<b>"+d.user+"</b><br><img src='"+d.url+"'>",d.id)
 
 })
 
-/* SYSTEM */
+socket.on("delete",(id)=>{
+
+document.getElementById(id)?.remove()
+
+})
 
 socket.on("system",(t)=>{
 
-add("<i>"+t+"</i>")
+add("<i>"+t+"</i>","sys"+Date.now())
 
 })
 
-/* USERS LIST */
+/* USERS */
 
 socket.on("online",(users)=>{
 
@@ -265,10 +330,18 @@ let html=""
 
 for(let id in users){
 
+let avatar = users[id].avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+
+let badge=""
+
+if(users[id].name.toLowerCase()=="ravi"){
+badge=" ⭐ OWNER"
+}
+
 html += `
 <div class="user" onclick="startDM('${users[id].name}')">
-<img src="${users[id].avatar}">
-${users[id].name}
+<img src="${avatar}">
+${users[id].name}${badge}
 </div>
 `
 
@@ -278,13 +351,11 @@ document.getElementById("online").innerHTML = html
 
 })
 
-/* START DM */
-
 function startDM(user){
 
-dmUser = user
+dmUser=user
 
-add("<i>Private chat with "+user+"</i>")
+add("<i>Private chat with "+user+"</i>","sys"+Date.now())
 
 }
 
