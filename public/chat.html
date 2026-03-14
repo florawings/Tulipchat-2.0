@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tulip Chat</title>
 
 <style>
@@ -24,7 +22,7 @@ justify-content:space-between;
 }
 
 #chat{
-height:70vh;
+height:72vh;
 overflow:auto;
 padding:10px;
 }
@@ -62,7 +60,7 @@ color:white;
 }
 
 img{
-max-width:200px;
+max-width:220px;
 border-radius:6px;
 }
 
@@ -88,10 +86,11 @@ border-radius:6px;
 
 <button onclick="send()">Send</button>
 
-<input type="file" id="file" hidden>
-<button onclick="upload()">📷</button>
+<input type="file" id="imageInput" accept="image/*" hidden>
+<button onclick="openGallery()">📷</button>
 
-<button onclick="gifUpload()">GIF</button>
+<input type="file" id="gifInput" accept="image/gif" hidden>
+<button onclick="openGif()">GIF</button>
 
 </div>
 
@@ -143,23 +142,35 @@ addImage(data.name,data.url)
 
 })
 
-socket.on("gif",(data)=>{
+function openGallery(){
 
-addImage(data.name,data.url)
-
-})
-
-function upload(){
-
-file.click()
+document.getElementById("imageInput").click()
 
 }
 
-file.onchange=function(){
+function openGif(){
+
+document.getElementById("gifInput").click()
+
+}
+
+document.getElementById("imageInput").onchange=function(){
+
+uploadFile(this.files[0],"Image")
+
+}
+
+document.getElementById("gifInput").onchange=function(){
+
+uploadFile(this.files[0],"GIF")
+
+}
+
+function uploadFile(file,type){
 
 let formData=new FormData()
 
-formData.append("file",file.files[0])
+formData.append("file",file)
 
 let xhr=new XMLHttpRequest()
 
@@ -169,7 +180,7 @@ xhr.upload.onprogress=function(e){
 
 let percent=Math.round((e.loaded/e.total)*100)
 
-addMsg("Uploading Image "+percent+"%",true)
+addMsg("Uploading "+type+" "+percent+"%",true)
 
 }
 
@@ -182,16 +193,6 @@ socket.emit("image",{name,url:data.url})
 }
 
 xhr.send(formData)
-
-}
-
-function gifUpload(){
-
-let url=prompt("Paste GIF URL")
-
-if(!url) return
-
-socket.emit("gif",{name,url})
 
 }
 
