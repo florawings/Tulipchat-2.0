@@ -12,45 +12,47 @@ io.on("connection",(socket)=>{
 
 socket.on("join",(name)=>{
 
-users[socket.id] = name
+users[socket.id]=name
 
-io.emit("system", name + " joined the chat")
+io.emit("system",name+" joined the chat")
 
-io.emit("users", users)
+io.emit("users",users)
 
 })
 
 socket.on("message",(data)=>{
 
-io.emit("message", data)
+io.emit("message",data)
 
 })
 
 socket.on("image",(data)=>{
 
-io.emit("image", data)
+io.emit("image",data)
 
 })
 
 socket.on("gif",(data)=>{
 
-io.emit("gif", data)
+io.emit("gif",data)
+
+})
+
+socket.on("leave",(name)=>{
+
+io.emit("system",name+" left the chat")
+
+delete users[socket.id]
+
+io.emit("users",users)
 
 })
 
 socket.on("disconnect",()=>{
 
-let name = users[socket.id]
-
-if(name){
-
-io.emit("system", name + " left the chat")
-
 delete users[socket.id]
 
-io.emit("users", users)
-
-}
+io.emit("users",users)
 
 })
 
@@ -59,5 +61,7 @@ io.emit("users", users)
 const PORT = process.env.PORT || 10000
 
 http.listen(PORT,()=>{
-console.log("Server running on port " + PORT)
+
+console.log("Server running on "+PORT)
+
 })
