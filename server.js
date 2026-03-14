@@ -4,75 +4,38 @@ const app = express()
 const http = require("http").createServer(app)
 const { Server } = require("socket.io")
 
+const multer = require("multer")
+const path = require("path")
+
 const io = new Server(http)
 
 app.use(express.static("public"))
+app.use("/uploads", express.static("uploads"))
+
+const storage = multer.diskStorage({
+
+destination:(req,file,cb)=>{
+cb(null,"uploads")
+},
+
+filename:(req,file,cb)=>{
+cb(null,Date.now()+path.extname(file.originalname))
+}
+
+})
+
+const upload = multer({storage:storage})
 
 let users = {}
-let messages = []   // chat history
+
+app.post("/upload",upload.single("file"),(req,res)=>{
+
+res.json({
+url:"/uploads/"+req.file.filename
+})
+
+})
 
 io.on("connection",(socket)=>{
 
-socket.on("join",(data)=>{
-
-users[socket.id] = data
-
-socket.emit("history",messages)   // old messages send
-
-io.emit("system",data.name+" joined the chat")
-
-io.emit("users",users)
-
-})
-
-socket.on("message",(data)=>{
-
-messages.push({type:"text",data:data})
-
-io.emit("message",data)
-
-})
-
-socket.on("image",(data)=>{
-
-messages.push({type:"image",data:data})
-
-io.emit("image",data)
-
-})
-
-socket.on("gif",(data)=>{
-
-messages.push({type:"gif",data:data})
-
-io.emit("gif",data)
-
-})
-
-socket.on("leave",(name)=>{
-
-delete users[socket.id]
-
-io.emit("system",name+" left the chat")
-
-io.emit("users",users)
-
-})
-
-socket.on("disconnect",()=>{
-
-delete users[socket.id]
-
-io.emit("users",users)
-
-})
-
-})
-
-const PORT = process.env.PORT || 10000
-
-http.listen(PORT,()=>{
-
-console.log("Tulip Chat running")
-
-})
+socket.on
