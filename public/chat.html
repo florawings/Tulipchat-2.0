@@ -31,8 +31,8 @@ overflow:auto;
 
 .msg{
 background:white;
-margin:5px;
 padding:10px;
+margin:5px;
 border-radius:6px;
 }
 
@@ -55,25 +55,10 @@ border:none;
 }
 
 button{
-padding:12px;
 border:none;
+padding:12px;
 background:#ff2d7a;
 color:white;
-}
-
-#userPopup{
-
-display:none;
-position:fixed;
-top:60px;
-right:10px;
-background:white;
-border:1px solid #ccc;
-width:200px;
-height:300px;
-overflow:auto;
-padding:10px;
-
 }
 
 img{
@@ -91,15 +76,11 @@ border-radius:6px;
 
 <span>🌷 Tulip Chat</span>
 
-<button onclick="toggleUsers()">👥</button>
+<button onclick="logout()">Logout</button>
 
 </header>
 
-<div id="userPopup"></div>
-
 <div id="chat"></div>
-
-<div id="typing"></div>
 
 <div class="bottom">
 
@@ -111,7 +92,9 @@ border-radius:6px;
 
 <button onclick="upload()">📷</button>
 
-<button onclick="sendGIF()">GIF</button>
+<input type="file" id="giffile" accept="image/gif" hidden>
+
+<button onclick="gifUpload()">GIF</button>
 
 </div>
 
@@ -132,8 +115,6 @@ localStorage.setItem("name",name)
 }
 
 socket.emit("join",name)
-
-let currentDM = null
 
 function send(){
 
@@ -201,16 +182,38 @@ reader.readAsDataURL(file.files[0])
 
 }
 
-function sendGIF(){
+function gifUpload(){
 
-let url=prompt("Paste GIF URL")
+giffile.click()
+
+}
+
+giffile.onchange=function(){
+
+let reader=new FileReader()
+
+reader.onload=function(){
 
 socket.emit("gif",{
 
 name:name,
-url:url
+url:reader.result
 
 })
+
+}
+
+reader.readAsDataURL(giffile.files[0])
+
+}
+
+function logout(){
+
+socket.emit("leave",name)
+
+localStorage.removeItem("name")
+
+location.reload()
 
 }
 
@@ -243,92 +246,6 @@ chat.appendChild(div)
 chat.scrollTop=chat.scrollHeight
 
 }
-
-socket.on("users",(list)=>{
-
-let box=document.getElementById("userPopup")
-
-box.innerHTML=""
-
-for(let id in list){
-
-let div=document.createElement("div")
-
-div.innerText=list[id]
-
-div.onclick=function(){
-
-startDM(id,list[id])
-
-}
-
-box.appendChild(div)
-
-}
-
-})
-
-function toggleUsers(){
-
-let box=document.getElementById("userPopup")
-
-box.style.display = box.style.display=="block" ? "none":"block"
-
-}
-
-function startDM(id,user){
-
-currentDM=id
-
-alert("DM started with "+user)
-
-}
-
-msg.oninput=function(){
-
-if(currentDM){
-
-socket.emit("typing",{
-
-to:currentDM,
-name:name
-
-})
-
-}
-
-}
-
-socket.on("typing",(user)=>{
-
-typing.innerText=user+" typing..."
-
-setTimeout(()=>{
-
-typing.innerText=""
-
-},2000)
-
-})
-
-socket.on("dm",(data)=>{
-
-addMsg("(DM) "+data.name+": "+data.text)
-
-socket.emit("seen",{
-
-to:currentDM,
-name:name
-
-})
-
-})
-
-socket.on("seen",(user)=>{
-
-console.log("Seen by "+user)
-
-})
 
 </script>
 
