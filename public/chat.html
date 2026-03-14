@@ -19,34 +19,48 @@ header{
 background:#ff2d7a;
 color:white;
 padding:12px;
-font-size:18px;
+}
+
+#users{
+position:fixed;
+left:0;
+top:50px;
+bottom:0;
+width:120px;
+background:black;
+color:white;
+overflow:auto;
 }
 
 #chat{
-height:70vh;
-overflow:auto;
+margin-left:120px;
 padding:10px;
+height:80vh;
+overflow:auto;
 }
 
 .msg{
 background:white;
 padding:10px;
-margin:6px 0;
+margin:5px;
 border-radius:6px;
+}
+
+.system{
+background:#ddd;
 }
 
 img{
 max-width:200px;
-border-radius:8px;
+border-radius:6px;
 }
 
 .bottom{
 position:fixed;
 bottom:0;
-width:100%;
+left:120px;
+right:0;
 display:flex;
-background:white;
-border-top:1px solid #ccc;
 }
 
 .bottom input{
@@ -62,30 +76,6 @@ background:#ff2d7a;
 color:white;
 }
 
-#progress{
-height:4px;
-background:green;
-width:0%;
-}
-
-#gifPanel{
-position:fixed;
-bottom:60px;
-left:0;
-right:0;
-height:300px;
-background:white;
-overflow:auto;
-display:none;
-padding:10px;
-}
-
-#gifPanel img{
-width:100px;
-margin:5px;
-cursor:pointer;
-}
-
 </style>
 
 </head>
@@ -94,19 +84,9 @@ cursor:pointer;
 
 <header>🌷 Tulip Chat</header>
 
-<div id="progress"></div>
+<div id="users"></div>
 
 <div id="chat"></div>
-
-<div id="gifPanel">
-
-<input id="gifSearch" placeholder="search gif">
-
-<button onclick="searchGIF()">Search</button>
-
-<div id="gifResults"></div>
-
-</div>
 
 <div class="bottom">
 
@@ -118,7 +98,7 @@ cursor:pointer;
 
 <button onclick="upload()">📷</button>
 
-<button onclick="toggleGIF()">GIF</button>
+<button onclick="gif()">GIF</button>
 
 </div>
 
@@ -131,33 +111,56 @@ const socket = io()
 let name = localStorage.getItem("name")
 
 if(!name){
+
 name = prompt("Enter name")
+
 localStorage.setItem("name",name)
+
 }
 
 socket.emit("join",name)
 
-socket.on("message",(data)=>{
+socket.on("chat",(data)=>{
+
+if(data.type=="join" || data.type=="left"){
+
+addText(data.text,true)
+
+}
+
+if(data.type=="text"){
 
 addText(data.name+": "+data.text)
 
-})
+}
 
-socket.on("image",(data)=>{
-
-addImage(data.name,data.url)
-
-})
-
-socket.on("gif",(data)=>{
+if(data.type=="image" || data.type=="gif"){
 
 addImage(data.name,data.url)
+
+}
+
+})
+
+socket.on("users",(list)=>{
+
+users.innerHTML=""
+
+for(let id in list){
+
+let div=document.createElement("div")
+
+div.innerText=list[id]
+
+users.appendChild(div)
+
+}
 
 })
 
 function send(){
 
-let text = msg.value
+let text=msg.value
 
 socket.emit("message",{
 
@@ -178,15 +181,7 @@ file.click()
 
 file.onchange=function(){
 
-let reader = new FileReader()
-
-reader.onprogress=function(e){
-
-let percent = Math.round((e.loaded/e.total)*100)
-
-progress.style.width = percent+"%"
-
-}
+let reader=new FileReader()
 
 reader.onload=function(){
 
@@ -197,12 +192,56 @@ url:reader.result
 
 })
 
-progress.style.width="0%"
-
 }
 
 reader.readAsDataURL(file.files[0])
 
 }
 
-function toggleGIF
+function gif(){
+
+let url=prompt("Paste GIF link")
+
+socket.emit("gif",{
+
+name:name,
+url:url
+
+})
+
+}
+
+function addText(text,system){
+
+let div=document.createElement("div")
+
+div.className="msg"
+
+if(system) div.className+=" system"
+
+div.innerText=text
+
+chat.appendChild(div)
+
+chat.scrollTop=chat.scrollHeight
+
+}
+
+function addImage(name,url){
+
+let div=document.createElement("div")
+
+div.className="msg"
+
+div.innerHTML=name+"<br><img src='"+url+"'>"
+
+chat.appendChild(div)
+
+chat.scrollTop=chat.scrollHeight
+
+}
+
+</script>
+
+</body>
+</html>
