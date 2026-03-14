@@ -1,3 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tulip Chat</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(#001a1f,#0f4c5c);
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.box{
+background:white;
+padding:30px;
+border-radius:10px;
+width:300px;
+text-align:center;
+}
+
+input,select{
+width:100%;
+padding:12px;
+margin:8px 0;
+border-radius:5px;
+border:1px solid #ccc;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:5px;
+font-size:16px;
+cursor:pointer;
+}
+
+.login{background:#4caf50;color:white}
+.guest{background:black;color:white}
+.register{background:#3498db;color:white}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>🌷 Tulip Chat</h2>
+
+<input id="username" placeholder="Username">
+
+<input id="password" type="password" placeholder="Password">
+
+<select id="country">
+<option>India</option>
+<option>USA</option>
+<option>UK</option>
+</select>
+
+<button class="login" onclick="login()">Login</button>
+
+<button class="guest" onclick="guest()">Guest Login</button>
+
+<button class="register" onclick="register()">Register</button>
+
+</div>
+
+
 <script>
 
 async function login(){
@@ -5,7 +84,7 @@ async function login(){
 let username=document.getElementById("username").value
 let password=document.getElementById("password").value
 
-let res = await fetch("/login",{
+let res=await fetch("/login",{
 method:"POST",
 headers:{
 "Content-Type":"application/json"
@@ -13,9 +92,9 @@ headers:{
 body:JSON.stringify({username,password})
 })
 
-let data = await res.json()
+let data=await res.json()
 
-if(data.status=="success"){
+if(data.status==="success"){
 
 localStorage.setItem("name",username)
 localStorage.setItem("type","registered")
@@ -30,6 +109,46 @@ alert("Invalid login")
 
 }
 
+
+
+async function register(){
+
+let username=document.getElementById("username").value
+let password=document.getElementById("password").value
+let country=document.getElementById("country").value
+
+let res=await fetch("/register",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({username,password,country})
+})
+
+let data=await res.json()
+
+if(data.status==="registered"){
+
+alert("Account created successfully. Now login.")
+
+}
+
+else if(data.status==="user_exists"){
+
+alert("Account already exists. Please login.")
+
+}
+
+else{
+
+alert("Registration failed")
+
+}
+
+}
+
+
+
 function guest(){
 
 let name="Guest"+Math.floor(Math.random()*1000)
@@ -42,3 +161,6 @@ location="chat.html"
 }
 
 </script>
+
+</body>
+</html>
