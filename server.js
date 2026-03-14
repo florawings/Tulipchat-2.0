@@ -1,65 +1,49 @@
-const express = require("express")
-const app = express()
+const express = require("express");
+const app = express();
+const http = require("http").createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(http);
 
-const http = require("http").createServer(app)
-const io = require("socket.io")(http)
+app.use(express.static("public"));
 
-app.use(express.static("public"))
+let users = {};
 
-let users = {}
+io.on("connection", (socket) => {
 
-io.on("connection",(socket)=>{
+  socket.on("join", (name) => {
+    users[socket.id] = name;
 
-socket.on("join",(name)=>{
+    io.emit("system", name + " joined the chat");
+    io.emit("users", users);
+  });
 
-users[socket.id] = name
+  socket.on("message", (data) => {
+    io.emit("message", data);
+  });
 
-io.emit("system", name+" joined the chat")
+  socket.on("image", (data) => {
+    io.emit("image", data);
+  });
 
-io.emit("users",users)
+  socket.on("gif", (data) => {
+    io.emit("gif", data);
+  });
 
-})
+  socket.on("leave", (name) => {
+    delete users[socket.id];
+    io.emit("system", name + " left the chat");
+    io.emit("users", users);
+  });
 
-socket.on("message",(data)=>{
+  socket.on("disconnect", () => {
+    delete users[socket.id];
+    io.emit("users", users);
+  });
 
-io.emit("message",data)
+});
 
-})
+const PORT = process.env.PORT || 10000;
 
-socket.on("image",(data)=>{
-
-io.emit("image",data)
-
-})
-
-socket.on("gif",(data)=>{
-
-io.emit("gif",data)
-
-})
-
-socket.on("leave",(name)=>{
-
-io.emit("system",name+" left the chat")
-
-delete users[socket.id]
-
-io.emit("users",users)
-
-})
-
-socket.on("disconnect",()=>{
-
-delete users[socket.id]
-
-io.emit("users",users)
-
-})
-
-})
-
-const PORT = process.env.PORT || 10000
-
-http.listen(PORT,()=>{
-
-console.log("Server running on "+PORT
+http.listen(PORT, () => {
+  console.log("Tulip Chat server running on port " + PORT);
+});
