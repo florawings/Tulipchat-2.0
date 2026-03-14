@@ -12,15 +12,13 @@
 body{
 margin:0;
 font-family:Arial;
-background-image:url("https://i.imgur.com/8Km9tLL.jpg");
-background-size:cover;
+background:#fce4ec;
 }
 
 .top{
-background:#ff4fa3;
+background:#ff2e93;
 color:white;
-padding:10px;
-font-size:18px;
+padding:12px;
 }
 
 .container{
@@ -28,29 +26,23 @@ display:flex;
 height:90vh;
 }
 
-/* USERS */
-
 .users{
-width:18%;
-background:#111;
+width:20%;
+background:black;
 color:white;
 padding:10px;
 overflow:auto;
 }
 
 .user{
-padding:8px;
+padding:6px;
 border-bottom:1px solid #333;
-cursor:pointer;
 }
-
-/* CHAT */
 
 .chat{
 flex:1;
 display:flex;
 flex-direction:column;
-background:rgba(255,255,255,0.85);
 }
 
 #messages{
@@ -62,11 +54,9 @@ padding:10px;
 .msg{
 background:white;
 padding:10px;
-margin-bottom:8px;
-border-radius:8px;
+margin-bottom:6px;
+border-radius:6px;
 }
-
-/* INPUT */
 
 .input{
 display:flex;
@@ -79,22 +69,13 @@ flex:1;
 padding:10px;
 }
 
-.input button{
-margin-left:5px;
-padding:10px;
-}
-
 </style>
 
 </head>
 
 <body>
 
-<div class="top">
-
-🌷 Tulip Chat
-
-</div>
+<div class="top">🌷 Tulip Chat</div>
 
 <div class="container">
 
@@ -116,7 +97,7 @@ padding:10px;
 
 <button onclick="send()">Send</button>
 
-<button onclick="sendImage()">📷</button>
+<button onclick="img()">📷</button>
 
 </div>
 
@@ -128,6 +109,101 @@ padding:10px;
 
 let socket = io()
 
-let username = localStorage.getItem("name")
+let name = localStorage.getItem("name")
 
-if(!username){
+if(!name){
+
+name = prompt("Enter name")
+localStorage.setItem("name",name)
+
+}
+
+let gender = localStorage.getItem("gender")
+
+if(!gender){
+
+gender = prompt("Male or Female")
+localStorage.setItem("gender",gender)
+
+}
+
+socket.emit("join",{name:name,gender:gender})
+
+let messages = document.getElementById("messages")
+
+function add(text){
+
+messages.innerHTML += "<div class='msg'>" + text + "</div>"
+
+messages.scrollTop = messages.scrollHeight
+
+}
+
+function send(){
+
+let text = document.getElementById("msg").value
+
+if(!text) return
+
+socket.emit("message",{
+
+user:name,
+gender:gender,
+text:text
+
+})
+
+msg.value=""
+
+}
+
+function img(){
+
+let url = prompt("Image URL")
+
+socket.emit("image",{
+
+user:name,
+url:url
+
+})
+
+}
+
+socket.on("message",(d)=>{
+
+add("<b>"+d.user+" ("+d.gender+")</b>: "+d.text)
+
+})
+
+socket.on("image",(d)=>{
+
+add("<b>"+d.user+"</b><br><img src='"+d.url+"' width='200'>")
+
+})
+
+socket.on("system",(t)=>{
+
+add("<i>"+t+"</i>")
+
+})
+
+socket.on("online",(users)=>{
+
+let html=""
+
+for(let id in users){
+
+html += "<div class='user'>"+users[id].name+" ("+users[id].gender+")</div>"
+
+}
+
+document.getElementById("online").innerHTML = html
+
+})
+
+</script>
+
+</body>
+
+</html>
