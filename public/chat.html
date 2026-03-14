@@ -1,12 +1,8 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
-<title>Tulip Chat</title>
-
+<title>Tulip Chat 3.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <script src="/socket.io/socket.io.js"></script>
 
 <style>
@@ -14,12 +10,12 @@
 body{
 margin:0;
 font-family:Arial;
-background:#ffd6ea;
+background:#f2f2f2;
 }
 
 /* HEADER */
 
-.top{
+.header{
 background:#ff2e93;
 color:white;
 padding:12px;
@@ -27,13 +23,13 @@ display:flex;
 align-items:center;
 }
 
-#backBtn{
+#back{
 display:none;
 margin-right:10px;
 background:white;
 border:none;
-padding:4px 8px;
 border-radius:6px;
+padding:4px 8px;
 }
 
 /* LAYOUT */
@@ -46,21 +42,18 @@ height:calc(100vh - 60px);
 /* USERS */
 
 .users{
-width:25%;
+width:28%;
 background:black;
 color:white;
-padding:10px;
 overflow:auto;
 }
 
 .user{
-padding:10px;
+padding:12px;
 border-bottom:1px solid #333;
 cursor:pointer;
 position:relative;
 }
-
-/* DM notification dot */
 
 .dot{
 width:10px;
@@ -79,7 +72,6 @@ display:none;
 flex:1;
 display:flex;
 flex-direction:column;
-background:#eee;
 }
 
 #messages{
@@ -88,13 +80,13 @@ overflow:auto;
 padding:10px;
 }
 
-/* MESSAGE DESIGN */
+/* MESSAGE BUBBLES */
 
 .msg{
+max-width:70%;
 padding:10px;
 margin:6px 0;
-border-radius:15px;
-max-width:70%;
+border-radius:16px;
 }
 
 .me{
@@ -113,10 +105,6 @@ background:white;
 display:flex;
 padding:10px;
 background:#ddd;
-position:fixed;
-bottom:0;
-left:0;
-right:0;
 }
 
 .input input{
@@ -124,101 +112,87 @@ flex:1;
 padding:10px;
 }
 
-.send{
-background:#ff2e93;
-color:white;
+.btn{
 padding:10px;
 border:none;
-margin-left:5px;
+margin-left:6px;
+border-radius:6px;
 }
 
-.cam{
-background:#2196f3;
-color:white;
-padding:10px;
-border:none;
-margin-left:5px;
-}
+.send{background:#ff2e93;color:white;}
+.cam{background:#2196f3;color:white;}
 
 </style>
-
 </head>
 
 <body>
 
-<div class="top">
+<div class="header">
 
-<button id="backBtn" onclick="goBack()">⬅</button>
+<button id="back" onclick="goBack()">⬅</button>
 
-🌷 Tulip Chat
+<span id="title">🌷 Tulip Chat</span>
 
 </div>
 
 <div class="container">
 
-<div class="users">
-
-<h3>Online</h3>
-
-<div id="online"></div>
-
-</div>
+<div class="users" id="userList"></div>
 
 <div class="chat">
 
 <div id="messages"></div>
 
-</div>
-
-</div>
-
 <div class="input">
 
 <input id="msg" placeholder="message">
 
-<button class="send" onclick="send()">Send</button>
+<button class="btn send" onclick="send()">Send</button>
 
-<button class="cam" onclick="openGallery()">📷</button>
+<button class="btn cam" onclick="openGallery()">📷</button>
 
-<input type="file" id="imageInput" accept="image/*" style="display:none">
+<input type="file" id="file" accept="image/*" style="display:none">
+
+</div>
+
+</div>
 
 </div>
 
 <script>
 
-let socket = io()
+const socket = io()
 
 let username = prompt("Enter name")
 
 socket.emit("join",{name:username})
 
 let currentDM=null
-let dmMessages={}
+let dmStore={}
 let notifications={}
 
-let messages=document.getElementById("messages")
+const messages=document.getElementById("messages")
 
 function add(text,type){
 
-messages.innerHTML += `<div class="msg ${type}">${text}</div>`
+messages.innerHTML+=`<div class="msg ${type}">${text}</div>`
 
 messages.scrollTop=messages.scrollHeight
 
 }
 
-/* SEND */
+/* SEND MESSAGE */
 
 function send(){
 
 let text=msg.value
-
-if(!text) return
+if(!text)return
 
 if(currentDM){
 
 socket.emit("dm",{to:currentDM,user:username,text:text})
 
-dmMessages[currentDM].push({text:text,me:true})
+dmStore[currentDM].push({text:text,me:true})
 
 renderDM()
 
@@ -238,7 +212,7 @@ msg.value=""
 
 socket.on("message",(d)=>{
 
-if(currentDM) return
+if(currentDM)return
 
 add(d.user+": "+d.text,"other")
 
@@ -248,44 +222,37 @@ add(d.user+": "+d.text,"other")
 
 socket.on("dm",(d)=>{
 
-if(!dmMessages[d.user]){
-dmMessages[d.user]=[]
-}
+if(!dmStore[d.user])dmStore[d.user]=[]
 
-dmMessages[d.user].push({text:d.text,me:false})
+dmStore[d.user].push({text:d.text,me:false})
 
 if(currentDM===d.user){
+
 renderDM()
+
 }else{
+
 notifications[d.user]=true
-updateUsers()
+renderUsers()
+
 }
 
 })
 
-/* DM OPEN */
+/* OPEN DM */
 
-function startDM(user){
+function openDM(user){
 
 currentDM=user
 
-document.getElementById("backBtn").style.display="block"
+if(!dmStore[user])dmStore[user]=[]
 
 notifications[user]=false
 
+document.getElementById("title").innerText="DM with "+user
+document.getElementById("back").style.display="block"
+
 renderDM()
-
-}
-
-/* BACK */
-
-function goBack(){
-
-currentDM=null
-
-document.getElementById("backBtn").style.display="none"
-
-messages.innerHTML=""
 
 }
 
@@ -295,7 +262,7 @@ function renderDM(){
 
 messages.innerHTML=""
 
-dmMessages[currentDM].forEach(m=>{
+dmStore[currentDM].forEach(m=>{
 
 let type=m.me?"me":"other"
 
@@ -305,31 +272,39 @@ add(m.text,type)
 
 }
 
-/* USERS */
+/* BACK */
 
-function updateUsers(){
+function goBack(){
+
+currentDM=null
+
+document.getElementById("title").innerText="🌷 Tulip Chat"
+document.getElementById("back").style.display="none"
+
+messages.innerHTML=""
+
+}
+
+/* USER LIST */
+
+function renderUsers(){
 
 let html=""
 
 for(let u in notifications){
 
-let dot=notifications[u]?"block":"none"
+let show=notifications[u]?"block":"none"
 
 html+=`
-
-<div class="user" onclick="startDM('${u}')">
-
+<div class="user" onclick="openDM('${u}')">
 ${u}
-
-<div class="dot" style="display:${dot}"></div>
-
+<div class="dot" style="display:${show}"></div>
 </div>
-
 `
 
 }
 
-online.innerHTML=html
+userList.innerHTML=html
 
 }
 
@@ -339,15 +314,17 @@ notifications={}
 
 for(let id in users){
 
-if(users[id].name!==username){
+let name=users[id].name
 
-notifications[users[id].name]=false
+if(name!==username){
+
+notifications[name]=false
 
 }
 
 }
 
-updateUsers()
+renderUsers()
 
 })
 
@@ -355,28 +332,27 @@ updateUsers()
 
 function openGallery(){
 
-imageInput.click()
+file.click()
 
 }
 
-imageInput.addEventListener("change",function(){
+file.addEventListener("change",function(){
 
-let file=this.files[0]
+let f=this.files[0]
 
 let reader=new FileReader()
 
 reader.onload=function(e){
 
-add(`<img src="${e.target.result}">`,"me")
+add(`<img src="${e.target.result}" width="150">`,"me")
 
 }
 
-reader.readAsDataURL(file)
+reader.readAsDataURL(f)
 
 })
 
 </script>
 
 </body>
-
 </html>
