@@ -1,6 +1,13 @@
-<!DOCTYPE html><html>
-<head><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tulip Chat</title><style>
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Tulip Chat</title>
+
+<style>
 
 body{
 margin:0;
@@ -14,7 +21,6 @@ color:white;
 padding:12px;
 display:flex;
 justify-content:space-between;
-align-items:center;
 }
 
 #chat{
@@ -61,6 +67,7 @@ border-radius:6px;
 }
 
 #usersBox{
+
 display:none;
 position:fixed;
 top:70px;
@@ -70,32 +77,63 @@ color:white;
 padding:15px;
 border-radius:8px;
 width:200px;
-max-height:300px;
-overflow:auto;
+
 }
 
-</style></head><body><header><span>🌷 Tulip Chat</span>
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<span>🌷 Tulip Chat</span>
 
 <div>
+
 <button onclick="toggleUsers()">👥</button>
 <button onclick="logout()">Logout</button>
-</div></header><div id="usersBox"></div><div id="chat"></div><div class="bottom"><input id="msg" placeholder="message"><button onclick="send()">Send</button>
+
+</div>
+
+</header>
+
+<div id="usersBox"></div>
+
+<div id="chat"></div>
+
+<div class="bottom">
+
+<input id="msg" placeholder="message">
+
+<button onclick="send()">Send</button>
 
 <input type="file" id="file" hidden>
-<button onclick="upload()">📷</button><input type="file" id="giffile" accept="image/gif" hidden>
-<button onclick="gifUpload()">GIF</button></div><script src="/socket.io/socket.io.js"></script><script>
+<button onclick="upload()">📷</button>
+
+<input type="file" id="giffile" accept="image/gif" hidden>
+<button onclick="gifUpload()">GIF</button>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
 
 const socket = io()
 
 let name = localStorage.getItem("name")
+
 if(!name){
 name = prompt("Enter name")
 localStorage.setItem("name",name)
 }
 
 let gender = localStorage.getItem("gender")
+
 if(!gender){
-gender = prompt("Enter gender (male/female)")
+gender = prompt("Enter gender")
 localStorage.setItem("gender",gender)
 }
 
@@ -111,6 +149,7 @@ gender:gender
 function send(){
 
 let text = msg.value
+
 if(!text) return
 
 socket.emit("message",{
@@ -142,17 +181,26 @@ function upload(){
 file.click()
 }
 
-file.onchange=async function(){
+file.onchange=function(){
 
 let formData=new FormData()
 formData.append("file",file.files[0])
 
-let res=await fetch("/upload",{
-method:"POST",
-body:formData
-})
+let xhr=new XMLHttpRequest()
 
-let data=await res.json()
+xhr.open("POST","/upload",true)
+
+xhr.upload.onprogress=function(e){
+
+let percent=Math.round((e.loaded/e.total)*100)
+
+addMsg("Uploading Image "+percent+"%",true)
+
+}
+
+xhr.onload=function(){
+
+let data=JSON.parse(xhr.responseText)
 
 socket.emit("image",{
 name:name,
@@ -161,21 +209,34 @@ url:data.url
 
 }
 
+xhr.send(formData)
+
+}
+
 function gifUpload(){
 giffile.click()
 }
 
-giffile.onchange=async function(){
+giffile.onchange=function(){
 
 let formData=new FormData()
 formData.append("file",giffile.files[0])
 
-let res=await fetch("/upload",{
-method:"POST",
-body:formData
-})
+let xhr=new XMLHttpRequest()
 
-let data=await res.json()
+xhr.open("POST","/upload",true)
+
+xhr.upload.onprogress=function(e){
+
+let percent=Math.round((e.loaded/e.total)*100)
+
+addMsg("Uploading GIF "+percent+"%",true)
+
+}
+
+xhr.onload=function(){
+
+let data=JSON.parse(xhr.responseText)
 
 socket.emit("gif",{
 name:name,
@@ -184,10 +245,16 @@ url:data.url
 
 }
 
+xhr.send(formData)
+
+}
+
 function logout(){
 
 socket.emit("leave",name)
+
 localStorage.clear()
+
 location.reload()
 
 }
@@ -195,6 +262,7 @@ location.reload()
 function addMsg(text,system){
 
 let div=document.createElement("div")
+
 div.className="msg"
 
 if(system) div.className+=" system"
@@ -210,6 +278,7 @@ chat.scrollTop=chat.scrollHeight
 function addImage(user,url){
 
 let div=document.createElement("div")
+
 div.className="msg"
 
 div.innerHTML=user+"<br><img src='"+url+"'>"
@@ -238,11 +307,15 @@ Object.values(list).forEach(user=>{
 
 let div=document.createElement("div")
 div.innerText=user.name+" ("+user.gender+")"
+
 box.appendChild(div)
 
 })
 
 })
 
-</script></body>
+</script>
+
+</body>
+
 </html>
