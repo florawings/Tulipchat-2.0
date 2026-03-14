@@ -1,33 +1,66 @@
 const express = require("express")
-const path = require("path")
+const bodyParser = require("body-parser")
 
 const app = express()
 
-app.use(express.json())
-app.use(express.static(path.join(__dirname,"public")))
+app.use(bodyParser.json())
+app.use(express.static("public"))
 
-let messages = []
+let users = []
 
-app.get("/messages",(req,res)=>{
-res.json(messages)
+
+// REGISTER
+app.post("/register",(req,res)=>{
+
+const {username,email,password,dob,country} = req.body
+
+const birth = new Date(dob)
+const age = new Date().getFullYear() - birth.getFullYear()
+
+if(age < 18){
+return res.json({success:false,message:"Only 18+ allowed"})
+}
+
+const exist = users.find(u=>u.username===username)
+
+if(exist){
+return res.json({success:false,message:"Username already exists"})
+}
+
+users.push({
+username,
+email,
+password,
+dob,
+country
 })
 
-app.post("/send",(req,res)=>{
-
-let {user,msg} = req.body
-
-messages.push({
-user,
-msg,
-time:Date.now()
-})
-
-res.json({ok:true})
+res.json({success:true})
 
 })
 
-const PORT = process.env.PORT || 3000
 
-app.listen(PORT,()=>{
-console.log("Server running on port "+PORT)
+// LOGIN
+app.post("/login",(req,res)=>{
+
+const {username,password} = req.body
+
+const user = users.find(
+u=>u.username===username && u.password===password
+)
+
+if(!user){
+return res.json({success:false})
+}
+
+res.json({success:true})
+
+})
+
+
+
+app.listen(3000,()=>{
+
+console.log("Tulip Chat server running")
+
 })
