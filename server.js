@@ -6,26 +6,27 @@ const io = require("socket.io")(http)
 app.use(express.json())
 app.use(express.static("public"))
 
-/* OWNER ACCOUNT */
-
 const OWNER = {
-username: "Lord_lucifer",
-password: "766521",
-email: "sharmaravindra515@gmail.com",
-role: "owner"
+username:"Lord_lucifer",
+password:"766521",
+role:"owner"
 }
 
-/* USERS DATABASE */
-
-let users = []
+let users=[]
+let rooms=["public"]
+let onlineUsers={}
 
 /* REGISTER */
 
 app.post("/register",(req,res)=>{
 
-let {username,password,country}=req.body
+let {username,password}=req.body
 
-let exist = users.find(u=>u.username===username)
+if(username===OWNER.username){
+return res.json({status:"reserved"})
+}
+
+let exist=users.find(u=>u.username===username)
 
 if(exist){
 return res.json({status:"exists"})
@@ -34,7 +35,6 @@ return res.json({status:"exists"})
 users.push({
 username,
 password,
-country,
 role:"user"
 })
 
@@ -48,8 +48,6 @@ app.post("/login",(req,res)=>{
 
 let {username,password}=req.body
 
-/* OWNER LOGIN */
-
 if(username===OWNER.username && password===OWNER.password){
 
 return res.json({
@@ -59,10 +57,8 @@ username:OWNER.username
 
 }
 
-/* NORMAL USER LOGIN */
-
-let user = users.find(
-u => u.username===username && u.password===password
+let user=users.find(
+u=>u.username===username && u.password===password
 )
 
 if(!user){
@@ -77,35 +73,25 @@ role:user.role
 
 })
 
-
-/* CHAT USERS */
-
-let onlineUsers = {}
+/* SOCKET */
 
 io.on("connection",(socket)=>{
 
 socket.on("join",(data)=>{
 
 onlineUsers[socket.id]={
-name:data.name,
-role:data.role || "user"
+name:data.name
 }
 
-io.emit("onlineUsers",Object.values(onlineUsers))
+socket.join("public")
+
+io.emit("system",data.name+" joined")
 
 })
 
+/* MESSAGE */
 
-socket.on("disconnect",()=>{
+socket.on("message",(data)=>{
 
-delete onlineUsers[socket.id]
-
-io.emit("onlineUsers",Object.values(onlineUsers))
-
-})
-
-})
-
-http.listen(3000,()=>{
-console.log("Server running")
-})
+io.to(data.room).emit("message",{
+user:data.user,
