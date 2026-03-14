@@ -1,46 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tulip Chat</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f3f3f3;
+text-align:center;
+margin-top:60px;
+}
+
+.box{
+background:white;
+padding:30px;
+width:90%;
+max-width:350px;
+margin:auto;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin:8px 0;
+border:1px solid #ccc;
+border-radius:6px;
+}
+
+button{
+width:100%;
+padding:12px;
+background:#ff2d7a;
+color:white;
+border:none;
+border-radius:6px;
+font-size:16px;
+}
+
+h1{
+color:#ff2d7a;
+}
+
+.admin{
+margin-top:20px;
+font-size:14px;
+color:#666;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h1>🌷 Tulip Chat</h1>
+
+<input id="name" placeholder="Username">
+
+<select id="gender">
+<option value="">Select Gender</option>
+<option>Male</option>
+<option>Female</option>
+</select>
+
+<input type="date" id="dob">
+
+<button onclick="enterChat()">Enter Chat</button>
+
+<div class="admin">
+Owner / Super Admin Login
+</div>
+
+<input id="adminpass" placeholder="Admin Password">
+<button onclick="adminLogin()">Admin Login</button>
+
+</div>
+
 <script>
 
-async function login(){
+function enterChat(){
 
-let username = document.getElementById("username").value
-let password = document.getElementById("password").value
+let name = document.getElementById("name").value
+let gender = document.getElementById("gender").value
+let dob = document.getElementById("dob").value
 
-let res = await fetch("/login",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({username,password})
-})
-
-let data = await res.json()
-
-/* OWNER LOGIN */
-
-if(data.status==="owner"){
-
-localStorage.setItem("name",data.username)
-localStorage.setItem("role","owner")
-
-location="admin.html"
-
+if(!name || !gender || !dob){
+alert("Fill all fields")
 return
+}
+
+let birth = new Date(dob)
+let today = new Date()
+
+let age = today.getFullYear() - birth.getFullYear()
+
+if(age < 18){
+alert("18+ only allowed")
+return
+}
+
+localStorage.setItem("name",name)
+localStorage.setItem("gender",gender)
+
+window.location="chat.html"
 
 }
 
-/* USER LOGIN */
+function adminLogin(){
 
-if(data.status==="success"){
+let pass = document.getElementById("adminpass").value
 
-localStorage.setItem("name",data.username)
-localStorage.setItem("role",data.role)
+if(pass==="tulipowner123"){
+localStorage.setItem("role","owner")
+window.location="chat.html"
+}
 
-location="chat.html"
+else if(pass==="superadmin123"){
+localStorage.setItem("role","superadmin")
+window.location="chat.html"
+}
 
-}else{
-
-alert("Wrong username or password")
-
+else{
+alert("Wrong password")
 }
 
 }
 
 </script>
+
+</body>
+</html>
