@@ -10,19 +10,27 @@ app.use(express.static("public"))
 
 const PORT = process.env.PORT || 3000
 
+/* USERS STORE */
+
 let users = {}
 
+/* SOCKET CONNECTION */
+
 io.on("connection",(socket)=>{
+
+/* USER JOIN */
 
 socket.on("join",(username)=>{
 
 users[socket.id] = username
 
-io.emit("online",Object.values(users))
+io.emit("online",users)
 
 io.emit("system",username+" joined the chat")
 
 })
+
+/* PUBLIC MESSAGE */
 
 socket.on("message",(data)=>{
 
@@ -30,11 +38,23 @@ io.emit("message",data)
 
 })
 
+/* IMAGE MESSAGE */
+
 socket.on("image",(data)=>{
 
 io.emit("image",data)
 
 })
+
+/* DM MESSAGE */
+
+socket.on("dm",(data)=>{
+
+io.to(data.to).emit("dm",data)
+
+})
+
+/* USER DISCONNECT */
 
 socket.on("disconnect",()=>{
 
@@ -42,7 +62,7 @@ let user = users[socket.id]
 
 delete users[socket.id]
 
-io.emit("online",Object.values(users))
+io.emit("online",users)
 
 if(user){
 
