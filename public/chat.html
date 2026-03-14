@@ -9,21 +9,104 @@
 
 <script src="/socket.io/socket.io.js"></script>
 
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#eee;
+}
+
+.top{
+background:black;
+color:white;
+padding:10px;
+font-size:18px;
+display:flex;
+justify-content:space-between;
+}
+
+.container{
+display:flex;
+height:90vh;
+}
+
+/* USERS */
+
+.users{
+width:22%;
+background:#111;
+color:white;
+overflow:auto;
+padding:10px;
+}
+
+.userItem{
+padding:8px;
+border-bottom:1px solid #333;
+cursor:pointer;
+}
+
+.userItem:hover{
+background:#222;
+}
+
+/* CHAT */
+
+.chat{
+flex:1;
+display:flex;
+flex-direction:column;
+}
+
+#messages{
+flex:1;
+overflow:auto;
+padding:10px;
+}
+
+.msg{
+background:white;
+margin-bottom:8px;
+padding:10px;
+border-radius:8px;
+max-width:85%;
+}
+
+/* INPUT */
+
+.input{
+display:flex;
+padding:8px;
+background:white;
+}
+
+.input input{
+flex:1;
+padding:10px;
+}
+
+.input button{
+margin-left:5px;
+}
+
+</style>
+
 </head>
 
 <body>
 
 <div class="top">
 
-🌷 Tulip Chat
+<div>🌷 Tulip Chat <span id="count"></span></div>
 
-<span id="count"></span>
+<div id="dmInfo"></div>
 
 </div>
 
 <div class="container">
 
-<!-- USERS PANEL -->
+<!-- USERS -->
 
 <div class="users">
 
@@ -33,7 +116,7 @@
 
 </div>
 
-<!-- CHAT AREA -->
+<!-- CHAT -->
 
 <div class="chat">
 
@@ -46,6 +129,8 @@
 <button onclick="send()">Send</button>
 
 <button onclick="sendImage()">📷</button>
+
+<button onclick="stopDM()">Public</button>
 
 </div>
 
@@ -73,14 +158,14 @@ localStorage.setItem("user",user)
 
 socket.emit("join",user)
 
-/* DM VARIABLES */
+/* DM */
 
-let dmTarget = null
-let dmName = null
+let dmTarget=null
+let dmName=null
 
 /* MESSAGE BOX */
 
-let messages = document.getElementById("messages")
+let messages=document.getElementById("messages")
 
 function add(text){
 
@@ -94,16 +179,18 @@ messages.scrollTop = messages.scrollHeight
 
 function send(){
 
-let m = document.getElementById("msg").value
+let m=document.getElementById("msg").value
 
 if(!m) return
 
 if(dmTarget){
 
 socket.emit("dm",{
+
 from:user,
 to:dmTarget,
 text:m
+
 })
 
 add("<b>You → "+dmName+"</b>: "+m)
@@ -111,8 +198,10 @@ add("<b>You → "+dmName+"</b>: "+m)
 }else{
 
 socket.emit("message",{
+
 user:user,
 text:m
+
 })
 
 }
@@ -121,17 +210,19 @@ msg.value=""
 
 }
 
-/* IMAGE SEND */
+/* IMAGE */
 
 function sendImage(){
 
-let url = prompt("Image URL")
+let url=prompt("Image URL")
 
 if(!url) return
 
 socket.emit("image",{
+
 user:user,
 url:url
+
 })
 
 }
@@ -140,14 +231,27 @@ url:url
 
 function startDM(id,name){
 
-dmTarget = id
-dmName = name
+dmTarget=id
+dmName=name
+
+document.getElementById("dmInfo").innerText="DM: "+name
 
 add("<i>DM started with "+name+"</i>")
 
 }
 
-/* PUBLIC MESSAGE RECEIVE */
+/* STOP DM */
+
+function stopDM(){
+
+dmTarget=null
+dmName=null
+
+document.getElementById("dmInfo").innerText="Public chat"
+
+}
+
+/* RECEIVE PUBLIC */
 
 socket.on("message",(d)=>{
 
@@ -155,7 +259,7 @@ add("<b>"+d.user+"</b>: "+d.text)
 
 })
 
-/* IMAGE RECEIVE */
+/* RECEIVE IMAGE */
 
 socket.on("image",(d)=>{
 
@@ -163,7 +267,7 @@ add("<b>"+d.user+"</b><br><img src='"+d.url+"' width='200'>")
 
 })
 
-/* SYSTEM MESSAGE */
+/* SYSTEM */
 
 socket.on("system",(t)=>{
 
@@ -171,7 +275,7 @@ add("<i>"+t+"</i>")
 
 })
 
-/* DM RECEIVE */
+/* RECEIVE DM */
 
 socket.on("dm",(d)=>{
 
@@ -183,21 +287,12 @@ add("<b>"+d.from+" (DM)</b>: "+d.text)
 
 socket.on("online",(u)=>{
 
-document.getElementById("count").innerText="Online "+Object.keys(u).length
+let count = Object.keys(u || {}).length
+
+document.getElementById("count").innerText="Online "+count
 
 let html=""
 
 for(let id in u){
 
-html += `<div onclick="startDM('${id}','${u[id]}')">${u[id]}</div>`
-
-}
-
-document.getElementById("list").innerHTML = html
-
-})
-
-</script>
-
-</body>
-</html>
+html += `<div class="userItem" onclick="startDM('${id}','${u[id]}')">🟢 ${u[id]}</div
