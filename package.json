@@ -1,6 +1,7 @@
 {
   "name": "tulipchat",
   "version": "1.0.0",
+  "description": "Tulip Chat App",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
