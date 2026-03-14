@@ -1,78 +1,57 @@
-<!DOCTYPE html>
-<html>
+const express = require("express")
+const bodyParser = require("body-parser")
+const path = require("path")
 
-<head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-</head>
+const app = express()
 
-<body>
+app.use(bodyParser.json())
+app.use(express.static("public"))
 
-<h2>Register</h2>
+let users = []
 
-<input id="user" placeholder="Username"><br>
+// REGISTER
+app.post("/register", (req,res)=>{
 
-<input id="pass" type="password" placeholder="Password"><br>
+const {username,email,password,dob,country} = req.body
 
-<input id="email" placeholder="Email"><br>
+const birth = new Date(dob)
+const age = new Date().getFullYear() - birth.getFullYear()
 
-<label>DOB</label><br>
+if(age < 18){
+return res.json({success:false,message:"18+ only"})
+}
 
-<input id="dob" type="date"><br>
+const exist = users.find(u=>u.username===username)
 
-<select id="gender">
+if(exist){
+return res.json({success:false,message:"Username exists"})
+}
 
-<option>Male</option>
-<option>Female</option>
-<option>Other</option>
+users.push({username,email,password,dob,country})
 
-</select><br>
-
-<input id="country" placeholder="Country"><br>
-
-<button onclick="register()">Register</button>
-
-<script>
-
-async function register(){
-
-let username=user.value
-let password=pass.value
-let email=email.value
-let dob=dob.value
-let gender=gender.value
-let country=country.value
-
-let r=await fetch("/register",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-username,password,email,dob,gender,country
-})
+res.json({success:true})
 
 })
 
-let data=await r.json()
 
-if(data.ok){
+// LOGIN
+app.post("/login",(req,res)=>{
 
-alert("Registered")
-location="index.html"
+const {username,password} = req.body
 
-}else{
+const user = users.find(u=>u.username===username && u.password===password)
 
-alert(data.msg)
-
+if(!user){
+return res.json({success:false})
 }
 
-}
+res.json({success:true})
 
-</script>
+})
 
-</body>
 
-</html>
+app.listen(3000,()=>{
+
+console.log("Server running")
+
+})
