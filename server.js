@@ -52,3 +52,11 @@ io.emit("system", user.name + " left the chat")
 }
 
 })
+
+})
+
+const PORT = process.env.PORT || 3000
+
+server.listen(PORT,()=>{
+console.log("Server running on "+PORT)
+})
