@@ -1,292 +1,128 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
-<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tulip Chat</title>
 
-<style>
+<link rel="stylesheet" href="style.css">
 
-body{
-margin:0;
-font-family:Arial;
-background:#ececec;
-}
-
-.topbar{
-background:black;
-color:white;
-padding:12px;
-display:flex;
-justify-content:space-between;
-}
-
-.menu{
-position:fixed;
-left:-260px;
-top:0;
-width:260px;
-height:100%;
-background:white;
-transition:0.3s;
-}
-
-.menu.show{
-left:0;
-}
-
-.users{
-position:fixed;
-right:-220px;
-top:0;
-width:220px;
-height:100%;
-background:#111;
-color:white;
-transition:0.3s;
-}
-
-.users.show{
-right:0;
-}
-
-.chat{
-height:70vh;
-overflow:auto;
-padding:10px;
-}
-
-.msg{
-background:white;
-padding:8px;
-margin-bottom:6px;
-border-radius:5px;
-}
-
-.system{
-background:#eee;
-font-style:italic;
-}
-
-.inputbar{
-display:flex;
-padding:8px;
-background:white;
-position:fixed;
-bottom:0;
-width:100%;
-}
-
-.inputbar input{
-flex:1;
-padding:10px;
-}
-
-</style>
+<script src="/socket.io/socket.io.js"></script>
 
 </head>
 
 <body>
 
-<div class="topbar">
+<div class="top">
 
-<div onclick="toggleMenu()">☰</div>
+🌷 Tulip Chat
 
-<div>🌷 Tulip Chat</div>
-
-<div onclick="toggleUsers()">👥</div>
+<span id="count"></span>
 
 </div>
 
-<div class="menu" id="menu">
+<div class="container">
 
-<div onclick="joinRoom('public')">Public Chat</div>
-<div onclick="createRoom()">Create Room</div>
+<div class="users">
 
-</div>
+<h3>Online</h3>
 
-<div class="users" id="users">
-
-<h3 style="padding:10px">Users</h3>
+<div id="list"></div>
 
 </div>
 
-<div class="chat" id="chat"></div>
+<div class="chat">
 
-<div class="inputbar">
+<div id="messages"></div>
 
-<input id="msgInput" placeholder="Type message">
+<div class="input">
 
-<button onclick="sendMsg()">Send</button>
+<input id="msg" placeholder="message">
 
-<button onclick="sendImage()">📷</button>
+<button onclick="send()">Send</button>
 
-<button onclick="sendGif()">GIF</button>
+<button onclick="img()">📷</button>
 
 </div>
 
-<script src="/socket.io/socket.io.js"></script>
+</div>
+
+</div>
 
 <script>
 
-const socket = io()
+let socket=io()
 
-let username = localStorage.getItem("name")
+let user=localStorage.getItem("user")
 
-if(!username){
+socket.emit("join",user)
 
-username = prompt("Enter username")
+let messages=document.getElementById("messages")
 
-localStorage.setItem("name",username)
+function add(t){
 
-}
+messages.innerHTML+=`<div class=msg>${t}</div>`
 
-let room="public"
-
-/* OWNER LOGIN */
-
-let isOwner=false
-
-if(username==="Lord_lucifer"){
-
-let p=prompt("Owner password")
-
-if(p==="766521"){
-
-isOwner=true
+messages.scrollTop=messages.scrollHeight
 
 }
 
-}
+/* send text */
 
-/* JOIN ROOM */
+function send(){
 
-socket.emit("joinRoom",{
-username:username,
-room:room
-})
+let m=document.getElementById("msg").value
 
-function joinRoom(r){
+socket.emit("message",{user:user,text:m})
 
-room=r
-
-chat.innerHTML=""
-
-socket.emit("joinRoom",{
-username:username,
-room:r
-})
+msg.value=""
 
 }
 
-/* SEND MESSAGE */
+/* image */
 
-function sendMsg(){
-
-let text=msgInput.value
-
-if(!text) return
-
-socket.emit("chatMessage",{
-username:username,
-room:room,
-message:text
-})
-
-msgInput.value=""
-
-}
-
-/* RECEIVE MESSAGE */
-
-socket.on("message",(data)=>{
-
-addMsg(data.username+": "+data.message)
-
-})
-
-/* SYSTEM MESSAGE */
-
-socket.on("system",(msg)=>{
-
-chat.innerHTML+=`
-<div class="msg system">
-${msg}
-</div>
-`
-
-chat.scrollTop=chat.scrollHeight
-
-})
-
-/* IMAGE */
-
-function sendImage(){
+function img(){
 
 let url=prompt("Image URL")
 
-socket.emit("chatMessage",{
-username:username,
-room:room,
-message:"<img src='"+url+"' width='200'>"
+socket.emit("image",{user:user,url:url})
+
+}
+
+/* events */
+
+socket.on("message",(d)=>{
+
+add("<b>"+d.user+"</b>: "+d.text)
+
 })
 
-}
+socket.on("image",(d)=>{
 
-/* GIF */
+add("<b>"+d.user+"</b><br><img src='"+d.url+"' width=200>")
 
-function sendGif(){
-
-let url=prompt("GIF URL")
-
-socket.emit("chatMessage",{
-username:username,
-room:room,
-message:"<img src='"+url+"' width='200'>"
 })
 
-}
+socket.on("system",(t)=>{
 
-/* ADD MESSAGE */
+add("<i>"+t+"</i>")
 
-function addMsg(text){
+})
 
-chat.innerHTML+=`
-<div class="msg">
-${text}
-</div>
-`
+socket.on("online",(u)=>{
 
-chat.scrollTop=chat.scrollHeight
+document.getElementById("count").innerText="Online "+u.length
 
-}
+let html=""
 
-/* MENU */
+u.forEach(x=>{
 
-function toggleMenu(){
+html+="<div>"+x+"</div>"
 
-menu.classList.toggle("show")
+})
 
-}
+document.getElementById("list").innerHTML=html
 
-/* USERS PANEL */
-
-function toggleUsers(){
-
-document.getElementById("users").classList.toggle("show")
-
-}
-
-/* ROOM */
-
-function createRoom(){
-
-let r=prompt("Room name")
-
-alert("Room '"+r+"' created")
-
-}
+})
 
 </script>
 
