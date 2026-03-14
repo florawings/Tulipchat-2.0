@@ -6,56 +6,62 @@ const io = require("socket.io")(http)
 
 const path = require("path")
 
-// public folder serve
-app.use(express.static(path.join(__dirname, "public")))
+app.use(express.static(path.join(__dirname,"public")))
 
-// home page
-app.get("/", (req, res) => {
-res.sendFile(path.join(__dirname, "public", "index.html"))
+app.get("/",(req,res)=>{
+res.sendFile(path.join(__dirname,"public","index.html"))
 })
 
-let users = {}
+let users={}
 
-io.on("connection", (socket) => {
+io.on("connection",(socket)=>{
 
-socket.on("join", (name) => {
+socket.on("join",(name)=>{
 
-users[socket.id] = name
+users[socket.id]=name
 
-io.emit("msg", {
-name: "System",
-text: name + " joined the chat"
+io.emit("users",users)
+
+io.emit("msg",{
+name:"System",
+text:name+" joined the chat"
 })
-
-})
-
-socket.on("msg", (data) => {
-
-io.emit("msg", data)
 
 })
 
-socket.on("disconnect", () => {
+socket.on("msg",(data)=>{
 
-let name = users[socket.id]
+io.emit("msg",data)
 
-if(name){
-
-io.emit("msg", {
-name: "System",
-text: name + " left the chat"
 })
 
-}
+socket.on("dm",(data)=>{
+
+io.to(data.to).emit("msg",{
+name:data.name,
+text:data.text,
+private:true
+})
+
+})
+
+socket.on("disconnect",()=>{
+
+let name=users[socket.id]
 
 delete users[socket.id]
 
+io.emit("users",users)
+
+io.emit("msg",{
+name:"System",
+text:name+" left the chat"
 })
 
 })
 
-const PORT = process.env.PORT || 3000
-
-http.listen(PORT, () => {
-console.log("Server running on port " + PORT)
 })
+
+const PORT=process.env.PORT || 3000
+
+http.listen(PORT)
