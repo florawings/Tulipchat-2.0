@@ -10,11 +10,7 @@ app.use(express.static("public"))
 
 const PORT = process.env.PORT || 3000
 
-/* USERS STORE */
-
 let users = {}
-
-/* SOCKET CONNECTION */
 
 io.on("connection",(socket)=>{
 
@@ -38,7 +34,7 @@ io.emit("message",data)
 
 })
 
-/* IMAGE MESSAGE */
+/* IMAGE */
 
 socket.on("image",(data)=>{
 
@@ -46,7 +42,7 @@ io.emit("image",data)
 
 })
 
-/* DM MESSAGE */
+/* DM */
 
 socket.on("dm",(data)=>{
 
@@ -54,7 +50,7 @@ io.to(data.to).emit("dm",data)
 
 })
 
-/* USER DISCONNECT */
+/* DISCONNECT */
 
 socket.on("disconnect",()=>{
 
