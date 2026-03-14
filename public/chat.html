@@ -5,7 +5,7 @@
 
 <title>Tulip Chat</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
 <script src="/socket.io/socket.io.js"></script>
 
@@ -17,8 +17,6 @@ font-family:Arial;
 background:#ffd6ea;
 }
 
-/* HEADER */
-
 .top{
 background:#ff2e93;
 color:white;
@@ -26,14 +24,10 @@ padding:12px;
 font-size:18px;
 }
 
-/* LAYOUT */
-
 .container{
 display:flex;
-height:calc(100vh - 50px);
+height:calc(100vh - 60px);
 }
-
-/* USERS */
 
 .users{
 width:22%;
@@ -42,12 +36,6 @@ color:white;
 padding:10px;
 overflow:auto;
 }
-
-.users h3{
-margin-top:0;
-}
-
-/* CHAT */
 
 .chat{
 flex:1;
@@ -69,8 +57,6 @@ margin-bottom:8px;
 border-radius:6px;
 }
 
-/* INPUT BAR */
-
 .input{
 display:flex;
 padding:10px;
@@ -85,8 +71,8 @@ right:0;
 flex:1;
 padding:12px;
 font-size:16px;
-border:1px solid #ccc;
 border-radius:6px;
+border:1px solid #ccc;
 }
 
 .input button{
@@ -94,13 +80,22 @@ padding:12px 14px;
 margin-left:6px;
 font-size:16px;
 border:none;
-background:#ff2e93;
-color:white;
 border-radius:6px;
 }
 
-.input button:last-child{
+.send{
+background:#ff2e93;
+color:white;
+}
+
+.cam{
 background:#2196f3;
+color:white;
+}
+
+.gif{
+background:#ff9800;
+color:white;
 }
 
 </style>
@@ -133,9 +128,13 @@ background:#2196f3;
 
 <input id="msg" placeholder="message">
 
-<button onclick="send()">Send</button>
+<button class="send" onclick="send()">Send</button>
 
-<button onclick="sendImage()">📷</button>
+<button class="cam" onclick="openGallery()">📷</button>
+
+<button class="gif" onclick="sendGif()">GIF</button>
+
+<input type="file" id="imageInput" accept="image/*" style="display:none">
 
 </div>
 
@@ -174,9 +173,44 @@ msg.value=""
 
 }
 
-function sendImage(){
+/* IMAGE FROM GALLERY */
 
-let url = prompt("Image URL")
+function openGallery(){
+
+document.getElementById("imageInput").click()
+
+}
+
+document.getElementById("imageInput").addEventListener("change",function(){
+
+let file=this.files[0]
+
+if(!file) return
+
+let reader=new FileReader()
+
+reader.onload=function(e){
+
+socket.emit("image",{
+
+user:name,
+url:e.target.result
+
+})
+
+}
+
+reader.readAsDataURL(file)
+
+})
+
+/* GIF */
+
+function sendGif(){
+
+let url=prompt("Paste GIF link")
+
+if(!url) return
 
 socket.emit("image",{
 
@@ -187,11 +221,15 @@ url:url
 
 }
 
+/* RECEIVE MESSAGE */
+
 socket.on("message",(d)=>{
 
 add("<b>"+d.user+"</b>: "+d.text)
 
 })
+
+/* RECEIVE IMAGE */
 
 socket.on("image",(d)=>{
 
@@ -199,11 +237,15 @@ add("<b>"+d.user+"</b><br><img src='"+d.url+"' width='200'>")
 
 })
 
+/* SYSTEM MESSAGE */
+
 socket.on("system",(t)=>{
 
 add("<i>"+t+"</i>")
 
 })
+
+/* ONLINE USERS */
 
 socket.on("online",(users)=>{
 
