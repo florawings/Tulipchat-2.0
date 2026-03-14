@@ -1,11 +1,8 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
 <title>Tulip Chat</title>
-
-<link rel="stylesheet" href="style.css">
 
 <script src="/socket.io/socket.io.js"></script>
 
@@ -21,7 +18,6 @@ background:#eee;
 background:black;
 color:white;
 padding:10px;
-font-size:18px;
 display:flex;
 justify-content:space-between;
 }
@@ -31,27 +27,27 @@ display:flex;
 height:90vh;
 }
 
-/* USERS */
-
 .users{
 width:22%;
 background:#111;
 color:white;
 overflow:auto;
-padding:10px;
 }
 
 .userItem{
 padding:8px;
 border-bottom:1px solid #333;
 cursor:pointer;
+display:flex;
+align-items:center;
 }
 
-.userItem:hover{
-background:#222;
+.userItem img{
+width:30px;
+height:30px;
+border-radius:50%;
+margin-right:8px;
 }
-
-/* CHAT */
 
 .chat{
 flex:1;
@@ -67,13 +63,10 @@ padding:10px;
 
 .msg{
 background:white;
-margin-bottom:8px;
 padding:10px;
+margin-bottom:8px;
 border-radius:8px;
-max-width:85%;
 }
-
-/* INPUT */
 
 .input{
 display:flex;
@@ -84,10 +77,6 @@ background:white;
 .input input{
 flex:1;
 padding:10px;
-}
-
-.input button{
-margin-left:5px;
 }
 
 </style>
@@ -106,21 +95,19 @@ margin-left:5px;
 
 <div class="container">
 
-<!-- USERS -->
-
 <div class="users">
 
-<h3>Online</h3>
+<h3 style="padding:10px">Online</h3>
 
 <div id="list"></div>
 
 </div>
 
-<!-- CHAT -->
-
 <div class="chat">
 
 <div id="messages"></div>
+
+<div id="typing"></div>
 
 <div class="input">
 
@@ -140,42 +127,39 @@ margin-left:5px;
 
 <script>
 
-/* SOCKET */
-
 let socket = io()
-
-/* USER */
 
 let user = localStorage.getItem("user")
 
 if(!user){
 
 user = prompt("Enter username")
-
 localStorage.setItem("user",user)
 
 }
 
-socket.emit("join",user)
+let avatar = localStorage.getItem("avatar")
 
-/* DM */
+if(!avatar){
+
+avatar = prompt("Paste profile photo URL")
+localStorage.setItem("avatar",avatar)
+
+}
+
+socket.emit("join",{name:user,avatar:avatar})
 
 let dmTarget=null
 let dmName=null
-
-/* MESSAGE BOX */
 
 let messages=document.getElementById("messages")
 
 function add(text){
 
 messages.innerHTML += "<div class='msg'>"+text+"</div>"
-
 messages.scrollTop = messages.scrollHeight
 
 }
-
-/* SEND MESSAGE */
 
 function send(){
 
@@ -186,11 +170,9 @@ if(!m) return
 if(dmTarget){
 
 socket.emit("dm",{
-
 from:user,
 to:dmTarget,
 text:m
-
 })
 
 add("<b>You → "+dmName+"</b>: "+m)
@@ -198,10 +180,8 @@ add("<b>You → "+dmName+"</b>: "+m)
 }else{
 
 socket.emit("message",{
-
 user:user,
 text:m
-
 })
 
 }
@@ -210,24 +190,13 @@ msg.value=""
 
 }
 
-/* IMAGE */
-
 function sendImage(){
 
 let url=prompt("Image URL")
 
-if(!url) return
-
-socket.emit("image",{
-
-user:user,
-url:url
-
-})
+socket.emit("image",{user:user,url:url})
 
 }
-
-/* START DM */
 
 function startDM(id,name){
 
@@ -236,11 +205,7 @@ dmName=name
 
 document.getElementById("dmInfo").innerText="DM: "+name
 
-add("<i>DM started with "+name+"</i>")
-
 }
-
-/* STOP DM */
 
 function stopDM(){
 
@@ -251,7 +216,21 @@ document.getElementById("dmInfo").innerText="Public chat"
 
 }
 
-/* RECEIVE PUBLIC */
+msg.addEventListener("input",()=>{
+
+socket.emit("typing",user)
+
+})
+
+socket.on("typing",(name)=>{
+
+document.getElementById("typing").innerText=name+" typing..."
+
+setTimeout(()=>{
+document.getElementById("typing").innerText=""
+},2000)
+
+})
 
 socket.on("message",(d)=>{
 
@@ -259,15 +238,11 @@ add("<b>"+d.user+"</b>: "+d.text)
 
 })
 
-/* RECEIVE IMAGE */
-
 socket.on("image",(d)=>{
 
 add("<b>"+d.user+"</b><br><img src='"+d.url+"' width='200'>")
 
 })
-
-/* SYSTEM */
 
 socket.on("system",(t)=>{
 
@@ -275,15 +250,11 @@ add("<i>"+t+"</i>")
 
 })
 
-/* RECEIVE DM */
-
 socket.on("dm",(d)=>{
 
 add("<b>"+d.from+" (DM)</b>: "+d.text)
 
 })
-
-/* ONLINE USERS */
 
 socket.on("online",(u)=>{
 
@@ -295,4 +266,6 @@ let html=""
 
 for(let id in u){
 
-html += `<div class="userItem" onclick="startDM('${id}','${u[id]}')">🟢 ${u[id]}</div
+html+=`
+<div class="userItem" onclick="startDM('${id}','${u[id].name}')">
+<img
