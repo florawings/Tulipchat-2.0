@@ -1,29 +1,64 @@
-const express=require("express")
-const app=express()
+const express = require("express")
+const app = express()
 
-const http=require("http").createServer(app)
+const http = require("http").createServer(app)
+const io = require("socket.io")(http)
 
-const io=require("socket.io")(http)
+const path = require("path")
 
-app.use(express.static(__dirname))
+// static files serve
+app.use(express.static(path.join(__dirname)))
 
-io.on("connection",(socket)=>{
+// home page (login page)
+app.get("/", (req, res) => {
+res.sendFile(path.join(__dirname, "index.html"))
+})
 
-socket.on("join",(name)=>{
+// users list
+let users = {}
 
-io.emit("msg",{
-name:"System",
-text:name+" joined the chat"
+// socket connection
+io.on("connection", (socket) => {
+
+socket.on("join", (name) => {
+
+users[socket.id] = name
+
+io.emit("msg", {
+name: "System",
+text: name + " joined the chat"
 })
 
 })
 
-socket.on("msg",(data)=>{
+// message send
+socket.on("msg", (data) => {
 
-io.emit("msg",data)
+io.emit("msg", data)
+
+})
+
+// disconnect
+socket.on("disconnect", () => {
+
+let name = users[socket.id]
+
+if(name){
+io.emit("msg", {
+name: "System",
+text: name + " left the chat"
+})
+}
+
+delete users[socket.id]
 
 })
 
 })
 
-http.listen(3000)
+// port
+const PORT = process.env.PORT || 3000
+
+http.listen(PORT, () => {
+console.log("Server running on port " + PORT)
+})
