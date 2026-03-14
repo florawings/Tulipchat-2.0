@@ -1,4 +1,6 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tulip Chat</title><script src="/socket.io/socket.io.js"></script><style>
+<!DOCTYPE html><html><head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tulip Chat</title><script src="/socket.io/socket.io.js"></script><style>
 
 body{
 margin:0;
@@ -22,11 +24,10 @@ align-items:center;
 }
 
 .logo{
-font-size:18px;
 font-weight:bold;
 }
 
-/* CHAT AREA */
+/* CHAT */
 
 .chat{
 flex:1;
@@ -35,17 +36,26 @@ padding:10px;
 }
 
 .msg{
-margin-bottom:15px;
+margin-bottom:12px;
 }
 
 .bubble{
 background:white;
 padding:10px;
-border-radius:10px;
+border-radius:8px;
+display:inline-block;
 max-width:80%;
 }
 
-/* INPUT BAR */
+/* USER TAG */
+
+.tag{
+font-size:11px;
+color:gray;
+margin-left:6px;
+}
+
+/* INPUT */
 
 .inputbar{
 display:flex;
@@ -103,7 +113,7 @@ cursor:pointer;
 background:#f0f0f0;
 }
 
-/* RIGHT FRIENDS PANEL */
+/* FRIENDS PANEL */
 
 .friends{
 position:fixed;
@@ -154,41 +164,44 @@ z-index:200;
 <div class="menu-item">📜 Rules</div>
 <div class="menu-item">💎 Buy VIP</div>
 <div class="menu-item">🎫 Support Ticket</div>
-<div class="menu-item">👤 Profile</div></div><!-- RIGHT FRIENDS PANEL --><div class="friends" id="friends"><div class="friends-header">
+<div class="menu-item">👤 Profile</div></div><!-- FRIEND LIST --><div class="friends" id="friends"><div class="friends-header">
 👥 Friends List
-</div><div style="padding:10px"><div>Rahul 🟢</div>
-<div>Neha 🟢</div>
-<div>Yash ⚫</div>
-<div>Ananya 🟢</div></div></div><!-- TOP BAR --><div class="topbar"><div onclick="toggleMenu()">☰</div><div class="logo">🌷 Tulip Chat</div><div>🔔</div></div><!-- CHAT --><div class="chat" id="chat"></div><!-- INPUT --><div class="inputbar"><span class="btn" onclick="uploadImage()">🖼</span>
+</div><div style="padding:10px"><div>👨 Rahul 🟢</div>
+<div>👩 Neha 🟢</div>
+<div>👨 Yash ⚫</div>
+<div>👩 Ananya 🟢</div></div></div><!-- TOP BAR --><div class="topbar"><div onclick="toggleMenu()">☰</div><div class="logo">🌷 Tulip Chat</div><div>🔔</div></div><!-- CHAT AREA --><div class="chat" id="chat"></div><!-- INPUT BAR --><div class="inputbar"><span class="btn" onclick="uploadImage()">🖼</span>
 <span class="btn" onclick="sendGIF()">🎞</span>
 <span class="btn" onclick="youtube()">▶</span>
 <span class="btn" onclick="uploadVideo()">🎥</span>
 <span class="btn" onclick="voiceTyping()">🎤</span>
 
-<input id="msgInput" placeholder="Type message..."><span class="btn" onclick="sendMsg()">➤</span>
+<input id="msgInput" placeholder="Type message"><span class="btn" onclick="sendMsg()">➤</span>
 
 </div><!-- FRIEND BUTTON --><div class="friendbtn" onclick="toggleFriends()">≡</div><input type="file" id="imgFile" accept="image/*" style="display:none">
 <input type="file" id="videoFile" accept="video/*" style="display:none"><script>
 
-/* MENU */
+/* MENU TOGGLE */
 
 function toggleMenu(){
 document.getElementById("menu").classList.toggle("show")
 }
 
-/* FRIENDS PANEL */
+/* FRIEND LIST TOGGLE */
 
 function toggleFriends(){
 document.getElementById("friends").classList.toggle("show")
 }
 
+
 /* SOCKET */
 
 let socket = io()
 
-let username = prompt("Enter name")
+let username = localStorage.getItem("name")
+let type = localStorage.getItem("type")
 
-socket.emit("join",username)
+socket.emit("join",{name:username,type:type})
+
 
 /* SEND MESSAGE */
 
@@ -198,11 +211,12 @@ let input=document.getElementById("msgInput")
 
 if(input.value=="") return
 
-socket.emit("message",{user:username,text:input.value})
+socket.emit("message",input.value)
 
 input.value=""
 
 }
+
 
 /* RECEIVE MESSAGE */
 
@@ -210,13 +224,32 @@ socket.on("message",(data)=>{
 
 let chat=document.getElementById("chat")
 
+let badge=""
+
+if(data.type=="guest"){
+badge="👻 Guest"
+}
+
+if(data.type=="registered"){
+badge="✔ Registered"
+}
+
 chat.innerHTML+=`
 
 <div class="msg">
+
 <div class="bubble">
-<b>${data.user}</b><br>
+
+<b>${data.user}</b>
+
+<span class="tag">${badge}</span>
+
+<br>
+
 ${data.text}
+
 </div>
+
 </div>
 
 `
@@ -224,6 +257,7 @@ ${data.text}
 chat.scrollTop=chat.scrollHeight
 
 })
+
 
 /* IMAGE */
 
@@ -253,6 +287,7 @@ reader.readAsDataURL(file.files[0])
 
 }
 
+
 /* GIF */
 
 function sendGIF(){
@@ -262,12 +297,17 @@ let url=prompt("Paste GIF URL")
 if(!url) return
 
 document.getElementById("chat").innerHTML+=`
+
 <div class="msg">
+
 <img src="${url}" width="200">
+
 </div>
+
 `
 
 }
+
 
 /* YOUTUBE */
 
@@ -282,10 +322,17 @@ let id=link.split("v=")[1]
 let embed="https://www.youtube.com/embed/"+id
 
 document.getElementById("chat").innerHTML+=`
-<iframe width="250" height="150" src="${embed}" frameborder="0" allowfullscreen></iframe>
+
+<iframe width="250" height="150"
+src="${embed}"
+frameborder="0"
+allowfullscreen>
+</iframe>
+
 `
 
 }
+
 
 /* VIDEO */
 
@@ -300,16 +347,21 @@ file.onchange=function(){
 let url=URL.createObjectURL(file.files[0])
 
 document.getElementById("chat").innerHTML+=`
+
 <video width="250" controls>
+
 <source src="${url}">
+
 </video>
+
 `
 
 }
 
 }
 
-/* VOICE */
+
+/* VOICE TYPING */
 
 function voiceTyping(){
 
@@ -321,7 +373,8 @@ speech.start()
 
 speech.onresult=function(event){
 
-document.getElementById("msgInput").value=event.results[0][0].transcript
+document.getElementById("msgInput").value=
+event.results[0][0].transcript
 
 }
 
