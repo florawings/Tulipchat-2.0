@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
 <title>Tulip Chat</title>
@@ -35,6 +34,21 @@ background:black;
 color:white;
 padding:10px;
 overflow:auto;
+}
+
+.user{
+display:flex;
+align-items:center;
+padding:6px;
+border-bottom:1px solid #333;
+cursor:pointer;
+}
+
+.user img{
+width:28px;
+height:28px;
+border-radius:50%;
+margin-right:6px;
 }
 
 .chat{
@@ -83,19 +97,14 @@ border:none;
 border-radius:6px;
 }
 
-.send{
-background:#ff2e93;
-color:white;
-}
+.send{background:#ff2e93;color:white;}
+.cam{background:#2196f3;color:white;}
+.gif{background:#ff9800;color:white;}
 
-.cam{
-background:#2196f3;
-color:white;
-}
-
-.gif{
-background:#ff9800;
-color:white;
+#preview{
+max-width:150px;
+margin:10px;
+display:none;
 }
 
 </style>
@@ -109,16 +118,15 @@ color:white;
 <div class="container">
 
 <div class="users">
-
 <h3>Online</h3>
-
 <div id="online"></div>
-
 </div>
 
 <div class="chat">
 
 <div id="messages"></div>
+
+<img id="preview">
 
 </div>
 
@@ -144,14 +152,18 @@ let socket = io()
 
 let name = prompt("Enter name")
 
-socket.emit("join",{name:name})
+let avatar = prompt("Paste profile photo URL")
+
+socket.emit("join",{name:name,avatar:avatar})
 
 let messages = document.getElementById("messages")
+let preview = document.getElementById("preview")
+
+let dmUser = null
 
 function add(text){
 
 messages.innerHTML += "<div class='msg'>"+text+"</div>"
-
 messages.scrollTop = messages.scrollHeight
 
 }
@@ -159,14 +171,12 @@ messages.scrollTop = messages.scrollHeight
 function send(){
 
 let text = document.getElementById("msg").value
-
 if(!text) return
 
 socket.emit("message",{
-
 user:name,
-text:text
-
+text:text,
+to:dmUser
 })
 
 msg.value=""
@@ -176,26 +186,25 @@ msg.value=""
 /* IMAGE FROM GALLERY */
 
 function openGallery(){
-
 document.getElementById("imageInput").click()
-
 }
 
 document.getElementById("imageInput").addEventListener("change",function(){
 
 let file=this.files[0]
-
 if(!file) return
 
 let reader=new FileReader()
 
 reader.onload=function(e){
 
+preview.src=e.target.result
+preview.style.display="block"
+
 socket.emit("image",{
-
 user:name,
-url:e.target.result
-
+url:e.target.result,
+to:dmUser
 })
 
 }
@@ -213,10 +222,9 @@ let url=prompt("Paste GIF link")
 if(!url) return
 
 socket.emit("image",{
-
 user:name,
-url:url
-
+url:url,
+to:dmUser
 })
 
 }
@@ -224,6 +232,8 @@ url:url
 /* RECEIVE MESSAGE */
 
 socket.on("message",(d)=>{
+
+if(d.to && d.to!==name) return
 
 add("<b>"+d.user+"</b>: "+d.text)
 
@@ -233,11 +243,13 @@ add("<b>"+d.user+"</b>: "+d.text)
 
 socket.on("image",(d)=>{
 
+if(d.to && d.to!==name) return
+
 add("<b>"+d.user+"</b><br><img src='"+d.url+"' width='200'>")
 
 })
 
-/* SYSTEM MESSAGE */
+/* SYSTEM */
 
 socket.on("system",(t)=>{
 
@@ -245,7 +257,7 @@ add("<i>"+t+"</i>")
 
 })
 
-/* ONLINE USERS */
+/* USERS LIST */
 
 socket.on("online",(users)=>{
 
@@ -253,13 +265,28 @@ let html=""
 
 for(let id in users){
 
-html += "<div>"+users[id].name+"</div>"
+html += `
+<div class="user" onclick="startDM('${users[id].name}')">
+<img src="${users[id].avatar}">
+${users[id].name}
+</div>
+`
 
 }
 
 document.getElementById("online").innerHTML = html
 
 })
+
+/* START DM */
+
+function startDM(user){
+
+dmUser = user
+
+add("<i>Private chat with "+user+"</i>")
+
+}
 
 </script>
 
