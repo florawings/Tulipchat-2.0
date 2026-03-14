@@ -1,141 +1,46 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-
-<title>Tulip Chat</title>
-
-<style>
-
-body{
-font-family:Arial;
-background:#0f4c5c;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-}
-
-.box{
-background:white;
-padding:30px;
-border-radius:10px;
-width:300px;
-text-align:center;
-}
-
-input,select{
-width:100%;
-padding:10px;
-margin:6px 0;
-}
-
-button{
-width:100%;
-padding:10px;
-margin-top:6px;
-cursor:pointer;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="box">
-
-<h2>Tulip Chat</h2>
-
-<input id="username" placeholder="Username">
-
-<input id="password" type="password" placeholder="Password">
-
-<select id="country">
-<option>India</option>
-<option>USA</option>
-<option>UK</option>
-</select>
-
-<button onclick="login()">Login</button>
-
-<button onclick="guest()">Guest Login</button>
-
-<button onclick="register()">Register</button>
-
-</div>
-
-
 <script>
 
 async function login(){
 
-let username=usernameInput.value
-let password=passwordInput.value
+let username = document.getElementById("username").value
+let password = document.getElementById("password").value
 
-let res=await fetch("/login",{
+let res = await fetch("/login",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({username,password})
 })
 
-let data=await res.json()
+let data = await res.json()
+
+/* OWNER LOGIN */
+
+if(data.status==="owner"){
+
+localStorage.setItem("name",data.username)
+localStorage.setItem("role","owner")
+
+location="admin.html"
+
+return
+
+}
+
+/* USER LOGIN */
 
 if(data.status==="success"){
 
-localStorage.setItem("name",username)
-localStorage.setItem("type","registered")
+localStorage.setItem("name",data.username)
+localStorage.setItem("role",data.role)
 
 location="chat.html"
 
 }else{
 
-alert("Invalid login")
+alert("Wrong username or password")
 
 }
-
-}
-
-
-
-async function register(){
-
-let username=usernameInput.value
-let password=passwordInput.value
-let country=country.value
-
-let res=await fetch("/register",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({username,password,country})
-})
-
-let data=await res.json()
-
-if(data.status==="registered"){
-alert("Account created")
-}
-
-else{
-alert("User already exists")
-}
-
-}
-
-
-
-function guest(){
-
-let name="Guest"+Math.floor(Math.random()*1000)
-
-localStorage.setItem("name",name)
-localStorage.setItem("type","guest")
-
-location="chat.html"
 
 }
 
 </script>
-
-</body>
-</html>
