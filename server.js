@@ -7,17 +7,26 @@ const app = express()
 const server = http.createServer(app)
 const io = new Server(server)
 
+/* static files */
+
 app.use(express.static("public"))
 
-/* MongoDB connection */
+/* PORT for Render */
 
-const uri = "mongodb+srv://epffoportal_db_user:wAaE19Wqq3XFMbJH@cluster0.mighbsf.mongodb.net/?retryWrites=true&w=majority"
+const PORT = process.env.PORT || 3000
+
+/* MongoDB */
+
+const uri =
+"mongodb+srv://epffoportal_db_user:wAaE19Wqq3XFMbJH@cluster0.mighbsf.mongodb.net/?retryWrites=true&w=majority"
 
 const client = new MongoClient(uri)
 
 let messagesCollection
 
 async function startDB(){
+
+try{
 
 await client.connect()
 
@@ -27,21 +36,31 @@ messagesCollection = db.collection("messages")
 
 console.log("MongoDB connected")
 
+}catch(err){
+
+console.log("MongoDB error:",err)
+
+}
+
 }
 
 startDB()
 
 /* Socket connection */
 
-io.on("connection", (socket)=>{
+io.on("connection",(socket)=>{
 
 console.log("User connected")
 
-socket.on("joinRoom", async(room)=>{
+/* join room */
+
+socket.on("joinRoom", async(data)=>{
+
+const room = data.room
 
 socket.join(room)
 
-/* load old messages */
+try{
 
 const oldMessages = await messagesCollection
 .find({room:room})
@@ -49,24 +68,44 @@ const oldMessages = await messagesCollection
 .limit(50)
 .toArray()
 
-socket.emit("oldMessages", oldMessages)
+socket.emit("oldMessages",oldMessages)
+
+}catch(e){
+
+console.log(e)
+
+}
 
 })
 
+/* new message */
+
 socket.on("chatMessage", async(data)=>{
 
-const message = {
+const msg = {
+
 username:data.username,
 room:data.room,
 message:data.message,
 time:new Date()
+
 }
 
-await messagesCollection.insertOne(message)
+try{
 
-io.to(data.room).emit("message", message)
+await messagesCollection.insertOne(msg)
+
+}catch(e){
+
+console.log(e)
+
+}
+
+io.to(data.room).emit("message",msg)
 
 })
+
+/* disconnect */
 
 socket.on("disconnect",()=>{
 
@@ -76,8 +115,10 @@ console.log("User disconnected")
 
 })
 
-server.listen(3000, ()=>{
+/* start server */
 
-console.log("Server running")
+server.listen(PORT,()=>{
+
+console.log("Server running on port "+PORT)
 
 })
