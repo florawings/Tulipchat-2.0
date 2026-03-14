@@ -134,7 +134,7 @@ display:none;
 
 <div onclick="showCoins()">🪙 My Coins</div>
 
-<div onclick="openLeaderboard()">🏆 Leaderboard</div>
+<div onclick="closeMenu()">❌ Close</div>
 
 </div>
 
@@ -170,7 +170,7 @@ display:none;
 
 <div class="panel" id="ownerPanel">
 
-<b>Owner Tools</b>
+<b>Owner Panel</b>
 
 <br><br>
 
@@ -180,7 +180,7 @@ display:none;
 
 <button onclick="muteUser()">Mute</button>
 
-<button onclick="promoteUser()">Promote</button>
+<button onclick="createRoom()">Create Room</button>
 
 </div>
 
@@ -190,35 +190,31 @@ display:none;
 
 const socket = io()
 
-/* USER */
-
 let username = localStorage.getItem("name")
 
-let role = localStorage.getItem("role")
+let role = "guest"
+
+let isOwner = false
 
 if(!username){
 
 username = prompt("Enter username")
 
-let type = confirm("Register user?\nOK = Registered\nCancel = Guest")
-
-role = type ? "user" : "guest"
-
 localStorage.setItem("name",username)
-
-localStorage.setItem("role",role)
 
 }
 
 /* OWNER LOGIN */
 
-if(username==="Lord_lucifer"){
+if(username === "Lord_lucifer"){
 
 let p = prompt("Owner password")
 
-if(p==="766521"){
+if(p === "766521"){
 
-role="owner"
+isOwner = true
+
+role = "owner"
 
 document.getElementById("ownerPanel").style.display="block"
 
@@ -228,11 +224,7 @@ document.getElementById("ownerPanel").style.display="block"
 
 let room="public"
 
-let coins=0
-
 let users=["Rahul","Neha","Aman"]
-
-let dmUser=null
 
 socket.emit("joinRoom",{room:room})
 
@@ -240,7 +232,13 @@ socket.emit("joinRoom",{room:room})
 
 function toggleMenu(){
 
-menu.classList.toggle("show")
+document.getElementById("menu").classList.toggle("show")
+
+}
+
+function closeMenu(){
+
+document.getElementById("menu").classList.remove("show")
 
 }
 
@@ -276,17 +274,7 @@ msgInput.value=""
 
 socket.on("message",(data)=>{
 
-addMsg(data.username+" ("+role+"): "+data.message)
-
-})
-
-socket.on("oldMessages",(msgs)=>{
-
-msgs.forEach(m=>{
-
-addMsg(m.username+": "+m.message)
-
-})
+addMsg(data.username+": "+data.message)
 
 })
 
@@ -372,19 +360,39 @@ alert("Room '"+r+"' created")
 
 }
 
-function joinRoom(r){
+/* OWNER TOOLS */
 
-room=r
+function kickUser(){
 
-chat.innerHTML=""
+if(!isOwner) return alert("Owner only")
 
-socket.emit("joinRoom",{room:r})
+let u=prompt("User to kick")
 
-addMsg("Joined room: "+r)
+socket.emit("ownerKick",u)
 
 }
 
-/* USERS */
+function banUser(){
+
+if(!isOwner) return alert("Owner only")
+
+let u=prompt("User to ban")
+
+socket.emit("ownerBan",u)
+
+}
+
+function muteUser(){
+
+if(!isOwner) return alert("Owner only")
+
+let u=prompt("User to mute")
+
+socket.emit("ownerMute",u)
+
+}
+
+/* USERS LIST */
 
 function refreshUsers(){
 
@@ -402,51 +410,11 @@ userList.innerHTML=html
 
 refreshUsers()
 
-/* OWNER */
-
-function kickUser(){
-
-let u=prompt("User")
-
-alert(u+" kicked")
-
-}
-
-function banUser(){
-
-let u=prompt("User")
-
-alert(u+" banned")
-
-}
-
-function muteUser(){
-
-let u=prompt("User")
-
-alert(u+" muted")
-
-}
-
-function promoteUser(){
-
-let u=prompt("User")
-
-alert(u+" promoted")
-
-}
-
 /* COINS */
 
 function showCoins(){
 
-alert("TulipCoins: "+coins)
-
-}
-
-function openLeaderboard(){
-
-alert(username+" coins: "+coins)
+alert("TulipCoins coming soon")
 
 }
 
