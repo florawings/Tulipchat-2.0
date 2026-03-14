@@ -4,7 +4,6 @@
 <head>
 
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>Tulip Chat</title>
 
 <style>
@@ -21,7 +20,6 @@ color:white;
 padding:12px;
 display:flex;
 justify-content:space-between;
-align-items:center;
 }
 
 .menu{
@@ -32,17 +30,10 @@ width:260px;
 height:100%;
 background:white;
 transition:0.3s;
-z-index:10;
 }
 
 .menu.show{
 left:0;
-}
-
-.menu div{
-padding:15px;
-border-bottom:1px solid #eee;
-cursor:pointer;
 }
 
 .users{
@@ -60,12 +51,6 @@ transition:0.3s;
 right:0;
 }
 
-.userItem{
-padding:10px;
-border-bottom:1px solid #333;
-cursor:pointer;
-}
-
 .chat{
 height:70vh;
 overflow:auto;
@@ -77,6 +62,11 @@ background:white;
 padding:8px;
 margin-bottom:6px;
 border-radius:5px;
+}
+
+.system{
+background:#eee;
+font-style:italic;
 }
 
 .inputbar{
@@ -91,21 +81,6 @@ width:100%;
 .inputbar input{
 flex:1;
 padding:10px;
-}
-
-.inputbar button{
-padding:10px;
-margin-left:4px;
-}
-
-.panel{
-position:fixed;
-bottom:120px;
-left:10px;
-background:white;
-padding:10px;
-border:1px solid #ccc;
-display:none;
 }
 
 </style>
@@ -124,35 +99,20 @@ display:none;
 
 </div>
 
-<!-- MENU -->
-
 <div class="menu" id="menu">
 
-<div onclick="joinRoom('public')">🌐 Public Chat</div>
-
-<div onclick="createRoom()">➕ Create Room</div>
-
-<div onclick="showCoins()">🪙 My Coins</div>
-
-<div onclick="closeMenu()">❌ Close</div>
+<div onclick="joinRoom('public')">Public Chat</div>
+<div onclick="createRoom()">Create Room</div>
 
 </div>
-
-<!-- USERS -->
 
 <div class="users" id="users">
 
-<h3 style="padding:10px">Online</h3>
-
-<div id="userList"></div>
+<h3 style="padding:10px">Users</h3>
 
 </div>
 
-<!-- CHAT -->
-
 <div class="chat" id="chat"></div>
-
-<!-- INPUT -->
 
 <div class="inputbar">
 
@@ -166,24 +126,6 @@ display:none;
 
 </div>
 
-<!-- OWNER PANEL -->
-
-<div class="panel" id="ownerPanel">
-
-<b>Owner Panel</b>
-
-<br><br>
-
-<button onclick="kickUser()">Kick</button>
-
-<button onclick="banUser()">Ban</button>
-
-<button onclick="muteUser()">Mute</button>
-
-<button onclick="createRoom()">Create Room</button>
-
-</div>
-
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
@@ -191,10 +133,6 @@ display:none;
 const socket = io()
 
 let username = localStorage.getItem("name")
-
-let role = "guest"
-
-let isOwner = false
 
 if(!username){
 
@@ -204,53 +142,45 @@ localStorage.setItem("name",username)
 
 }
 
-/* OWNER LOGIN */
-
-if(username === "Lord_lucifer"){
-
-let p = prompt("Owner password")
-
-if(p === "766521"){
-
-isOwner = true
-
-role = "owner"
-
-document.getElementById("ownerPanel").style.display="block"
-
-}
-
-}
-
 let room="public"
 
-let users=["Rahul","Neha","Aman"]
+/* OWNER LOGIN */
 
-socket.emit("joinRoom",{room:room})
+let isOwner=false
 
-/* MENU */
+if(username==="Lord_lucifer"){
 
-function toggleMenu(){
+let p=prompt("Owner password")
 
-document.getElementById("menu").classList.toggle("show")
+if(p==="766521"){
 
-}
-
-function closeMenu(){
-
-document.getElementById("menu").classList.remove("show")
+isOwner=true
 
 }
 
-/* USERS */
+}
 
-function toggleUsers(){
+/* JOIN ROOM */
 
-document.getElementById("users").classList.toggle("show")
+socket.emit("joinRoom",{
+username:username,
+room:room
+})
+
+function joinRoom(r){
+
+room=r
+
+chat.innerHTML=""
+
+socket.emit("joinRoom",{
+username:username,
+room:r
+})
 
 }
 
-/* MESSAGE */
+/* SEND MESSAGE */
 
 function sendMsg(){
 
@@ -259,22 +189,34 @@ let text=msgInput.value
 if(!text) return
 
 socket.emit("chatMessage",{
-
 username:username,
 room:room,
 message:text
-
 })
 
 msgInput.value=""
 
 }
 
-/* RECEIVE */
+/* RECEIVE MESSAGE */
 
 socket.on("message",(data)=>{
 
 addMsg(data.username+": "+data.message)
+
+})
+
+/* SYSTEM MESSAGE */
+
+socket.on("system",(msg)=>{
+
+chat.innerHTML+=`
+<div class="msg system">
+${msg}
+</div>
+`
+
+chat.scrollTop=chat.scrollHeight
 
 })
 
@@ -285,11 +227,9 @@ function sendImage(){
 let url=prompt("Image URL")
 
 socket.emit("chatMessage",{
-
 username:username,
 room:room,
 message:"<img src='"+url+"' width='200'>"
-
 })
 
 }
@@ -301,11 +241,9 @@ function sendGif(){
 let url=prompt("GIF URL")
 
 socket.emit("chatMessage",{
-
 username:username,
 room:room,
 message:"<img src='"+url+"' width='200'>"
-
 })
 
 }
@@ -315,106 +253,38 @@ message:"<img src='"+url+"' width='200'>"
 function addMsg(text){
 
 chat.innerHTML+=`
-
 <div class="msg">
-
 ${text}
-
-<br>
-
-<button onclick="deleteMsg(this)">Delete</button>
-
-<button onclick="reportMsg()">Report</button>
-
 </div>
-
 `
 
 chat.scrollTop=chat.scrollHeight
 
 }
 
-/* DELETE */
+/* MENU */
 
-function deleteMsg(btn){
+function toggleMenu(){
 
-btn.parentElement.remove()
-
-}
-
-/* REPORT */
-
-function reportMsg(){
-
-alert("Message reported")
+menu.classList.toggle("show")
 
 }
 
-/* ROOMS */
+/* USERS PANEL */
+
+function toggleUsers(){
+
+document.getElementById("users").classList.toggle("show")
+
+}
+
+/* ROOM */
 
 function createRoom(){
 
 let r=prompt("Room name")
 
 alert("Room '"+r+"' created")
-
-}
-
-/* OWNER TOOLS */
-
-function kickUser(){
-
-if(!isOwner) return alert("Owner only")
-
-let u=prompt("User to kick")
-
-socket.emit("ownerKick",u)
-
-}
-
-function banUser(){
-
-if(!isOwner) return alert("Owner only")
-
-let u=prompt("User to ban")
-
-socket.emit("ownerBan",u)
-
-}
-
-function muteUser(){
-
-if(!isOwner) return alert("Owner only")
-
-let u=prompt("User to mute")
-
-socket.emit("ownerMute",u)
-
-}
-
-/* USERS LIST */
-
-function refreshUsers(){
-
-let html=""
-
-users.forEach(u=>{
-
-html+=`<div class="userItem">${u}</div>`
-
-})
-
-userList.innerHTML=html
-
-}
-
-refreshUsers()
-
-/* COINS */
-
-function showCoins(){
-
-alert("TulipCoins coming soon")
 
 }
 
