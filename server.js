@@ -14,19 +14,18 @@ let users = {}
 
 io.on("connection",(socket)=>{
 
-/* USER JOIN */
+socket.on("join",(data)=>{
 
-socket.on("join",(username)=>{
-
-users[socket.id] = username
+users[socket.id] = {
+name: data.name,
+avatar: data.avatar
+}
 
 io.emit("online",users)
 
-io.emit("system",username+" joined the chat")
+io.emit("system",data.name+" joined the chat")
 
 })
-
-/* PUBLIC MESSAGE */
 
 socket.on("message",(data)=>{
 
@@ -34,23 +33,23 @@ io.emit("message",data)
 
 })
 
-/* IMAGE */
-
 socket.on("image",(data)=>{
 
 io.emit("image",data)
 
 })
 
-/* DM */
+socket.on("typing",(name)=>{
+
+socket.broadcast.emit("typing",name)
+
+})
 
 socket.on("dm",(data)=>{
 
 io.to(data.to).emit("dm",data)
 
 })
-
-/* DISCONNECT */
 
 socket.on("disconnect",()=>{
 
@@ -61,9 +60,7 @@ delete users[socket.id]
 io.emit("online",users)
 
 if(user){
-
-io.emit("system",user+" left the chat")
-
+io.emit("system",user.name+" left the chat")
 }
 
 })
@@ -71,7 +68,5 @@ io.emit("system",user+" left the chat")
 })
 
 server.listen(PORT,()=>{
-
-console.log("Server running on port "+PORT)
-
+console.log("Server running")
 })
