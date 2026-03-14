@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,72 +12,46 @@
 body{
 margin:0;
 font-family:Arial;
-display:flex;
-height:100vh;
 background:#f1f1f1;
-}
-
-#users{
-width:28%;
-background:black;
-color:white;
-padding:10px;
-overflow:auto;
-}
-
-#users div{
-padding:8px;
-border-bottom:1px solid #444;
-cursor:pointer;
-}
-
-#chatbox{
-flex:1;
-display:flex;
-flex-direction:column;
 }
 
 header{
 background:#ff2d7a;
 color:white;
 padding:12px;
+display:flex;
+justify-content:space-between;
+align-items:center;
 font-size:18px;
 }
 
+#menu button{
+background:white;
+border:none;
+padding:6px 10px;
+margin-left:5px;
+border-radius:5px;
+}
+
 #chat{
-flex:1;
+height:75vh;
 overflow:auto;
 padding:10px;
-display:flex;
-flex-direction:column;
 }
 
 .msg{
-max-width:70%;
-padding:10px;
-margin:6px;
-border-radius:10px;
-}
-
-.me{
-background:#ff2d7a;
-color:white;
-align-self:flex-end;
-}
-
-.other{
 background:white;
-align-self:flex-start;
-}
-
-.system{
-background:#ddd;
-align-self:center;
-font-size:13px;
+padding:10px;
+margin:6px 0;
+border-radius:8px;
 }
 
 .bottom{
+position:fixed;
+bottom:0;
+width:100%;
 display:flex;
+background:white;
 border-top:1px solid #ccc;
 }
 
@@ -87,8 +62,8 @@ border:none;
 }
 
 .bottom button{
-padding:12px;
 border:none;
+padding:12px;
 background:#ff2d7a;
 color:white;
 }
@@ -99,21 +74,35 @@ color:white;
 
 <body>
 
-<div id="users"></div>
+<header>
 
-<div id="chatbox">
+<span>🌷 Tulip Chat</span>
 
-<header>🌷 Tulip Chat</header>
+<div id="menu">
+
+<button onclick="showUsers()">👥</button>
+
+<button onclick="showDM()">💬</button>
+
+<button onclick="logout()">🚪</button>
+
+</div>
+
+</header>
 
 <div id="chat"></div>
 
 <div class="bottom">
 
-<input id="msg" placeholder="Type message">
+<button onclick="emoji()">😀</button>
+
+<input id="msg" placeholder="message">
 
 <button onclick="send()">Send</button>
 
-</div>
+<button onclick="image()">📷</button>
+
+<button onclick="gif()">GIF</button>
 
 </div>
 
@@ -125,65 +114,17 @@ const socket=io()
 
 let name=localStorage.getItem("name")
 
-let currentDM=null
-
 socket.emit("join",name)
-
-socket.on("users",(list)=>{
-
-let usersDiv=document.getElementById("users")
-
-usersDiv.innerHTML=""
-
-for(let id in list){
-
-let u=document.createElement("div")
-
-u.innerText=list[id]
-
-u.onclick=()=>{
-
-currentDM=id
-
-}
-
-usersDiv.appendChild(u)
-
-}
-
-})
 
 socket.on("msg",(data)=>{
 
 let div=document.createElement("div")
 
-div.classList.add("msg")
+div.className="msg"
 
-if(data.name=="System"){
-
-div.classList.add("system")
-div.innerText=data.text
-
-}
-
-else if(data.name==name){
-
-div.classList.add("me")
-div.innerText=data.text
-
-}
-
-else{
-
-div.classList.add("other")
 div.innerText=data.name+": "+data.text
 
-}
-
 document.getElementById("chat").appendChild(div)
-
-document.getElementById("chat").scrollTop=
-document.getElementById("chat").scrollHeight
 
 })
 
@@ -191,27 +132,41 @@ function send(){
 
 let text=document.getElementById("msg").value
 
-if(text=="") return
-
-if(currentDM){
-
-socket.emit("dm",{
-to:currentDM,
-name:name,
-text:text
-})
-
-}else{
-
 socket.emit("msg",{
 name:name,
 text:text
 })
 
-}
-
 document.getElementById("msg").value=""
 
+}
+
+function logout(){
+
+localStorage.clear()
+
+location.href="/"
+
+}
+
+function showUsers(){
+alert("Online users feature")
+}
+
+function showDM(){
+alert("DM inbox feature")
+}
+
+function emoji(){
+document.getElementById("msg").value+="😀"
+}
+
+function image(){
+alert("Upload image feature")
+}
+
+function gif(){
+alert("GIF feature")
 }
 
 </script>
