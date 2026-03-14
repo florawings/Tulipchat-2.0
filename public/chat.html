@@ -8,8 +8,6 @@ font-family:Arial;
 background:#ececec;
 }
 
-/* TOP BAR */
-
 .topbar{
 background:black;
 color:white;
@@ -18,8 +16,6 @@ display:flex;
 justify-content:space-between;
 align-items:center;
 }
-
-/* MENU */
 
 .menu{
 position:fixed;
@@ -42,8 +38,6 @@ border-bottom:1px solid #eee;
 cursor:pointer;
 }
 
-/* USERS */
-
 .users{
 position:fixed;
 right:-220px;
@@ -65,8 +59,6 @@ border-bottom:1px solid #333;
 cursor:pointer;
 }
 
-/* CHAT */
-
 .chat{
 height:70vh;
 overflow:auto;
@@ -79,8 +71,6 @@ padding:8px;
 margin-bottom:6px;
 border-radius:5px;
 }
-
-/* INPUT */
 
 .inputbar{
 display:flex;
@@ -101,8 +91,6 @@ padding:10px;
 margin-left:4px;
 }
 
-/* PANELS */
-
 .panel{
 position:fixed;
 bottom:120px;
@@ -113,7 +101,7 @@ border:1px solid #ccc;
 display:none;
 }
 
-</style></head><body><div class="topbar"><div onclick="toggleMenu()">☰</div><div>🌷 Tulip Chat</div><div onclick="toggleUsers()">👥</div></div><!-- MENU --><div class="menu" id="menu"><div onclick="joinRoom('public')">🌐 Public Chat</div><div onclick="createRoom()">➕ Create Room</div><div onclick="openNews()">📰 News Board</div><div onclick="openLeaderboard()">🏆 Leaderboard</div></div><!-- USERS --><div class="users" id="users"><h3 style="padding:10px">Online</h3><div id="userList"></div></div><!-- CHAT --><div class="chat" id="chat"></div><!-- INPUT --><div class="inputbar"><input id="msgInput" placeholder="Type message"><button onclick="sendMsg()">Send</button>
+</style></head><body><div class="topbar"><div onclick="toggleMenu()">☰</div><div>🌷 Tulip Chat</div><div onclick="toggleUsers()">👥</div></div><!-- MENU --><div class="menu" id="menu"><div onclick="joinRoom('public')">🌐 Public Chat</div><div onclick="createRoom()">➕ Create Room</div><div onclick="showCoins()">🪙 My Coins</div><div onclick="openLeaderboard()">🏆 Leaderboard</div></div><!-- USERS --><div class="users" id="users"><h3 style="padding:10px">Online</h3><div id="userList"></div></div><!-- CHAT --><div class="chat" id="chat"></div><!-- INPUT --><div class="inputbar"><input id="msgInput" placeholder="Type message"><button onclick="sendMsg()">Send</button>
 
 <button onclick="sendImage()">📷</button>
 
@@ -133,30 +121,32 @@ display:none;
 
 </div><script>
 
+/* USER SETUP */
+
 let username=localStorage.getItem("name")
+
+let role=localStorage.getItem("role")
 
 if(!username){
 
 username=prompt("Enter username")
 
-localStorage.setItem("name",username)
+let type=confirm("Register user?\nOK = Registered\nCancel = Guest")
+
+if(type){
+
+role="user"
+
+}else{
+
+role="guest"
 
 }
 
-let role="user"
+localStorage.setItem("name",username)
+localStorage.setItem("role",role)
 
-let room="public"
-
-let dmUser=null
-
-let coins=0
-
-let banned=[]
-
-let muted=[]
-
-let users=["Rahul","Neha","Aman","Ravi"]
-
+}
 
 /* OWNER LOGIN */
 
@@ -174,6 +164,17 @@ document.getElementById("ownerPanel").style.display="block"
 
 }
 
+let coins=0
+
+let muted=[]
+let banned=[]
+
+let users=["Rahul","Neha","Aman","Ravi"]
+
+let dmUser=null
+
+let room="public"
+
 
 /* MENU */
 
@@ -184,7 +185,7 @@ menu.classList.toggle("show")
 }
 
 
-/* USERS PANEL */
+/* USERS */
 
 function toggleUsers(){
 
@@ -193,7 +194,7 @@ document.getElementById("users").classList.toggle("show")
 }
 
 
-/* MESSAGE */
+/* SEND MESSAGE */
 
 function sendMsg(){
 
@@ -202,11 +203,8 @@ let text=msgInput.value
 if(!text) return
 
 if(muted.includes(username)){
-
 alert("You are muted")
-
 return
-
 }
 
 if(dmUser){
@@ -215,11 +213,17 @@ addMsg("DM "+username+" → "+dmUser+": "+text)
 
 }else{
 
-addMsg(username+": "+text)
+addMsg(username+" ("+role+"): "+text)
 
 }
 
+/* COIN RULE */
+
+if(role==="user" || role==="owner"){
+
 coins++
+
+}
 
 msgInput.value=""
 
@@ -301,9 +305,6 @@ alert("Room '"+r+"' created")
 
 }
 
-
-/* JOIN ROOM */
-
 function joinRoom(r){
 
 room=r
@@ -315,7 +316,7 @@ addMsg("Joined room: "+r)
 }
 
 
-/* USER LIST */
+/* USERS LIST */
 
 function refreshUsers(){
 
@@ -386,11 +387,11 @@ alert(u+" promoted to superadmin")
 }
 
 
-/* NEWS */
+/* COINS */
 
-function openNews(){
+function showCoins(){
 
-alert("Community news board")
+alert("Your TulipCoins: "+coins)
 
 }
 
@@ -399,7 +400,7 @@ alert("Community news board")
 
 function openLeaderboard(){
 
-alert("Your TulipCoins: "+coins)
+alert(username+" coins: "+coins)
 
 }
 
