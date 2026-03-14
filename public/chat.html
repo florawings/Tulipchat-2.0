@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,63 +19,71 @@ header{
 background:#ff2d7a;
 color:white;
 padding:12px;
-display:flex;
-justify-content:space-between;
-}
-
-#users{
-position:fixed;
-left:0;
-top:50px;
-bottom:0;
-width:120px;
-background:black;
-color:white;
-overflow:auto;
+font-size:18px;
 }
 
 #chat{
-margin-left:120px;
-padding:10px;
-height:80vh;
+height:70vh;
 overflow:auto;
+padding:10px;
 }
 
 .msg{
 background:white;
-padding:8px;
-margin:5px;
+padding:10px;
+margin:6px 0;
 border-radius:6px;
 }
 
-.system{
-background:#ddd;
+img{
+max-width:200px;
+border-radius:8px;
 }
 
 .bottom{
 position:fixed;
 bottom:0;
-left:120px;
-right:0;
+width:100%;
 display:flex;
+background:white;
+border-top:1px solid #ccc;
 }
 
 .bottom input{
 flex:1;
-padding:10px;
+padding:12px;
 border:none;
 }
 
 button{
 border:none;
-padding:10px;
+padding:12px;
 background:#ff2d7a;
 color:white;
 }
 
-img{
-max-width:150px;
-border-radius:6px;
+#progress{
+height:4px;
+background:green;
+width:0%;
+}
+
+#gifPanel{
+position:fixed;
+bottom:60px;
+left:0;
+right:0;
+height:300px;
+background:white;
+overflow:auto;
+display:none;
+padding:10px;
+}
+
+#gifPanel img{
+width:100px;
+margin:5px;
+cursor:pointer;
 }
 
 </style>
@@ -83,15 +92,21 @@ border-radius:6px;
 
 <body>
 
-<header>
+<header>🌷 Tulip Chat</header>
 
-<span>🌷 Tulip Chat</span>
-
-</header>
-
-<div id="users"></div>
+<div id="progress"></div>
 
 <div id="chat"></div>
+
+<div id="gifPanel">
+
+<input id="gifSearch" placeholder="search gif">
+
+<button onclick="searchGIF()">Search</button>
+
+<div id="gifResults"></div>
+
+</div>
 
 <div class="bottom">
 
@@ -99,11 +114,11 @@ border-radius:6px;
 
 <button onclick="send()">Send</button>
 
-<input type="file" id="imgInput" hidden>
+<input type="file" id="file" hidden>
 
 <button onclick="upload()">📷</button>
 
-<button onclick="gif()">GIF</button>
+<button onclick="toggleGIF()">GIF</button>
 
 </div>
 
@@ -116,97 +131,37 @@ const socket = io()
 let name = localStorage.getItem("name")
 
 if(!name){
-
 name = prompt("Enter name")
-
 localStorage.setItem("name",name)
-
 }
 
 socket.emit("join",name)
 
-socket.on("system",(text)=>{
-
-addMessage("System: "+text,"system")
-
-})
-
 socket.on("message",(data)=>{
 
-addMessage(data.name+": "+data.text)
+addText(data.name+": "+data.text)
 
 })
 
 socket.on("image",(data)=>{
 
-let div = document.createElement("div")
-
-div.className="msg"
-
-div.innerHTML = data.name + "<br><img src='"+data.url+"'>"
-
-chat.appendChild(div)
+addImage(data.name,data.url)
 
 })
 
 socket.on("gif",(data)=>{
 
-let div = document.createElement("div")
-
-div.className="msg"
-
-div.innerHTML = data.name + "<br><img src='"+data.url+"'>"
-
-chat.appendChild(div)
-
-})
-
-socket.on("dm",(data)=>{
-
-addMessage("DM from "+data.from+": "+data.text)
-
-})
-
-socket.on("users",(list)=>{
-
-users.innerHTML=""
-
-for(let id in list){
-
-let u=document.createElement("div")
-
-u.innerText=list[id]
-
-u.onclick=()=>{
-
-let msg=prompt("DM message")
-
-socket.emit("dm",{
-
-to:id,
-
-name:name,
-
-text:msg
-
-})
-
-}
-
-users.appendChild(u)
-
-}
+addImage(data.name,data.url)
 
 })
 
 function send(){
 
-let text=msg.value
+let text = msg.value
 
 socket.emit("message",{
 
 name:name,
-
 text:text
 
 })
@@ -217,61 +172,37 @@ msg.value=""
 
 function upload(){
 
-imgInput.click()
+file.click()
 
 }
 
-imgInput.onchange=function(){
+file.onchange=function(){
 
-let file=this.files[0]
+let reader = new FileReader()
 
-let reader=new FileReader()
+reader.onprogress=function(e){
+
+let percent = Math.round((e.loaded/e.total)*100)
+
+progress.style.width = percent+"%"
+
+}
 
 reader.onload=function(){
 
 socket.emit("image",{
 
 name:name,
-
 url:reader.result
 
 })
 
-}
-
-reader.readAsDataURL(file)
+progress.style.width="0%"
 
 }
 
-function gif(){
-
-let url=prompt("Paste GIF link")
-
-socket.emit("gif",{
-
-name:name,
-
-url:url
-
-})
+reader.readAsDataURL(file.files[0])
 
 }
 
-function addMessage(text,type){
-
-let div=document.createElement("div")
-
-div.className="msg "+(type||"")
-
-div.innerText=text
-
-chat.appendChild(div)
-
-chat.scrollTop=chat.scrollHeight
-
-}
-
-</script>
-
-</body>
-</html>
+function toggleGIF
