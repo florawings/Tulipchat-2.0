@@ -3,13 +3,14 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Tulip Chat</title>
 
 <style>
 
 body{
 margin:0;
-font-family:Arial, sans-serif;
+font-family:Arial;
 height:100vh;
 display:flex;
 align-items:center;
@@ -21,7 +22,7 @@ background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
 background:white;
 width:340px;
 padding:30px;
-border-radius:10px;
+border-radius:12px;
 box-shadow:0 10px 30px rgba(0,0,0,0.4);
 text-align:center;
 }
@@ -39,7 +40,6 @@ padding:12px;
 margin-top:10px;
 border-radius:6px;
 border:1px solid #ccc;
-font-size:15px;
 }
 
 button{
@@ -115,7 +115,6 @@ font-size:18px;
 </div>
 
 
-<!-- REGISTER POPUP -->
 
 <div id="registerModal" class="modal">
 
@@ -150,22 +149,40 @@ font-size:18px;
 </div>
 
 
+
 <script>
 
-function login(){
 
-let user=document.getElementById("username").value
+async function login(){
 
-if(user==""){
-alert("Enter username")
-return
-}
+let username=document.getElementById("username").value
+let password=document.getElementById("password").value
 
-localStorage.setItem("user",user)
+let res=await fetch("/login",{
+
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({username,password})
+
+})
+
+let data=await res.json()
+
+if(data.success){
 
 alert("Login success")
 
+localStorage.setItem("user",username)
+
+}else{
+
+alert("Wrong username or password")
+
 }
+
+}
+
+
 
 function guestLogin(){
 
@@ -176,6 +193,8 @@ localStorage.setItem("user",guest)
 alert("Guest login: "+guest)
 
 }
+
+
 
 function openRegister(){
 
@@ -189,32 +208,37 @@ document.getElementById("registerModal").style.display="none"
 
 }
 
-function register(){
 
+
+async function register(){
+
+let username=document.getElementById("ruser").value
+let email=document.getElementById("remail").value
+let password=document.getElementById("rpass").value
 let dob=document.getElementById("rdob").value
+let country=document.getElementById("rcountry").value
 
-if(dob==""){
-alert("Enter DOB")
-return
-}
 
-let birth=new Date(dob)
+let res=await fetch("/register",{
 
-let today=new Date()
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({username,email,password,dob,country})
 
-let age=today.getFullYear()-birth.getFullYear()
+})
 
-if(age<18){
+let data=await res.json()
 
-alert("Only 18+ users allowed")
-
-return
-
-}
+if(data.success){
 
 alert("Registration successful")
-
 closeRegister()
+
+}else{
+
+alert(data.message)
+
+}
 
 }
 
