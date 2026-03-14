@@ -1,11 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tulip Chat</title>
-
-<style>
+<!DOCTYPE html><html>
+<head><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tulip Chat</title><style>
 
 body{
 margin:0;
@@ -33,7 +28,6 @@ background:white;
 padding:10px;
 margin:6px;
 border-radius:6px;
-max-width:90%;
 }
 
 .system{
@@ -59,13 +53,11 @@ border:none;
 padding:12px;
 background:#ff2d7a;
 color:white;
-cursor:pointer;
 }
 
 img{
-max-width:220px;
+max-width:200px;
 border-radius:6px;
-margin-top:5px;
 }
 
 #usersBox{
@@ -82,63 +74,26 @@ max-height:300px;
 overflow:auto;
 }
 
-#uploadStatus{
-padding:5px;
-font-size:13px;
-color:#444;
-}
-
-</style>
-</head>
-
-<body>
-
-<header>
-
-<span>🌷 Tulip Chat</span>
+</style></head><body><header><span>🌷 Tulip Chat</span>
 
 <div>
 <button onclick="toggleUsers()">👥</button>
 <button onclick="logout()">Logout</button>
-</div>
-
-</header>
-
-<div id="usersBox"></div>
-
-<div id="uploadStatus"></div>
-
-<div id="chat"></div>
-
-<div class="bottom">
-
-<input id="msg" placeholder="message">
-
-<button onclick="send()">Send</button>
+</div></header><div id="usersBox"></div><div id="chat"></div><div class="bottom"><input id="msg" placeholder="message"><button onclick="send()">Send</button>
 
 <input type="file" id="file" hidden>
-<button onclick="upload()">📷</button>
-
-<input type="file" id="giffile" accept="image/gif" hidden>
-<button onclick="gifUpload()">GIF</button>
-
-</div>
-
-<script src="/socket.io/socket.io.js"></script>
-
-<script>
+<button onclick="upload()">📷</button><input type="file" id="giffile" accept="image/gif" hidden>
+<button onclick="gifUpload()">GIF</button></div><script src="/socket.io/socket.io.js"></script><script>
 
 const socket = io()
 
 let name = localStorage.getItem("name")
-
 if(!name){
 name = prompt("Enter name")
 localStorage.setItem("name",name)
 }
 
 let gender = localStorage.getItem("gender")
-
 if(!gender){
 gender = prompt("Enter gender (male/female)")
 localStorage.setItem("gender",gender)
@@ -153,12 +108,9 @@ gender:gender
 
 })
 
-/* MESSAGE SEND */
-
 function send(){
 
 let text = msg.value
-
 if(!text) return
 
 socket.emit("message",{
@@ -170,53 +122,21 @@ msg.value=""
 
 }
 
-/* RECEIVE MESSAGE */
-
 socket.on("message",(data)=>{
 addMsg(data.name+": "+data.text)
 })
-
-/* SYSTEM MESSAGE */
 
 socket.on("system",(text)=>{
 addMsg(text,true)
 })
 
-/* IMAGE */
-
 socket.on("image",(data)=>{
 addImage(data.name,data.url)
 })
 
-/* GIF */
-
 socket.on("gif",(data)=>{
 addImage(data.name,data.url)
 })
-
-/* HISTORY */
-
-socket.on("history",(msgs)=>{
-
-msgs.forEach(msg=>{
-
-if(msg.type==="text"){
-addMsg(msg.data.name+": "+msg.data.text)
-}
-
-if(msg.type==="image"){
-addImage(msg.data.name,msg.data.url)
-}
-
-if(msg.type==="gif"){
-addImage(msg.data.name,msg.data.url)
-}
-
-})
-
-})
-
-/* IMAGE UPLOAD */
 
 function upload(){
 file.click()
@@ -227,8 +147,6 @@ file.onchange=async function(){
 let formData=new FormData()
 formData.append("file",file.files[0])
 
-uploadStatus.innerText="Uploading..."
-
 let res=await fetch("/upload",{
 method:"POST",
 body:formData
@@ -236,16 +154,12 @@ body:formData
 
 let data=await res.json()
 
-uploadStatus.innerText="Upload complete ✔"
-
 socket.emit("image",{
 name:name,
 url:data.url
 })
 
 }
-
-/* GIF UPLOAD */
 
 function gifUpload(){
 giffile.click()
@@ -256,16 +170,12 @@ giffile.onchange=async function(){
 let formData=new FormData()
 formData.append("file",giffile.files[0])
 
-uploadStatus.innerText="Uploading GIF..."
-
 let res=await fetch("/upload",{
 method:"POST",
 body:formData
 })
 
 let data=await res.json()
-
-uploadStatus.innerText="GIF sent ✔"
 
 socket.emit("gif",{
 name:name,
@@ -274,24 +184,17 @@ url:data.url
 
 }
 
-/* LOGOUT */
-
 function logout(){
 
 socket.emit("leave",name)
-
 localStorage.clear()
-
 location.reload()
 
 }
 
-/* ADD TEXT */
-
 function addMsg(text,system){
 
 let div=document.createElement("div")
-
 div.className="msg"
 
 if(system) div.className+=" system"
@@ -304,12 +207,9 @@ chat.scrollTop=chat.scrollHeight
 
 }
 
-/* ADD IMAGE */
-
 function addImage(user,url){
 
 let div=document.createElement("div")
-
 div.className="msg"
 
 div.innerHTML=user+"<br><img src='"+url+"'>"
@@ -319,8 +219,6 @@ chat.appendChild(div)
 chat.scrollTop=chat.scrollHeight
 
 }
-
-/* ONLINE USERS */
 
 function toggleUsers(){
 
@@ -346,8 +244,5 @@ box.appendChild(div)
 
 })
 
-/* AUTO REFRESH EVERY 10 SEC */
-
-setInterval(()=>{
-location.reload()
-},
+</script></body>
+</html>
