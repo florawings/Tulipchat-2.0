@@ -12,7 +12,7 @@
 body{
 margin:0;
 font-family:Arial;
-background:#f2f2f2;
+background:#eee;
 }
 
 header{
@@ -24,15 +24,15 @@ justify-content:space-between;
 }
 
 #chat{
-padding:10px;
 height:70vh;
 overflow:auto;
+padding:10px;
 }
 
 .msg{
 background:white;
 padding:10px;
-margin:5px;
+margin:6px;
 border-radius:6px;
 }
 
@@ -70,12 +70,13 @@ border-radius:6px;
 
 display:none;
 position:fixed;
+top:70px;
 right:10px;
-top:60px;
+background:black;
+color:white;
+padding:15px;
+border-radius:8px;
 width:200px;
-background:white;
-border:1px solid #ccc;
-padding:10px;
 max-height:300px;
 overflow:auto;
 
@@ -94,6 +95,7 @@ overflow:auto;
 <div>
 
 <button onclick="toggleUsers()">👥</button>
+
 <button onclick="logout()">Logout</button>
 
 </div>
@@ -136,11 +138,26 @@ localStorage.setItem("name",name)
 
 }
 
-socket.emit("join",name)
+let gender = localStorage.getItem("gender")
+
+if(!gender){
+
+gender = prompt("Enter gender (male/female)")
+
+localStorage.setItem("gender",gender)
+
+}
+
+socket.emit("join",{
+
+name:name,
+gender:gender
+
+})
 
 function send(){
 
-let text=msg.value
+let text = msg.value
 
 if(!text) return
 
@@ -187,7 +204,15 @@ file.click()
 
 file.onchange=function(){
 
-let reader=new FileReader()
+let reader = new FileReader()
+
+reader.onprogress=function(e){
+
+let percent = Math.round((e.loaded/e.total)*100)
+
+addMsg("Uploading image "+percent+"%",true)
+
+}
 
 reader.onload=function(){
 
@@ -212,7 +237,15 @@ giffile.click()
 
 giffile.onchange=function(){
 
-let reader=new FileReader()
+let reader = new FileReader()
+
+reader.onprogress=function(e){
+
+let percent = Math.round((e.loaded/e.total)*100)
+
+addMsg("Uploading GIF "+percent+"%",true)
+
+}
 
 reader.onload=function(){
 
@@ -233,7 +266,7 @@ function logout(){
 
 socket.emit("leave",name)
 
-localStorage.removeItem("name")
+localStorage.clear()
 
 location.reload()
 
@@ -285,9 +318,11 @@ box.innerHTML="<b>Online Users</b><hr>"
 
 for(let id in list){
 
+let user=list[id]
+
 let div=document.createElement("div")
 
-div.innerText=list[id]
+div.innerText=user.name+" ("+user.gender+")"
 
 box.appendChild(div)
 
@@ -298,4 +333,5 @@ box.appendChild(div)
 </script>
 
 </body>
+
 </html>
