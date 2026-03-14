@@ -12,7 +12,7 @@
 body{
 margin:0;
 font-family:Arial;
-background:#fce4ec;
+background:#ffd6e7;
 }
 
 .top{
@@ -31,18 +31,13 @@ width:20%;
 background:black;
 color:white;
 padding:10px;
-overflow:auto;
-}
-
-.user{
-padding:6px;
-border-bottom:1px solid #333;
 }
 
 .chat{
 flex:1;
 display:flex;
 flex-direction:column;
+background:white;
 }
 
 #messages{
@@ -52,9 +47,9 @@ padding:10px;
 }
 
 .msg{
-background:white;
+background:#f2f2f2;
 padding:10px;
-margin-bottom:6px;
+margin-bottom:8px;
 border-radius:6px;
 }
 
@@ -97,8 +92,6 @@ padding:10px;
 
 <button onclick="send()">Send</button>
 
-<button onclick="img()">📷</button>
-
 </div>
 
 </div>
@@ -109,31 +102,15 @@ padding:10px;
 
 let socket = io()
 
-let name = localStorage.getItem("name")
+let name = prompt("Enter name")
 
-if(!name){
-
-name = prompt("Enter name")
-localStorage.setItem("name",name)
-
-}
-
-let gender = localStorage.getItem("gender")
-
-if(!gender){
-
-gender = prompt("Male or Female")
-localStorage.setItem("gender",gender)
-
-}
-
-socket.emit("join",{name:name,gender:gender})
+socket.emit("join",{name:name})
 
 let messages = document.getElementById("messages")
 
 function add(text){
 
-messages.innerHTML += "<div class='msg'>" + text + "</div>"
+messages.innerHTML += "<div class='msg'>"+text+"</div>"
 
 messages.scrollTop = messages.scrollHeight
 
@@ -148,7 +125,6 @@ if(!text) return
 socket.emit("message",{
 
 user:name,
-gender:gender,
 text:text
 
 })
@@ -157,28 +133,9 @@ msg.value=""
 
 }
 
-function img(){
-
-let url = prompt("Image URL")
-
-socket.emit("image",{
-
-user:name,
-url:url
-
-})
-
-}
-
 socket.on("message",(d)=>{
 
-add("<b>"+d.user+" ("+d.gender+")</b>: "+d.text)
-
-})
-
-socket.on("image",(d)=>{
-
-add("<b>"+d.user+"</b><br><img src='"+d.url+"' width='200'>")
+add("<b>"+d.user+"</b>: "+d.text)
 
 })
 
@@ -194,7 +151,7 @@ let html=""
 
 for(let id in users){
 
-html += "<div class='user'>"+users[id].name+" ("+users[id].gender+")</div>"
+html += "<div>"+users[id].name+"</div>"
 
 }
 
