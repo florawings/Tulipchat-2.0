@@ -1,99 +1,32 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tulip Chat</title>
-
-<style>
-
-body{
-margin:0;
-font-family:Arial;
-background:linear-gradient(#001a1f,#0f4c5c);
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-}
-
-.box{
-background:white;
-padding:30px;
-border-radius:10px;
-width:300px;
-text-align:center;
-}
-
-input{
-width:100%;
-padding:12px;
-margin:8px 0;
-border-radius:5px;
-border:1px solid #ccc;
-}
-
-button{
-width:100%;
-padding:12px;
-margin-top:10px;
-border:none;
-border-radius:5px;
-font-size:16px;
-cursor:pointer;
-}
-
-.login{
-background:#4caf50;
-color:white;
-}
-
-.guest{
-background:black;
-color:white;
-}
-
-.register{
-background:#3498db;
-color:white;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="box">
-
-<h2>🌷 Tulip Chat</h2>
-
-<input id="username" placeholder="Enter username">
-
-<input type="password" placeholder="Password">
-
-<button class="login" onclick="login()">Login</button>
-
-<button class="guest" onclick="guest()">Guest Login</button>
-
-<button class="register">Register</button>
-
-</div>
-
-
 <script>
 
-function login(){
+async function login(){
 
-let name=document.getElementById("username").value
+let username=document.getElementById("username").value
+let password=document.getElementById("password").value
 
-if(!name) return
+let res = await fetch("/login",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({username,password})
+})
 
-localStorage.setItem("name",name)
+let data = await res.json()
+
+if(data.status=="success"){
+
+localStorage.setItem("name",username)
 localStorage.setItem("type","registered")
 
 location="chat.html"
+
+}else{
+
+alert("Invalid login")
+
+}
 
 }
 
@@ -109,6 +42,3 @@ location="chat.html"
 }
 
 </script>
-
-</body>
-</html>
