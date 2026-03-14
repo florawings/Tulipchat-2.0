@@ -1,62 +1,29 @@
-const express = require("express")
-const http = require("http")
-const { Server } = require("socket.io")
+const express=require("express")
+const app=express()
 
-const app = express()
-const server = http.createServer(app)
+const http=require("http").createServer(app)
 
-const io = new Server(server,{
-cors:{origin:"*"}
-})
+const io=require("socket.io")(http)
 
-app.use(express.static("public"))
-
-let users = {}
+app.use(express.static(__dirname))
 
 io.on("connection",(socket)=>{
 
-console.log("User connected")
+socket.on("join",(name)=>{
 
-socket.on("join",(data)=>{
-
-users[socket.id] = data
-
-io.emit("online",users)
-
-io.emit("system", data.name + " joined the chat")
+io.emit("msg",{
+name:"System",
+text:name+" joined the chat"
+})
 
 })
 
-socket.on("message",(data)=>{
+socket.on("msg",(data)=>{
 
-io.emit("message",data)
-
-})
-
-socket.on("image",(data)=>{
-
-io.emit("image",data)
-
-})
-
-socket.on("disconnect",()=>{
-
-let user = users[socket.id]
-
-delete users[socket.id]
-
-io.emit("online",users)
-
-if(user){
-io.emit("system", user.name + " left the chat")
-}
+io.emit("msg",data)
 
 })
 
 })
 
-const PORT = process.env.PORT || 3000
-
-server.listen(PORT,()=>{
-console.log("Server running on "+PORT)
-})
+http.listen(3000)
