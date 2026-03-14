@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Tulip Chat</title>
 
 <style>
@@ -64,18 +66,6 @@ max-width:200px;
 border-radius:6px;
 }
 
-#usersBox{
-display:none;
-position:fixed;
-top:70px;
-right:10px;
-background:black;
-color:white;
-padding:15px;
-border-radius:8px;
-width:200px;
-}
-
 </style>
 
 </head>
@@ -83,14 +73,12 @@ width:200px;
 <body>
 
 <header>
-<span>🌷 Tulip Chat</span>
-<div>
-<button onclick="toggleUsers()">👥</button>
-<button onclick="logout()">Logout</button>
-</div>
-</header>
 
-<div id="usersBox"></div>
+<span>🌷 Tulip Chat</span>
+
+<button onclick="logout()">Logout</button>
+
+</header>
 
 <div id="chat"></div>
 
@@ -103,7 +91,6 @@ width:200px;
 <input type="file" id="file" hidden>
 <button onclick="upload()">📷</button>
 
-<input type="file" id="giffile" accept="image/gif" hidden>
 <button onclick="gifUpload()">GIF</button>
 
 </div>
@@ -117,18 +104,14 @@ const socket = io()
 let name = localStorage.getItem("name")
 
 if(!name){
+
 name = prompt("Enter name")
+
 localStorage.setItem("name",name)
+
 }
 
-let gender = localStorage.getItem("gender")
-
-if(!gender){
-gender = prompt("Male or Female")
-localStorage.setItem("gender",gender)
-}
-
-socket.emit("join",{name,gender})
+socket.emit("join",{name})
 
 function send(){
 
@@ -143,33 +126,52 @@ msg.value=""
 }
 
 socket.on("message",(data)=>{
+
 addMsg(data.name+": "+data.text)
+
 })
 
 socket.on("system",(text)=>{
+
 addMsg(text,true)
+
 })
 
 socket.on("image",(data)=>{
+
 addImage(data.name,data.url)
+
 })
 
 socket.on("gif",(data)=>{
+
 addImage(data.name,data.url)
+
 })
 
 function upload(){
+
 file.click()
+
 }
 
 file.onchange=function(){
 
 let formData=new FormData()
+
 formData.append("file",file.files[0])
 
 let xhr=new XMLHttpRequest()
 
-xhr.open("POST","/upload")
+xhr.open("POST","/upload",true)
+
+xhr.upload.onprogress=function(e){
+
+let percent=Math.round((e.loaded/e.total)*100)
+
+addMsg("Uploading Image "+percent+"%",true)
+
+}
 
 xhr.onload=function(){
 
@@ -184,33 +186,16 @@ xhr.send(formData)
 }
 
 function gifUpload(){
-giffile.click()
-}
 
-giffile.onchange=function(){
+let url=prompt("Paste GIF URL")
 
-let formData=new FormData()
-formData.append("file",giffile.files[0])
+if(!url) return
 
-let xhr=new XMLHttpRequest()
-
-xhr.open("POST","/upload")
-
-xhr.onload=function(){
-
-let data=JSON.parse(xhr.responseText)
-
-socket.emit("gif",{name,url:data.url})
-
-}
-
-xhr.send(formData)
+socket.emit("gif",{name,url})
 
 }
 
 function logout(){
-
-socket.emit("leave",name)
 
 localStorage.clear()
 
@@ -248,32 +233,14 @@ chat.scrollTop=chat.scrollHeight
 
 }
 
-function toggleUsers(){
+setInterval(()=>{
 
-let box=document.getElementById("usersBox")
+socket.emit("refresh")
 
-box.style.display = box.style.display==="block" ? "none":"block"
-
-}
-
-socket.on("users",(list)=>{
-
-let box=document.getElementById("usersBox")
-
-box.innerHTML="<b>Online Users</b><hr>"
-
-Object.values(list).forEach(user=>{
-
-let div=document.createElement("div")
-div.innerText=user.name+" ("+user.gender+")"
-
-box.appendChild(div)
-
-})
-
-})
+},10000)
 
 </script>
 
 </body>
+
 </html>
