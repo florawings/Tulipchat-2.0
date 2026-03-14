@@ -66,6 +66,21 @@ max-width:200px;
 border-radius:6px;
 }
 
+#usersBox{
+
+display:none;
+position:fixed;
+right:10px;
+top:60px;
+width:200px;
+background:white;
+border:1px solid #ccc;
+padding:10px;
+max-height:300px;
+overflow:auto;
+
+}
+
 </style>
 
 </head>
@@ -76,9 +91,16 @@ border-radius:6px;
 
 <span>🌷 Tulip Chat</span>
 
+<div>
+
+<button onclick="toggleUsers()">👥</button>
 <button onclick="logout()">Logout</button>
 
+</div>
+
 </header>
+
+<div id="usersBox"></div>
 
 <div id="chat"></div>
 
@@ -246,6 +268,32 @@ chat.appendChild(div)
 chat.scrollTop=chat.scrollHeight
 
 }
+
+function toggleUsers(){
+
+let box=document.getElementById("usersBox")
+
+box.style.display = box.style.display==="block" ? "none":"block"
+
+}
+
+socket.on("users",(list)=>{
+
+let box=document.getElementById("usersBox")
+
+box.innerHTML="<b>Online Users</b><hr>"
+
+for(let id in list){
+
+let div=document.createElement("div")
+
+div.innerText=list[id]
+
+box.appendChild(div)
+
+}
+
+})
 
 </script>
 
