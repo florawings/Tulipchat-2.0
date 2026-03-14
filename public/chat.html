@@ -1,356 +1,121 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Tulip Chat 3.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="/socket.io/socket.io.js"></script>
+<title>Tulip Chat</title>
 
 <style>
 
 body{
 margin:0;
 font-family:Arial;
-background:#f2f2f2;
+background:#eee;
 }
 
-/* HEADER */
-
-.header{
-background:#ff2e93;
+header{
+background:#ff2d7a;
 color:white;
 padding:12px;
-display:flex;
-align-items:center;
+font-size:18px;
 }
 
-#back{
-display:none;
-margin-right:10px;
-background:white;
-border:none;
-border-radius:6px;
-padding:4px 8px;
-}
-
-/* LAYOUT */
-
-.container{
-display:flex;
-height:calc(100vh - 60px);
-}
-
-/* USERS */
-
-.users{
-width:28%;
-background:black;
-color:white;
-overflow:auto;
-}
-
-.user{
-padding:12px;
-border-bottom:1px solid #333;
-cursor:pointer;
-position:relative;
-}
-
-.dot{
-width:10px;
-height:10px;
-background:red;
-border-radius:50%;
-position:absolute;
-right:10px;
-top:15px;
-display:none;
-}
-
-/* CHAT */
-
-.chat{
-flex:1;
-display:flex;
-flex-direction:column;
-}
-
-#messages{
-flex:1;
+#chat{
+height:80vh;
 overflow:auto;
 padding:10px;
 }
-
-/* MESSAGE BUBBLES */
 
 .msg{
-max-width:70%;
+background:white;
 padding:10px;
 margin:6px 0;
-border-radius:16px;
+border-radius:8px;
 }
 
 .me{
-background:#ff2e93;
+background:#ff2d7a;
 color:white;
-margin-left:auto;
+text-align:right;
 }
 
-.other{
-background:white;
-}
-
-/* INPUT */
-
-.input{
+.bottom{
+position:fixed;
+bottom:0;
+width:100%;
 display:flex;
-padding:10px;
-background:#ddd;
 }
 
-.input input{
+input{
 flex:1;
-padding:10px;
-}
-
-.btn{
-padding:10px;
+padding:12px;
 border:none;
-margin-left:6px;
-border-radius:6px;
 }
 
-.send{background:#ff2e93;color:white;}
-.cam{background:#2196f3;color:white;}
+button{
+padding:12px;
+background:#ff2d7a;
+color:white;
+border:none;
+}
 
 </style>
 </head>
 
 <body>
 
-<div class="header">
+<header>🌷 Tulip Chat</header>
 
-<button id="back" onclick="goBack()">⬅</button>
+<div id="chat"></div>
 
-<span id="title">🌷 Tulip Chat</span>
-
-</div>
-
-<div class="container">
-
-<div class="users" id="userList"></div>
-
-<div class="chat">
-
-<div id="messages"></div>
-
-<div class="input">
-
+<div class="bottom">
 <input id="msg" placeholder="message">
-
-<button class="btn send" onclick="send()">Send</button>
-
-<button class="btn cam" onclick="openGallery()">📷</button>
-
-<input type="file" id="file" accept="image/*" style="display:none">
-
+<button onclick="send()">Send</button>
 </div>
 
-</div>
-
-</div>
+<script src="/socket.io/socket.io.js"></script>
 
 <script>
 
 const socket = io()
 
-let username = prompt("Enter name")
+// name login page से आएगा
+let name = localStorage.getItem("name")
 
-socket.emit("join",{name:username})
-
-let currentDM=null
-let dmStore={}
-let notifications={}
-
-const messages=document.getElementById("messages")
-
-function add(text,type){
-
-messages.innerHTML+=`<div class="msg ${type}">${text}</div>`
-
-messages.scrollTop=messages.scrollHeight
-
+// अगर login नहीं हुआ तो वापस login page
+if(!name){
+window.location="index.html"
 }
 
-/* SEND MESSAGE */
+socket.emit("join",name)
+
+socket.on("msg",(data)=>{
+
+let div=document.createElement("div")
+
+div.className="msg"
+
+if(data.name==name){
+div.classList.add("me")
+}
+
+div.innerText=data.name+": "+data.text
+
+document.getElementById("chat").appendChild(div)
+
+})
 
 function send(){
 
-let text=msg.value
-if(!text)return
+let text=document.getElementById("msg").value
 
-if(currentDM){
-
-socket.emit("dm",{to:currentDM,user:username,text:text})
-
-dmStore[currentDM].push({text:text,me:true})
-
-renderDM()
-
-}else{
-
-socket.emit("message",{user:username,text:text})
-
-add(text,"me")
-
-}
-
-msg.value=""
-
-}
-
-/* RECEIVE PUBLIC */
-
-socket.on("message",(d)=>{
-
-if(currentDM)return
-
-add(d.user+": "+d.text,"other")
-
+socket.emit("msg",{
+name:name,
+text:text
 })
 
-/* RECEIVE DM */
-
-socket.on("dm",(d)=>{
-
-if(!dmStore[d.user])dmStore[d.user]=[]
-
-dmStore[d.user].push({text:d.text,me:false})
-
-if(currentDM===d.user){
-
-renderDM()
-
-}else{
-
-notifications[d.user]=true
-renderUsers()
+document.getElementById("msg").value=""
 
 }
-
-})
-
-/* OPEN DM */
-
-function openDM(user){
-
-currentDM=user
-
-if(!dmStore[user])dmStore[user]=[]
-
-notifications[user]=false
-
-document.getElementById("title").innerText="DM with "+user
-document.getElementById("back").style.display="block"
-
-renderDM()
-
-}
-
-/* RENDER DM */
-
-function renderDM(){
-
-messages.innerHTML=""
-
-dmStore[currentDM].forEach(m=>{
-
-let type=m.me?"me":"other"
-
-add(m.text,type)
-
-})
-
-}
-
-/* BACK */
-
-function goBack(){
-
-currentDM=null
-
-document.getElementById("title").innerText="🌷 Tulip Chat"
-document.getElementById("back").style.display="none"
-
-messages.innerHTML=""
-
-}
-
-/* USER LIST */
-
-function renderUsers(){
-
-let html=""
-
-for(let u in notifications){
-
-let show=notifications[u]?"block":"none"
-
-html+=`
-<div class="user" onclick="openDM('${u}')">
-${u}
-<div class="dot" style="display:${show}"></div>
-</div>
-`
-
-}
-
-userList.innerHTML=html
-
-}
-
-socket.on("online",(users)=>{
-
-notifications={}
-
-for(let id in users){
-
-let name=users[id].name
-
-if(name!==username){
-
-notifications[name]=false
-
-}
-
-}
-
-renderUsers()
-
-})
-
-/* IMAGE */
-
-function openGallery(){
-
-file.click()
-
-}
-
-file.addEventListener("change",function(){
-
-let f=this.files[0]
-
-let reader=new FileReader()
-
-reader.onload=function(e){
-
-add(`<img src="${e.target.result}" width="150">`,"me")
-
-}
-
-reader.readAsDataURL(f)
-
-})
 
 </script>
 
