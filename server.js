@@ -1,124 +1,78 @@
 const express = require("express")
 const http = require("http")
 const { Server } = require("socket.io")
-const { MongoClient } = require("mongodb")
 
 const app = express()
 const server = http.createServer(app)
 const io = new Server(server)
 
-/* static files */
-
 app.use(express.static("public"))
-
-/* PORT for Render */
 
 const PORT = process.env.PORT || 3000
 
-/* MongoDB */
-
-const uri =
-"mongodb+srv://epffoportal_db_user:wAaE19Wqq3XFMbJH@cluster0.mighbsf.mongodb.net/?retryWrites=true&w=majority"
-
-const client = new MongoClient(uri)
-
-let messagesCollection
-
-async function startDB(){
-
-try{
-
-await client.connect()
-
-const db = client.db("tulipchat")
-
-messagesCollection = db.collection("messages")
-
-console.log("MongoDB connected")
-
-}catch(err){
-
-console.log("MongoDB error:",err)
-
-}
-
-}
-
-startDB()
-
-/* Socket connection */
+let users = {}
 
 io.on("connection",(socket)=>{
 
-console.log("User connected")
+console.log("user connected")
 
-/* join room */
+socket.on("joinRoom",(data)=>{
 
-socket.on("joinRoom", async(data)=>{
-
-const room = data.room
+const {username,room} = data
 
 socket.join(room)
 
-try{
+users[socket.id] = {username,room}
 
-const oldMessages = await messagesCollection
-.find({room:room})
-.sort({time:1})
-.limit(50)
-.toArray()
-
-socket.emit("oldMessages",oldMessages)
-
-}catch(e){
-
-console.log(e)
-
-}
+io.to(room).emit("system",username+" joined the room")
 
 })
 
-/* new message */
+socket.on("chatMessage",(data)=>{
 
-socket.on("chatMessage", async(data)=>{
-
-const msg = {
-
+io.to(data.room).emit("message",{
 username:data.username,
-room:data.room,
-message:data.message,
-time:new Date()
-
-}
-
-try{
-
-await messagesCollection.insertOne(msg)
-
-}catch(e){
-
-console.log(e)
-
-}
-
-io.to(data.room).emit("message",msg)
+message:data.message
+})
 
 })
 
-/* disconnect */
+socket.on("ownerKick",(user)=>{
+
+io.emit("system",user+" was kicked by owner")
+
+})
+
+socket.on("ownerBan",(user)=>{
+
+io.emit("system",user+" was banned by owner")
+
+})
+
+socket.on("ownerMute",(user)=>{
+
+io.emit("system",user+" was muted by owner")
+
+})
 
 socket.on("disconnect",()=>{
 
-console.log("User disconnected")
+const user = users[socket.id]
+
+if(user){
+
+io.to(user.room).emit("system",user.username+" left the room")
+
+delete users[socket.id]
+
+}
 
 })
 
 })
-
-/* start server */
 
 server.listen(PORT,()=>{
 
-console.log("Server running on port "+PORT)
+console.log("Server running on "+PORT)
 
 })
