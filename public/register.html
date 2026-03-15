@@ -1,45 +1,73 @@
-<form id="reg">
+<!DOCTYPE html>
+<html>
 
-<input name="username" placeholder="username">
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Register</title>
+</head>
 
-<input name="password" placeholder="password">
+<body>
 
-<select name="gender">
+<h2>Register</h2>
 
-<option>male</option>
-<option>female</option>
+<input id="name" placeholder="Name">
 
+<input id="age" placeholder="Age">
+
+<select id="gender">
+<option value="">Gender</option>
+<option>Male</option>
+<option>Female</option>
 </select>
 
-<button>Register</button>
+<input id="email" placeholder="Email">
 
-</form>
+<button onclick="register()">Register</button>
 
 <script>
 
-reg.onsubmit = async e=>{
+async function register(){
 
-e.preventDefault()
+let name=document.getElementById("name").value
+let age=document.getElementById("age").value
+let gender=document.getElementById("gender").value
+let email=document.getElementById("email").value
 
-let data = new FormData(reg)
+if(!name || !age || !gender || !email){
+
+alert("Fill all fields")
+return
+
+}
 
 let res = await fetch("/register",{
 
 method:"POST",
-body:data
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify({
+
+username:name,
+age:age,
+gender:gender,
+email:email
 
 })
 
-let r = await res.json()
+})
 
-alert(r.msg)
+alert("Registered")
 
-if(r.msg==="registered"){
-
-location.href="login.html"
-
-}
+location.href="/login.html"
 
 }
 
 </script>
+
+</body>
+</html>
