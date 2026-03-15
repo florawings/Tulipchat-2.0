@@ -1,63 +1,62 @@
-const express=require("express")
-const http=require("http")
-const {Server}=require("socket.io")
-const multer=require("multer")
+const express = require("express")
+const http = require("http")
+const {Server} = require("socket.io")
+const multer = require("multer")
+const path = require("path")
 
-const app=express()
-const server=http.createServer(app)
-const io=new Server(server)
+const app = express()
+const server = http.createServer(app)
+const io = new Server(server)
 
 app.use(express.static("public"))
+app.use("/uploads", express.static("uploads"))
 
-const storage=multer.diskStorage({
-destination:"uploads",
+/* FILE UPLOAD */
+
+const storage = multer.diskStorage({
+destination:(req,file,cb)=>{
+cb(null,"uploads/")
+},
 filename:(req,file,cb)=>{
-cb(null,Date.now()+"-"+file.originalname)
+cb(null,Date.now()+"_"+file.originalname)
 }
 })
 
-const upload=multer({storage})
+const upload = multer({storage})
 
 app.post("/upload",upload.single("file"),(req,res)=>{
-res.send("/uploads/"+req.file.filename)
+
+const url="/uploads/"+req.file.filename
+
+res.json({
+url:url
 })
 
-app.use("/uploads",express.static("uploads"))
-
-let users={}
-
-const bannedWords=["spam","badword"]
-
-io.on("connection",socket=>{
-
-socket.on("user",name=>{
-users[socket.id]=name
-io.emit("users",Object.values(users))
 })
 
-socket.on("join",room=>{
-socket.join(room)
+/* SOCKET CHAT */
+
+io.on("connection",(socket)=>{
+
+socket.on("join",(data)=>{
+
+socket.join(data.room)
+
+io.to(data.room).emit("message",{
+user:"System",
+msg:data.user+" joined the room"
 })
 
-socket.on("message",data=>{
+})
 
-for(let w of bannedWords){
-if(data.msg.includes(w)) return
-}
+socket.on("message",(data)=>{
 
 io.to(data.room).emit("message",data)
 
 })
 
-socket.on("report",data=>{
-console.log("reported",data)
 })
 
-socket.on("disconnect",()=>{
-delete users[socket.id]
-io.emit("users",Object.values(users))
+server.listen(3000,()=>{
+console.log("Server running")
 })
-
-})
-
-server.listen(3000)
