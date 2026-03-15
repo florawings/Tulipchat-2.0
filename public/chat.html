@@ -6,10 +6,12 @@ margin:0;
 font-family:Arial;
 display:flex;
 height:100vh;
-overflow:hidden;
 background:black;
 color:white;
+overflow:hidden;
 }
+
+/* SIDEBAR */
 
 #sidebar{
 width:220px;
@@ -20,14 +22,16 @@ padding:15px;
 .room{
 padding:10px;
 background:#111;
-margin-bottom:8px;
 border-radius:6px;
+margin-bottom:8px;
 cursor:pointer;
 }
 
 .room:hover{
 background:#222;
 }
+
+/* CHAT AREA */
 
 #chat{
 flex:1;
@@ -44,6 +48,8 @@ align-items:center;
 padding-left:15px;
 }
 
+/* MESSAGES */
+
 #messages{
 flex:1;
 overflow:auto;
@@ -53,21 +59,29 @@ padding:15px;
 .msg{
 background:rgba(0,0,0,0.6);
 padding:10px;
-margin-bottom:10px;
 border-radius:10px;
+margin-bottom:10px;
 max-width:70%;
 }
 
-.msg img{
-max-width:200px;
-border-radius:10px;
-margin-top:5px;
+.system{
+text-align:center;
+color:#aaa;
+margin:10px 0;
 }
+
+.msg img{
+max-width:220px;
+border-radius:10px;
+margin-top:6px;
+}
+
+/* INPUT */
 
 #inputBar{
 display:flex;
 padding:10px;
-background:#000;
+background:black;
 }
 
 #text{
@@ -93,13 +107,36 @@ margin-left:10px;
 font-size:12px;
 }
 
-</style></head><body><div id="sidebar"><h3 style="color:#ff4da6">Tulip Chat</h3><div class="room" onclick="joinRoom('normal')">Normal Room</div><div class="room" onclick="joinRoom('adult')">Adult Room</div></div><div id="chat"><div id="topbar">
+/* ADULT WARNING */
+
+#adultWarning{
+position:fixed;
+top:0;
+left:0;
+right:0;
+bottom:0;
+background:rgba(0,0,0,0.9);
+display:none;
+align-items:center;
+justify-content:center;
+}
+
+#adultBox{
+background:#111;
+padding:25px;
+border-radius:10px;
+text-align:center;
+}
+
+</style></head><body><div id="sidebar"><h3 style="color:#ff4da6">Tulip Chat</h3><div class="room" onclick="joinRoom('normal')">Normal Room</div><div class="room" onclick="adultCheck()">Adult Room</div></div><div id="chat"><div id="topbar">
 <span id="roomName">Normal Room</span>
 </div><div id="messages"></div><div id="inputBar"><input id="text" placeholder="Type message"><button onclick="sendMsg()">Send</button>
 
-<button onclick="sendGIF()">GIF</button>
+<input type="file" id="file" accept="image/*"><span id="progress"></span>
 
-<input type="file" id="file"><span id="progress"></span>
+</div></div><div id="adultWarning"><div id="adultBox"><h3>🔞 Adult Room</h3><p>You must be 18+ to enter</p><button onclick="enterAdult()">I am 18+</button>
+
+<button onclick="closeAdult()">Cancel</button>
 
 </div></div><script src="/socket.io/socket.io.js"></script><script>
 
@@ -119,6 +156,8 @@ let room="normal"
 
 socket.emit("join",{user:username,room})
 
+addSystem(username+" joined the room")
+
 function joinRoom(r){
 
 room=r
@@ -127,7 +166,31 @@ document.getElementById("roomName").innerText=r+" room"
 
 socket.emit("join",{user:username,room})
 
+addSystem(username+" joined the room")
+
 }
+
+function adultCheck(){
+
+document.getElementById("adultWarning").style.display="flex"
+
+}
+
+function enterAdult(){
+
+document.getElementById("adultWarning").style.display="none"
+
+joinRoom("adult")
+
+}
+
+function closeAdult(){
+
+document.getElementById("adultWarning").style.display="none"
+
+}
+
+/* MESSAGE SEND */
 
 function sendMsg(){
 
@@ -141,6 +204,8 @@ document.getElementById("text").value=""
 
 }
 
+/* RECEIVE MESSAGE */
+
 socket.on("message",(data)=>{
 
 let box=document.createElement("div")
@@ -153,15 +218,21 @@ document.getElementById("messages").appendChild(box)
 
 })
 
-function sendGIF(){
+/* SYSTEM MSG */
 
-let link=prompt("Paste GIF link")
+function addSystem(msg){
 
-if(!link) return
+let div=document.createElement("div")
 
-socket.emit("message",{user:username,msg:'<img src="'+link+'">',room})
+div.className="system"
+
+div.innerText=msg
+
+document.getElementById("messages").appendChild(div)
 
 }
+
+/* IMAGE / GIF UPLOAD */
 
 document.getElementById("file").onchange=function(){
 
