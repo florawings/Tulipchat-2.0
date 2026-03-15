@@ -37,9 +37,21 @@ users[socket.id]=name
 io.emit("users",Object.values(users))
 })
 
+/* room join */
+
 socket.on("join",room=>{
-socket.join(room)
+
+socket.rooms.forEach(r=>{
+if(r!==socket.id){
+socket.leave(r)
+}
 })
+
+socket.join(room)
+
+})
+
+/* message */
 
 socket.on("message",data=>{
 io.to(data.room).emit("message",data)
