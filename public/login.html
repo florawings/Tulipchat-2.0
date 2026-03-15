@@ -1,75 +1,59 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat Login</title><style>
-
+<!DOCTYPE html><html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tulip Chat Login</title><style>
 body{
 margin:0;
-font-family:system-ui;
-background:#111;
-color:white;
+font-family:Arial;
+background:#f5e3ea;
 display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
 }
-
 #box{
-background:#1c1c1c;
+background:white;
 padding:30px;
-border-radius:10px;
-width:280px;
+border-radius:12px;
+width:300px;
+box-shadow:0 0 10px rgba(0,0,0,.2);
 }
-
-h2{
-color:#b983ff;
-margin-top:0;
-}
-
+h2{color:#ff3d6e;text-align:center}
 input,select{
 width:100%;
 padding:10px;
 margin-top:10px;
-border:none;
-border-radius:6px;
-background:#2b2b2b;
-color:white;
+border-radius:8px;
+border:1px solid #ccc;
 }
-
 button{
-margin-top:15px;
 width:100%;
 padding:10px;
-border:none;
-border-radius:6px;
-background:#b983ff;
+margin-top:15px;
+background:#ff3d6e;
 color:white;
-font-weight:bold;
-cursor:pointer;
+border:none;
+border-radius:8px;
 }
-
-</style></head><body><div id="box"><h2>Tulip Chat</h2><input id="name" placeholder="Enter name"><input id="age" type="number" placeholder="Age"><select id="gender">
-<option value="">Select gender</option>
-<option value="Male">Male</option>
-<option value="Female">Female</option>
-</select><button onclick="enter()">Enter Chat</button>
+</style></head><body><div id="box">
+<h2>Tulip Chat</h2><input id="name" placeholder="Enter name">
+<input id="age" type="number" placeholder="Age"><select id="gender">
+<option value="male">Male</option>
+<option value="female">Female</option>
+</select><button onclick="go()">Enter Chat</button>
 
 </div><script>
-
-function enter(){
+function go(){
 
 let name=document.getElementById("name").value
 let age=document.getElementById("age").value
 let gender=document.getElementById("gender").value
 
-if(!name || !age || !gender){
-alert("Fill all fields")
-return
-}
-
 localStorage.setItem("username",name)
 localStorage.setItem("age",age)
 localStorage.setItem("gender",gender)
 
-location.href="/chat.html"
-
+location.href="chat.html"
 }
-
-</script></body></html>
+</script></body>
+</html>
