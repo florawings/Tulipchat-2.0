@@ -1,44 +1,16 @@
 const socket = io()
 
-let room = "normal"
-
-let username = localStorage.getItem("user")
-
-if(!username){
-username = prompt("Enter username")
-localStorage.setItem("user",username)
-}
+let room="normal"
+let username = localStorage.getItem("user") || prompt("username")
 
 socket.emit("user",username)
-
-/* default room join */
-
 socket.emit("join","normal")
 
 function joinRoom(r){
 
-room = r
-
+room=r
 document.getElementById("messages").innerHTML=""
-
 socket.emit("join",room)
-
-}
-
-/* add message */
-
-function addMsg(html){
-
-let div = document.createElement("div")
-
-div.className="msg"
-
-div.innerHTML = html
-
-document.getElementById("messages").appendChild(div)
-
-document.getElementById("messages").scrollTop =
-document.getElementById("messages").scrollHeight
 
 }
 
@@ -46,9 +18,9 @@ document.getElementById("messages").scrollHeight
 
 function sendMsg(){
 
-let text = document.getElementById("text").value
+let text=document.getElementById("text").value
 
-if(!text) return
+if(!text)return
 
 socket.emit("message",{
 room:room,
@@ -60,39 +32,50 @@ document.getElementById("text").value=""
 
 }
 
-/* receive message */
+/* typing */
+
+document.getElementById("text").addEventListener("keypress",()=>{
+socket.emit("typing",{room:room,user:username})
+})
+
+socket.on("typing",(msg)=>{
+document.getElementById("typing").innerText=msg
+setTimeout(()=>{
+document.getElementById("typing").innerText=""
+},1000)
+})
+
+/* receive */
 
 socket.on("message",(data)=>{
 
-addMsg("<b>"+data.user+":</b> "+data.msg)
+addMsg("<b>"+data.user+"</b>: "+data.msg)
 
 })
 
-/* upload image / gif */
+/* emoji */
 
-document.getElementById("file").onchange = function(){
+function emoji(e){
+document.getElementById("text").value+=e
+}
 
-let file = this.files[0]
+/* add message */
 
-let form = new FormData()
+function addMsg(html){
 
-form.append("file",file)
+let div=document.createElement("div")
+div.className="msg"
+div.innerHTML=html
 
-let xhr = new XMLHttpRequest()
-
-xhr.open("POST","/upload")
-
-xhr.upload.onprogress = e =>{
-
-let p = Math.round((e.loaded/e.total)*100)
-
-document.getElementById("progress").innerText = p+"%"
+document.getElementById("messages").appendChild(div)
 
 }
 
-xhr.onload = ()=>{
+/* gif */
 
-let url = xhr.responseText
+function sendGif(){
+
+let url=prompt("Paste GIF link")
 
 socket.emit("message",{
 room:room,
@@ -102,6 +85,17 @@ msg:"<img src='"+url+"'>"
 
 }
 
-xhr.send(form)
+/* friend request */
+
+function addFriend(user){
+
+socket.emit("friend_request",{
+from:username,
+to:user
+})
 
 }
+
+socket.on("friend_request",(data)=>{
+alert(data.from+" sent friend request")
+})
