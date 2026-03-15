@@ -30,55 +30,24 @@ const users={}
 io.on("connection",(socket)=>{
 
 socket.on("join",(data)=>{
-
-users[socket.id]={
-name:data.user,
-gender:data.gender
-}
-
-/* OLD ROOMS LEAVE */
-
-for (let room of socket.rooms) {
-if(room!==socket.id){
-socket.leave(room)
-}
-}
-
-socket.join(data.room)
-
+users[socket.id]={name:data.user}
 io.emit("onlineUsers",users)
-
-io.to(data.room).emit("message",{
-user:"System",
-msg:data.user+" joined the room"
 })
 
+/* PUBLIC CHAT */
+
+socket.on("publicMessage",(data)=>{
+io.emit("publicMessage",data)
 })
 
-/* ROOM MESSAGE */
+/* PRIVATE DM */
 
-socket.on("message",(data)=>{
-io.to(data.room).emit("message",data)
-})
-
-/* DM */
-
-socket.on("dm",(data)=>{
-
-io.to(data.to).emit("dm",{
+socket.on("dmMessage",(data)=>{
+io.to(data.to).emit("dmMessage",{
 from:data.from,
 msg:data.msg
 })
-
 })
-
-/* TYPING */
-
-socket.on("typing",(data)=>{
-socket.to(data.room).emit("typing",data.user)
-})
-
-/* DISCONNECT */
 
 socket.on("disconnect",()=>{
 delete users[socket.id]
