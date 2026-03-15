@@ -1,28 +1,42 @@
+<form id="reg">
+
+<input name="username" placeholder="username">
+
+<input name="password" placeholder="password">
+
+<select name="gender">
+
+<option>male</option>
+<option>female</option>
+
+</select>
+
+<button>Register</button>
+
+</form>
+
 <script>
 
-async function register(){
+reg.onsubmit = async e=>{
 
-let username=document.getElementById("username").value
-let password=document.getElementById("password").value
+e.preventDefault()
+
+let data = new FormData(reg)
 
 let res = await fetch("/register",{
+
 method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({username,password})
+body:data
+
 })
 
-let data = await res.json()
+let r = await res.json()
 
-if(data.status=="registered"){
+alert(r.msg)
 
-alert("Registration successful")
-location="login.html"
+if(r.msg==="registered"){
 
-}else{
-
-alert("Username already exists")
+location.href="login.html"
 
 }
 
