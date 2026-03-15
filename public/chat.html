@@ -1,5 +1,4 @@
-<!DOCTYPE html><html>
-<head><meta charset="UTF-8">
+<!DOCTYPE html><html><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat</title><style>
 
 *{
@@ -13,58 +12,16 @@ body{
 
 height:100dvh;
 display:flex;
+flex-direction:column;
 
 background:
-linear-gradient(rgba(0,0,0,0.55),rgba(0,0,0,0.55)),
+linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),
 url("https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2");
 
 background-size:cover;
 background-position:center;
 
 color:white;
-
-}
-
-/* sidebar */
-
-#sidebar{
-
-width:230px;
-background:rgba(0,0,0,0.65);
-padding:15px;
-overflow:auto;
-
-}
-
-#sidebar h2{
-margin-bottom:10px;
-}
-
-#onlineCount{
-margin-bottom:10px;
-}
-
-#userList{
-list-style:none;
-}
-
-#userList li{
-padding:6px;
-cursor:pointer;
-border-radius:6px;
-}
-
-#userList li:hover{
-background:rgba(255,255,255,0.15);
-}
-
-/* chat area */
-
-#chatArea{
-
-flex:1;
-display:flex;
-flex-direction:column;
 
 }
 
@@ -75,14 +32,66 @@ flex-direction:column;
 height:55px;
 display:flex;
 align-items:center;
-padding-left:15px;
+
 background:#ff3b6b;
+
+padding:0 15px;
 
 font-weight:bold;
 
 }
 
-/* messages */
+/* menu button */
+
+#menuBtn{
+
+font-size:22px;
+margin-right:10px;
+cursor:pointer;
+
+}
+
+/* sidebar */
+
+#sidebar{
+
+position:fixed;
+left:-240px;
+top:0;
+
+width:240px;
+height:100%;
+
+background:rgba(0,0,0,0.8);
+
+padding:20px;
+
+transition:0.3s;
+
+z-index:10;
+
+}
+
+#sidebar.show{
+left:0;
+}
+
+#userList{
+list-style:none;
+margin-top:15px;
+}
+
+#userList li{
+padding:6px;
+border-radius:6px;
+cursor:pointer;
+}
+
+#userList li:hover{
+background:rgba(255,255,255,0.15);
+}
+
+/* chat */
 
 #messages{
 
@@ -92,13 +101,13 @@ padding:15px;
 
 }
 
-/* bubble */
+/* message */
 
 .message{
 
-max-width:70%;
+max-width:75%;
 padding:10px 14px;
-border-radius:15px;
+border-radius:14px;
 margin-bottom:10px;
 
 background:rgba(255,255,255,0.2);
@@ -106,25 +115,29 @@ background:rgba(255,255,255,0.2);
 }
 
 .me{
+
 background:#ff3b6b;
 margin-left:auto;
+
 }
 
-/* image */
+/* image / gif */
 
-.chatImg{
-max-width:230px;
+.chatMedia{
+
+max-width:240px;
 border-radius:10px;
 margin-top:6px;
+
 }
 
-/* input */
+/* input area */
 
 #inputArea{
 
 display:flex;
 padding:10px;
-background:rgba(0,0,0,0.65);
+background:rgba(0,0,0,0.7);
 
 }
 
@@ -142,42 +155,33 @@ button{
 
 margin-left:6px;
 padding:9px 12px;
+
 border:none;
+
 background:#ff3b6b;
+
 color:white;
+
 border-radius:8px;
+
 cursor:pointer;
 
 }
 
-/* upload status */
-
 #uploadStatus{
-
 font-size:12px;
 padding-left:15px;
-
 }
 
-/* mobile */
+</style></head><body><div id="sidebar"><h3>Online Users</h3><p id="onlineCount">0 users online</p><ul id="userList"></ul></div><div id="header"><span id="menuBtn" onclick="toggleMenu()">☰</span>
 
-@media(max-width:700px){
-
-#sidebar{
-display:none;
-}
-
-}
-
-</style></head><body><div id="sidebar"><h2>🌷 Tulip Chat</h2><button onclick="logout()">Logout</button>
-
-<p id="onlineCount">0 users online</p><ul id="userList"></ul></div><div id="chatArea"><div id="header">Tulip Chat
+Tulip Chat
 
 </div><div id="messages"></div><div id="uploadStatus"></div><div id="inputArea"><input id="msgInput" placeholder="Type message"><button onclick="sendMsg()">Send</button>
 
 <input type="file" id="fileInput" accept="image/*,image/gif" style="display:none"><button onclick="fileInput.click()">📷 / GIF</button>
 
-</div></div><script src="/socket.io/socket.io.js"></script><script>
+</div><script src="/socket.io/socket.io.js"></script><script>
 
 const socket = io()
 
@@ -193,10 +197,19 @@ localStorage.setItem("username",username)
 
 socket.emit("join",username)
 
+/* toggle sidebar */
+
+function toggleMenu(){
+
+sidebar.classList.toggle("show")
+
+}
+
+/* add message */
 
 function addMessage(html,type=""){
 
-let div = document.createElement("div")
+let div=document.createElement("div")
 
 div.className="message "+type
 
@@ -204,16 +217,15 @@ div.innerHTML=html
 
 messages.appendChild(div)
 
-messages.scrollTop = messages.scrollHeight
+messages.scrollTop=messages.scrollHeight
 
 }
-
 
 /* send text */
 
 function sendMsg(){
 
-let msg = msgInput.value
+let msg=msgInput.value
 
 if(msg=="") return
 
@@ -228,25 +240,21 @@ msgInput.value=""
 
 }
 
-
-/* receive message */
+/* receive text */
 
 socket.on("chat message",(data)=>{
 
 let type=""
 
 if(data.user===username){
-
 type="me"
-
 }
 
 addMessage("<b>"+data.user+":</b> "+data.msg,type)
 
 })
 
-
-/* system message */
+/* join / leave system */
 
 socket.on("system",(msg)=>{
 
@@ -254,12 +262,11 @@ addMessage("<i>"+msg+"</i>")
 
 })
 
-
-/* user list */
+/* online users */
 
 socket.on("user list",(users)=>{
 
-onlineCount.innerText = users.length+" users online"
+onlineCount.innerText=users.length+" users online"
 
 userList.innerHTML=""
 
@@ -269,44 +276,13 @@ let li=document.createElement("li")
 
 li.innerText=u
 
-li.onclick=()=>sendDM(u)
-
 userList.appendChild(li)
 
 })
 
 })
 
-
-/* DM */
-
-function sendDM(user){
-
-let msg = prompt("Send message to "+user)
-
-if(!msg) return
-
-socket.emit("private message",{
-
-from:username,
-to:user,
-msg:msg
-
-})
-
-}
-
-
-/* receive DM */
-
-socket.on("private message",(data)=>{
-
-addMessage("<b>DM "+data.from+":</b> "+data.msg)
-
-})
-
-
-/* upload image */
+/* upload image / gif */
 
 fileInput.addEventListener("change",function(){
 
@@ -340,10 +316,12 @@ uploadStatus.innerText=""
 
 let data=JSON.parse(xhr.responseText)
 
+/* gif automatically plays */
+
 socket.emit("chat message",{
 
 user:username,
-msg:"<img class='chatImg' src='"+data.url+"'>"
+msg:"<img class='chatMedia' src='"+data.url+"'>"
 
 })
 
@@ -352,15 +330,6 @@ msg:"<img class='chatImg' src='"+data.url+"'>"
 xhr.send(form)
 
 })
-
-
-function logout(){
-
-localStorage.removeItem("username")
-
-location.reload()
-
-}
 
 </script></body>
 </html>
