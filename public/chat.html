@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Tulip Chat</title>
 
 <style>
@@ -112,6 +114,8 @@ localStorage.setItem("name",name)
 
 socket.emit("join",{name})
 
+let uploadMsg = null
+
 function send(){
 
 let text = msg.value
@@ -180,11 +184,25 @@ xhr.upload.onprogress=function(e){
 
 let percent=Math.round((e.loaded/e.total)*100)
 
-addMsg("Uploading "+type+" "+percent+"%",true)
+if(!uploadMsg){
+
+uploadMsg=document.createElement("div")
+
+uploadMsg.className="msg system"
+
+chat.appendChild(uploadMsg)
+
+}
+
+uploadMsg.innerText="Uploading "+type+" "+percent+"%"
+
+chat.scrollTop=chat.scrollHeight
 
 }
 
 xhr.onload=function(){
+
+uploadMsg=null
 
 let data=JSON.parse(xhr.responseText)
 
