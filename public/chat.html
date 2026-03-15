@@ -3,121 +3,48 @@
 
 <head>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>Tulip Chat</title>
 
 <style>
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial;
-}
-
 body{
-
-height:100vh;
+font-family:Arial;
+background:#ffd6df;
 display:flex;
 flex-direction:column;
-background:#ffd6df;
-
+height:100vh;
 }
-
-/* HEADER */
-
-#header{
-
-height:50px;
-background:#ff2f6e;
-color:white;
-display:flex;
-align-items:center;
-justify-content:space-between;
-padding:10px;
-
-}
-
-/* MAIN */
 
 #main{
-
 flex:1;
 display:flex;
-
-}
-
-/* CHAT */
-
-#chatSection{
-
-width:70%;
-display:flex;
-flex-direction:column;
-
 }
 
 #chat{
-
-flex:1;
+width:70%;
 overflow:auto;
 padding:10px;
-
 }
 
-/* MESSAGE */
+#users{
+width:30%;
+background:white;
+overflow:auto;
+}
 
 .msg{
-
 background:#ff2f6e;
 color:white;
 padding:8px;
-margin-bottom:8px;
-border-radius:10px;
-max-width:80%;
-
-}
-
-/* INPUT BAR */
-
-#inputBar{
-
-display:flex;
-gap:6px;
-padding:8px;
-background:white;
-
-}
-
-#text{
-
-flex:1;
-padding:8px;
-
-}
-
-/* USERS */
-
-#usersSection{
-
-width:30%;
-background:white;
-border-left:1px solid #ccc;
-
-}
-
-#onlineList{
-
-padding:10px;
-
+margin:6px;
+border-radius:8px;
 }
 
 .user{
-
-padding:6px;
+padding:8px;
 border-bottom:1px solid #eee;
-
 }
 
 </style>
@@ -126,47 +53,19 @@ border-bottom:1px solid #eee;
 
 <body>
 
-<div id="header">
-
-<div>🌷 Tulip Chat</div>
-
-<div>
-
-<button onclick="clearChat()">🧹</button>
-
-</div>
-
-</div>
+<h2>Tulip Chat</h2>
 
 <div id="main">
 
-<!-- CHAT -->
-
-<div id="chatSection">
-
 <div id="chat"></div>
 
-<div id="inputBar">
+<div id="users"></div>
 
-<input id="text" placeholder="Type message">
+</div>
+
+<input id="text">
 
 <button onclick="send()">Send</button>
-
-</div>
-
-</div>
-
-<!-- USERS -->
-
-<div id="usersSection">
-
-<h3 style="padding:10px">Online</h3>
-
-<div id="onlineList"></div>
-
-</div>
-
-</div>
 
 <script src="/socket.io/socket.io.js"></script>
 
@@ -174,71 +73,63 @@ border-bottom:1px solid #eee;
 
 const socket = io()
 
-let username = localStorage.getItem("username")
-let role = localStorage.getItem("role")
-let gender = localStorage.getItem("gender")
+let username = prompt("Enter name")
 
-if(!username){
+let role="user"
 
-location.href="/login.html"
+if(username==="Lord_lucifer") role="owner"
+if(username==="Garima") role="superadmin"
 
-}
-
-/* BADGE */
+socket.emit("join",{username})
 
 function badge(r){
 
 if(r==="owner") return "👑"
-
 if(r==="superadmin") return "⭐"
-
 return "👤"
 
 }
-
-/* JOIN */
-
-socket.emit("join",{
-
-username,
-role,
-gender
-
-})
 
 /* SEND */
 
 function send(){
 
-let msg = document.getElementById("text").value
-
-if(!msg) return
+let msg=text.value
 
 socket.emit("message",{
 
 username,
-role,
 msg
 
 })
 
-document.getElementById("text").value=""
+text.value=""
 
 }
 
 /* RECEIVE */
 
-socket.on("message",(data)=>{
+socket.on("message",(d)=>{
 
 let div=document.createElement("div")
 
 div.className="msg"
 
-div.innerText= badge(data.role)+" "+data.username+" : "+data.msg
+div.innerText=badge(d.role)+" "+d.username+" : "+d.msg
 
 chat.appendChild(div)
 
-chat.scrollTop=chat.scrollHeight
+})
+
+/* SYSTEM */
+
+socket.on("system",(msg)=>{
+
+let div=document.createElement("div")
+
+div.innerText="⚠ "+msg
+
+chat.appendChild(div)
 
 })
 
@@ -246,7 +137,7 @@ chat.scrollTop=chat.scrollHeight
 
 socket.on("onlineUsers",(users)=>{
 
-onlineList.innerHTML=""
+usersDiv.innerHTML=""
 
 users.forEach(u=>{
 
@@ -254,33 +145,37 @@ let div=document.createElement("div")
 
 div.className="user"
 
-div.innerText= badge(u.role)+" "+u.username
+div.innerHTML=
 
-onlineList.appendChild(div)
+badge(u.role)+" "+u.username+
+
+` <button onclick="ban('${u.username}')">Ban</button>
+<button onclick="mute('${u.username}')">Mute</button>
+<button onclick="kick('${u.username}')">Kick</button>`
+
+users.appendChild(div)
+
+})
 
 })
 
-})
+function ban(user){
 
-/* CLEAR */
-
-function clearChat(){
-
-socket.emit("message",{
-
-username,
-role,
-msg:"/clear"
-
-})
+socket.emit("banUser",user)
 
 }
 
-socket.on("clearChat",()=>{
+function mute(user){
 
-chat.innerHTML=""
+socket.emit("muteUser",user)
 
-})
+}
+
+function kick(user){
+
+socket.emit("kickUser",user)
+
+}
 
 </script>
 
