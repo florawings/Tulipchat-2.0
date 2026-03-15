@@ -1,132 +1,102 @@
-const socket = io()
+const socket = io();
 
-let username = localStorage.getItem("username")
-
-if(!username){
-
-username = prompt("Enter username")
-
-localStorage.setItem("username",username)
-
+let username = localStorage.getItem("username");
+if (!username) {
+username = prompt("Enter username");
+localStorage.setItem("username", username);
 }
 
-let room = "normal"
-let currentDM = null
+let room = "normal";
+let currentDM = null;
 
-socket.emit("join",{username,room})
+socket.emit("join", { username, room });
 
-/* ROOM JOIN */
+/* Send room message */
+function sendMessage() {
+let text = document.getElementById("text").value;
+if (!text) return;
 
-function joinRoom(r){
-
-room = r
-
-socket.emit("join",{username,room})
-
-document.getElementById("messages").innerHTML=""
-
+socket.emit("message", { user: username, msg: text, room });
+document.getElementById("text").value = "";
 }
 
-/* SEND ROOM MESSAGE */
+/* Receive message */
+socket.on("message", (data) => {
+let box = document.getElementById("messages");
+box.innerHTML += "<div><b>${data.user}</b>: ${data.msg}</div>";
+box.scrollTop = box.scrollHeight;
+});
 
-function sendMessage(){
+/* System message */
+socket.on("system", (msg) => {
+document.getElementById("messages").innerHTML += "<div style="opacity:.6">${msg}</div>";
+});
 
-let text = document.getElementById("text").value
+/* Online users */
+socket.on("online", (list) => {
+let box = document.getElementById("online");
+box.innerHTML = "";
+list.forEach(u => {
+let d = document.createElement("div");
+d.innerText = u;
+d.onclick = () => openDM(u);
+box.appendChild(d);
+});
+});
 
-if(!text) return
-
-socket.emit("message",{
-
-user:username,
-msg:text,
-room:room
-
-})
-
-document.getElementById("text").value=""
-
+/* Open DM */
+function openDM(user) {
+currentDM = user;
+document.getElementById("dmBox").style.display = "block";
+document.getElementById("dmUser").innerText = "Chat with " + user;
 }
 
-/* RECEIVE ROOM MESSAGE */
+/* Send DM */
+function sendDM() {
+let text = document.getElementById("dmText").value;
 
-socket.on("message",(data)=>{
+socket.emit("dm", {
+from: username,
+to: currentDM,
+msg: text
+});
 
-let box=document.getElementById("messages")
-
-box.innerHTML += `<div><b>${data.user}</b>: ${data.msg}</div>`
-
-box.scrollTop = box.scrollHeight
-
-})
-
-/* SYSTEM MESSAGE */
-
-socket.on("system",(msg)=>{
-
-let box=document.getElementById("messages")
-
-box.innerHTML += `<div style="opacity:.6">${msg}</div>`
-
-})
-
-/* ONLINE USERS */
-
-socket.on("online",(list)=>{
-
-let box=document.getElementById("online")
-
-box.innerHTML=""
-
-list.forEach(u=>{
-
-let div=document.createElement("div")
-
-div.innerText=u
-
-div.onclick=()=>openDM(u)
-
-box.appendChild(div)
-
-})
-
-})
-
-/* OPEN DM */
-
-function openDM(user){
-
-currentDM = user
-
-document.getElementById("dmBox").style.display="block"
-
-document.getElementById("dmUser").innerText="Chat with "+user
-
+document.getElementById("dmMessages").innerHTML += "<div><b>Me:</b> ${text}</div>";
+document.getElementById("dmText").value = "";
 }
 
-/* SEND DM */
+/* Receive DM */
+socket.on("dm", (data) => {
+document.getElementById("dmMessages").innerHTML += "<div><b>${data.from}:</b> ${data.msg}</div>";
+});
 
-function sendDM(){
+/* File upload (GIF / image) */
+document.getElementById("file").onchange = function () {
+let file = this.files[0];
+let form = new FormData();
+form.append("file", file);
 
-let text=document.getElementById("dmText").value
+let xhr = new XMLHttpRequest();
+xhr.open("POST", "/upload");
 
-socket.emit("dm",{
+xhr.upload.onprogress = function (e) {
+let percent = Math.round((e.loaded / e.total) * 100);
+document.getElementById("progress").innerText = percent + "%";
+};
 
-from:username,
-to:currentDM,
-msg:text
+xhr.onload = function () {
+let res = JSON.parse(xhr.response);
+let url = res.url;
 
-})
+socket.emit("message", {
+  user: username,
+  msg: `<img src="${url}" width="200">`,
+  room
+});
 
-document.getElementById("dmMessages").innerHTML += `<div><b>Me:</b> ${text}</div>`
+document.getElementById("progress").innerText = "";
 
-document.getElementById("dmText").value=""
+};
 
-}
-
-/* RECEIVE DM */
-
-socket.on("dm",(data)=>{
-
-document.getElementById("dmMessages").innerHTML += `<div><b>${data.from}:</b> ${data.msg}</div>`
-
-})
+xhr.send(form);
+};
