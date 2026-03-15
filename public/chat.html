@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Tulip Chat</title>
 
 <style>
@@ -18,7 +20,7 @@ body{
 height:100vh;
 display:flex;
 flex-direction:column;
-background:#f5d9e0;
+background:#f6dbe0;
 overflow:hidden;
 }
 
@@ -33,10 +35,6 @@ align-items:center;
 justify-content:space-between;
 padding:0 10px;
 font-size:18px;
-}
-
-#header button{
-margin-left:6px;
 }
 
 /* MAIN */
@@ -72,12 +70,7 @@ color:white;
 padding:10px;
 border-radius:12px;
 max-width:75%;
-}
-
-.msg img{
-max-width:200px;
-margin-top:6px;
-border-radius:10px;
+font-size:14px;
 }
 
 /* INPUT */
@@ -115,73 +108,24 @@ font-weight:bold;
 
 #onlineList{
 flex:1;
-overflow-y:auto;
+overflow:auto;
 }
 
 .userItem{
 padding:8px;
 border-bottom:1px solid #eee;
 display:flex;
+justify-content:space-between;
 align-items:center;
-gap:6px;
-cursor:pointer;
+font-size:14px;
 }
 
-/* PROFILE */
+/* ADMIN BUTTON */
 
-.avatar{
-width:28px;
-height:28px;
-border-radius:50%;
-object-fit:cover;
-}
-
-/* DM */
-
-#dmBox{
-position:fixed;
-bottom:70px;
-right:20px;
-width:280px;
-height:320px;
-background:white;
-border:1px solid #ccc;
-display:none;
-flex-direction:column;
-}
-
-#dmMessages{
-flex:1;
-overflow:auto;
-padding:8px;
-}
-
-#dmInput{
-display:flex;
-border-top:1px solid #ccc;
-}
-
-#dmText{
-flex:1;
-padding:6px;
-border:none;
-}
-
-/* FRIEND REQUEST */
-
-#friendRequests{
-position:fixed;
-top:60px;
-right:20px;
-width:250px;
-background:white;
-border:1px solid #ccc;
-display:none;
-}
-
-.request{
-padding:8px;
-border-bottom:1px solid #eee;
+.adminBtn{
+margin-left:4px;
+font-size:11px;
+padding:2px 4px;
 }
 
 </style>
@@ -196,8 +140,6 @@ border-bottom:1px solid #eee;
 
 <div>
 
-<button onclick="openInbox()">📥</button>
-
 <button onclick="clearChat()">🧹</button>
 
 <button onclick="location.reload()">🔄</button>
@@ -207,6 +149,8 @@ border-bottom:1px solid #eee;
 </div>
 
 <div id="main">
+
+<!-- CHAT -->
 
 <div id="chatSection">
 
@@ -218,15 +162,11 @@ border-bottom:1px solid #eee;
 
 <button onclick="send()">Send</button>
 
-<input type="file" id="file" hidden accept="image/*,.gif">
-
-<button onclick="upload()">📷</button>
-
-<span id="progress"></span>
-
 </div>
 
 </div>
+
+<!-- USERS -->
 
 <div id="usersSection">
 
@@ -238,31 +178,6 @@ border-bottom:1px solid #eee;
 
 </div>
 
-<!-- DM BOX -->
-
-<div id="dmBox">
-
-<div style="background:#ff2f6e;color:white;padding:6px">
-DM Chat
-<button onclick="closeDM()" style="float:right">X</button>
-</div>
-
-<div id="dmMessages"></div>
-
-<div id="dmInput">
-
-<input id="dmText">
-
-<button onclick="sendDM()">Send</button>
-
-</div>
-
-</div>
-
-<!-- FRIEND REQUESTS -->
-
-<div id="friendRequests"></div>
-
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
@@ -273,10 +188,12 @@ let username = localStorage.getItem("username")
 let gender = localStorage.getItem("gender")
 let role = localStorage.getItem("role")
 
-let avatar = localStorage.getItem("avatar")
+let blockedUsers = []
 
-if(!avatar){
-avatar="https://i.imgur.com/7k12EPD.png"
+if(!username){
+
+location.href="/login.html"
+
 }
 
 /* BADGE */
@@ -297,8 +214,7 @@ socket.emit("join",{
 
 username,
 gender,
-role,
-avatar
+role
 
 })
 
@@ -306,7 +222,7 @@ avatar
 
 function send(){
 
-let msg=text.value.trim()
+let msg = text.value.trim()
 
 if(!msg) return
 
@@ -315,7 +231,6 @@ socket.emit("message",{
 username,
 gender,
 role,
-avatar,
 msg
 
 })
@@ -324,81 +239,25 @@ text.value=""
 
 }
 
-/* RECEIVE */
+/* RECEIVE MESSAGE */
 
 socket.on("message",(d)=>{
+
+if(blockedUsers.includes(d.username)) return
 
 let div=document.createElement("div")
 
 div.className="msg"
 
-if(d.msg.includes("/uploads")){
-
-div.innerHTML=badge(d.role)+" "+d.username+"<br><img src='"+d.msg+"'>"
-
-}else{
-
-div.innerText=badge(d.role)+" "+d.username+": "+d.msg
-
-}
+div.innerText = badge(d.role)+" "+d.username+": "+d.msg
 
 chat.appendChild(div)
 
-chat.scrollTop=chat.scrollHeight
+chat.scrollTop = chat.scrollHeight
 
 })
 
-/* UPLOAD */
-
-function upload(){
-
-file.click()
-
-}
-
-file.onchange=()=>{
-
-let f=file.files[0]
-
-let fd=new FormData()
-
-fd.append("file",f)
-
-let xhr=new XMLHttpRequest()
-
-xhr.open("POST","/upload")
-
-xhr.upload.onprogress=(e)=>{
-
-let p=Math.round((e.loaded/e.total)*100)
-
-progress.innerText=p+"%"
-
-}
-
-xhr.onload=()=>{
-
-let res=JSON.parse(xhr.responseText)
-
-socket.emit("message",{
-
-username,
-gender,
-role,
-avatar,
-msg:res.url
-
-})
-
-progress.innerText=""
-
-}
-
-xhr.send(fd)
-
-}
-
-/* CLEAR */
+/* CLEAR COMMAND */
 
 function clearChat(){
 
@@ -419,6 +278,58 @@ chat.innerHTML=""
 
 })
 
+/* BLOCK USER */
+
+function blockUser(user){
+
+blockedUsers.push(user)
+
+socket.emit("blockUser",{
+
+blocker:username,
+target:user
+
+})
+
+alert(user+" blocked")
+
+}
+
+/* ADMIN ACTIONS */
+
+function banUser(user){
+
+socket.emit("banUser",{
+
+target:user,
+role:role
+
+})
+
+}
+
+function muteUser(user){
+
+socket.emit("muteUser",{
+
+target:user,
+role:role
+
+})
+
+}
+
+function kickUser(user){
+
+socket.emit("kickUser",{
+
+target:user,
+role:role
+
+})
+
+}
+
 /* ONLINE USERS */
 
 socket.on("onlineUsers",(users)=>{
@@ -431,11 +342,63 @@ let div=document.createElement("div")
 
 div.className="userItem"
 
-div.innerHTML=
-"<img class='avatar' src='"+u.avatar+"'>"+
-badge(u.role)+" "+u.username
+let left = document.createElement("span")
 
-div.onclick=()=>openDM(u.username)
+left.innerText = badge(u.role)+" "+u.username
+
+div.appendChild(left)
+
+let controls = document.createElement("span")
+
+/* BLOCK */
+
+let block=document.createElement("button")
+
+block.innerText="🚫"
+
+block.className="adminBtn"
+
+block.onclick=()=>blockUser(u.username)
+
+controls.appendChild(block)
+
+/* OWNER / ADMIN OPTIONS */
+
+if(role==="owner" || role==="superadmin"){
+
+let ban=document.createElement("button")
+
+ban.innerText="Ban"
+
+ban.className="adminBtn"
+
+ban.onclick=()=>banUser(u.username)
+
+controls.appendChild(ban)
+
+let mute=document.createElement("button")
+
+mute.innerText="Mute"
+
+mute.className="adminBtn"
+
+mute.onclick=()=>muteUser(u.username)
+
+controls.appendChild(mute)
+
+let kick=document.createElement("button")
+
+kick.innerText="Kick"
+
+kick.className="adminBtn"
+
+kick.onclick=()=>kickUser(u.username)
+
+controls.appendChild(kick)
+
+}
+
+div.appendChild(controls)
 
 onlineList.appendChild(div)
 
@@ -443,91 +406,8 @@ onlineList.appendChild(div)
 
 })
 
-/* DM */
-
-let currentDM=""
-
-function openDM(user){
-
-currentDM=user
-
-dmBox.style.display="flex"
-
-}
-
-function closeDM(){
-
-dmBox.style.display="none"
-
-}
-
-function sendDM(){
-
-let msg=dmText.value
-
-socket.emit("dm",{
-
-from:username,
-to:currentDM,
-msg
-
-})
-
-dmText.value=""
-
-}
-
-socket.on("dm",(d)=>{
-
-let div=document.createElement("div")
-
-div.innerText=d.from+": "+d.msg
-
-dmMessages.appendChild(div)
-
-})
-
-/* FRIEND REQUEST */
-
-function sendFriend(user){
-
-socket.emit("friendRequest",{
-
-from:username,
-to:user
-
-})
-
-}
-
-socket.on("friendRequest",(d)=>{
-
-let div=document.createElement("div")
-
-div.className="request"
-
-div.innerHTML=
-d.from+" wants to add friend"+
-"<button onclick='acceptFriend(\""+d.from+"\")'>Accept</button>"
-
-friendRequests.appendChild(div)
-
-})
-
-function openInbox(){
-
-friendRequests.style.display="block"
-
-}
-
-function acceptFriend(user){
-
-alert("You are now friends with "+user)
-
-}
-
 </script>
 
 </body>
 
-  </html>
+</html>
