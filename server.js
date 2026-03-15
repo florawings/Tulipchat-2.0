@@ -1,122 +1,131 @@
 const express = require("express")
+const http = require("http")
+const { Server } = require("socket.io")
 const app = express()
-const http = require("http").createServer(app)
-const io = require("socket.io")(http)
-const multer = require("multer")
-const path = require("path")
+const server = http.createServer(app)
+const io = new Server(server)
 
-app.use(express.json())
 app.use(express.static("public"))
+app.use(express.json())
 
-let onlineUsers=[]
-let friends={}
-let reports=[]
+/* OWNER CONFIG */
 
-const OWNER="Lord_lucifer"
-const SUPERADMIN="Garima"
+const OWNER_NAME = "Lord_lucifer"
+const OWNER_PASSWORD = "766521"
 
-const storage = multer.diskStorage({
-destination:"public/uploads",
-filename:(req,file,cb)=>{
-cb(null,Date.now()+"-"+file.originalname)
+const SUPER_ADMIN = "Garima"
+
+let onlineUsers = []
+
+/* LOGIN API */
+
+app.post("/login",(req,res)=>{
+
+const {username,password,age,gender} = req.body
+
+let role = "user"
+
+/* OWNER CHECK */
+
+if(username === OWNER_NAME){
+
+if(password === OWNER_PASSWORD){
+
+role = "owner"
+
+}else{
+
+return res.json({error:"Wrong owner password"})
+
 }
+
+}
+
+/* SUPER ADMIN */
+
+if(username === SUPER_ADMIN){
+
+role = "superadmin"
+
+}
+
+res.json({
+
+username,
+role,
+age,
+gender
+
 })
 
-const upload = multer({storage})
-
-app.post("/upload",upload.single("file"),(req,res)=>{
-res.json({url:"/uploads/"+req.file.filename})
 })
+
+/* SOCKET */
 
 io.on("connection",(socket)=>{
 
 socket.on("join",(data)=>{
 
-socket.username=data.username
-
-socket.role="user"
-
-if(data.username===OWNER) socket.role="owner"
-if(data.username===SUPERADMIN) socket.role="superadmin"
+socket.username = data.username
+socket.role = data.role
+socket.gender = data.gender
 
 onlineUsers.push({
+
 id:socket.id,
 username:data.username,
-role:socket.role
-})
-
-io.emit("onlineUsers",onlineUsers)
+role:data.role,
+gender:data.gender
 
 })
 
-socket.on("message",(data)=>{
+/* JOIN MESSAGE */
 
-io.emit("message",data)
+io.emit("message",{
+system:true,
+text:data.username+" joined the chat"
+})
+
+io.emit("users",onlineUsers)
 
 })
 
-/* DM */
+/* MESSAGE */
 
-socket.on("dm",(data)=>{
+socket.on("chat",(msg)=>{
 
-onlineUsers.forEach(u=>{
-if(u.username===data.to){
-io.to(u.id).emit("dm",data)
+io.emit("message",{
+username:socket.username,
+role:socket.role,
+text:msg
+})
+
+})
+
+/* CLEAR COMMAND */
+
+socket.on("chat",(msg)=>{
+
+if(msg === "/clear" && socket.role === "owner"){
+
+io.emit("clear")
+
 }
-})
-
-})
-
-/* FRIEND REQUEST */
-
-socket.on("friendRequest",(data)=>{
-
-if(!friends[data.to]) friends[data.to]=[]
-
-friends[data.to].push(data.from)
-
-onlineUsers.forEach(u=>{
-if(u.username===data.to){
-io.to(u.id).emit("friendRequest",data)
-}
-})
-
-})
-
-/* REPORT USER */
-
-socket.on("reportUser",(data)=>{
-
-reports.push(data)
-
-})
-
-/* BAN */
-
-socket.on("banUser",(target)=>{
-
-if(socket.role!=="owner" && socket.role!=="superadmin") return
-
-onlineUsers.forEach(u=>{
-if(u.username===target){
-io.to(u.id).disconnectSockets()
-}
-})
 
 })
 
 socket.on("disconnect",()=>{
 
-onlineUsers=onlineUsers.filter(u=>u.id!==socket.id)
+onlineUsers = onlineUsers.filter(u=>u.id !== socket.id)
 
-io.emit("onlineUsers",onlineUsers)
-
-})
+io.emit("users",onlineUsers)
 
 })
 
-http.listen(3000,()=>{
+})
 
-console.log("Tulip Chat running")
+server.listen(3000,()=>{
+
+console.log("TulipChat running")
 
 })
