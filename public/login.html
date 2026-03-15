@@ -1,46 +1,55 @@
-<form id="login">
+<!DOCTYPE html>
+<html>
 
-<input name="username">
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Login</title>
+</head>
 
-<input name="password">
+<body>
 
-<button>Login</button>
+<h2>Login</h2>
 
-</form>
+<input id="name" placeholder="Name">
+
+<input id="age" placeholder="Age">
+
+<select id="gender">
+<option value="">Gender</option>
+<option>Male</option>
+<option>Female</option>
+</select>
+
+<button onclick="login()">Login</button>
+
+<br><br>
+
+<a href="/register.html">Register</a>
 
 <script>
 
-login.onsubmit = async e=>{
+function login(){
 
-e.preventDefault()
+let name=document.getElementById("name").value
+let age=document.getElementById("age").value
+let gender=document.getElementById("gender").value
 
-let data = new FormData(login)
+if(!name || !age || !gender){
 
-let res = await fetch("/login",{
-
-method:"POST",
-body:data
-
-})
-
-let r = await res.json()
-
-if(r.username){
-
-localStorage.setItem("username",r.username)
-localStorage.setItem("gender",r.gender)
-localStorage.setItem("role",r.role)
-
-location.href="chat.html"
+alert("Fill all fields")
+return
 
 }
 
-else{
+localStorage.setItem("username",name)
+localStorage.setItem("age",age)
+localStorage.setItem("gender",gender)
 
-alert(r.msg)
-
-}
+location.href="/chat.html"
 
 }
 
 </script>
+
+</body>
+</html>
