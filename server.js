@@ -1,98 +1,72 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+const express = require("express")
+const app = express()
+const http = require("http").createServer(app)
+const io = require("socket.io")(http)
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+const multer = require("multer")
+const path = require("path")
 
-/* ==== FOLDERS ==== */
+let users = []
 
-const uploadPath = path.join(__dirname, "public/uploads");
-
-if (!fs.existsSync(uploadPath)) {
-  fs.mkdirSync(uploadPath, { recursive: true });
-}
-
-/* ==== STATIC ==== */
-
-app.use(express.static("public"));
-app.use("/uploads", express.static(uploadPath));
-
-/* ==== FILE STORAGE ==== */
+/* FILE UPLOAD */
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, unique + path.extname(file.originalname));
-  }
-});
+destination: "public/uploads",
+filename: (req,file,cb)=>{
+cb(null, Date.now()+"-"+file.originalname)
+}
+})
 
-const upload = multer({ storage });
+const upload = multer({storage})
 
-/* ==== UPLOAD API ==== */
+app.use(express.static("public"))
 
-app.post("/upload", upload.single("file"), (req, res) => {
+app.post("/upload", upload.single("file"), (req,res)=>{
+res.json({url:"/uploads/"+req.file.filename})
+})
 
-  if (!req.file) {
-    return res.status(400).json({ error: "No file uploaded" });
-  }
+/* SOCKET */
 
-  res.json({
-    url: "/uploads/" + req.file.filename
-  });
+io.on("connection",(socket)=>{
 
-});
+socket.on("join",(data)=>{
 
-/* ==== USERS ==== */
+socket.username = data.username
+socket.gender = data.gender
 
-let users = [];
+users.push({
+id:socket.id,
+username:data.username,
+gender:data.gender
+})
 
-/* ==== SOCKET ==== */
+io.emit("onlineUsers",users)
 
-io.on("connection", (socket) => {
+})
 
-  socket.on("join", (data) => {
+socket.on("message",(data)=>{
 
-    socket.username = data.username;
-    socket.gender = data.gender;
+/* CLEAR COMMAND */
 
-    users.push({
-      id: socket.id,
-      username: data.username,
-      gender: data.gender
-    });
+if(data.msg === "/clear"){
+io.emit("clearChat")
+return
+}
 
-    io.emit("onlineUsers", users);
+io.emit("message",data)
 
-  });
+})
 
-  socket.on("message", (data) => {
+socket.on("disconnect",()=>{
 
-    io.emit("message", data);
+users = users.filter(u=>u.id !== socket.id)
 
-  });
+io.emit("onlineUsers",users)
 
-  socket.on("disconnect", () => {
+})
 
-    users = users.filter(u => u.id !== socket.id);
+})
 
-    io.emit("onlineUsers", users);
-
-  });
-
-});
-
-/* ==== PORT ==== */
-
-const PORT = process.env.PORT || 3000;
-
-server.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
-});
+http.listen(3000,()=>{
+console.log("Server running")
+})
