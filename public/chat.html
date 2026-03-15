@@ -1,25 +1,19 @@
 <!DOCTYPE html><html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tulip Chat</title><style>
-
-/* ===== GLOBAL ===== */
-
-*{
-box-sizing:border-box;
-}
 
 body{
 margin:0;
 height:100vh;
 display:flex;
 flex-direction:column;
-font-family:Arial, sans-serif;
-background:#f5dbe3;
+font-family:Arial;
+background:#f2dce3;
 overflow:hidden;
 }
 
-/* ===== HEADER ===== */
+/* HEADER */
 
 #header{
 height:50px;
@@ -29,12 +23,6 @@ display:flex;
 align-items:center;
 justify-content:space-between;
 padding:0 12px;
-flex-shrink:0;
-}
-
-#title{
-font-weight:bold;
-font-size:16px;
 }
 
 #header button{
@@ -42,156 +30,104 @@ background:none;
 border:none;
 color:white;
 font-size:18px;
-cursor:pointer;
 }
 
-/* ===== USERS PANEL ===== */
+/* USERS */
 
 #usersPanel{
 position:fixed;
-left:-250px;
+left:-240px;
 top:50px;
-width:230px;
+width:220px;
 height:100%;
 background:white;
-box-shadow:0 0 12px rgba(0,0,0,0.2);
-transition:0.3s;
-overflow-y:auto;
+transition:.3s;
+overflow:auto;
 padding:10px;
-z-index:1000;
 }
 
 #usersPanel.open{
 left:0;
 }
 
-.userItem{
-padding:6px;
-border-bottom:1px solid #eee;
-font-size:14px;
-}
-
-/* ===== INBOX PANEL ===== */
-
-#inboxPanel{
-position:fixed;
-right:-260px;
-top:50px;
-width:240px;
-height:100%;
-background:white;
-box-shadow:0 0 12px rgba(0,0,0,0.2);
-transition:0.3s;
-overflow-y:auto;
-padding:10px;
-z-index:1000;
-}
-
-#inboxPanel.open{
-right:0;
-}
-
-/* ===== CHAT AREA ===== */
+/* CHAT */
 
 #chat{
 flex:1;
 overflow-y:auto;
-padding:12px;
+padding:10px;
 display:flex;
 flex-direction:column;
 gap:8px;
 }
 
-/* ===== MESSAGE ===== */
+/* MESSAGE */
 
 .msg{
 background:#ff3d6e;
 color:white;
-padding:10px 14px;
+padding:8px 14px;
 border-radius:20px;
 max-width:75%;
 font-size:14px;
-word-wrap:break-word;
 }
 
 .msg img{
-max-width:220px;
+max-width:200px;
 border-radius:10px;
 margin-top:4px;
 }
 
-/* ===== INPUT BAR ===== */
+/* INPUT */
 
-#inputBar{
-height:65px;
+#input{
+height:60px;
 display:flex;
-align-items:center;
 gap:6px;
 padding:6px;
 background:white;
-flex-shrink:0;
-border-top:1px solid #ddd;
 }
 
 #text{
 flex:1;
 border-radius:20px;
 border:1px solid #ccc;
-padding:10px;
-font-size:14px;
-outline:none;
+padding:8px;
 }
 
-button.sendBtn{
+button{
 background:#ff3d6e;
-border:none;
 color:white;
+border:none;
 padding:8px 12px;
-border-radius:10px;
-font-size:14px;
+border-radius:8px;
 }
 
 #progress{
 font-size:12px;
-color:#444;
-margin-left:4px;
+color:#333;
 }
 
-</style></head><body><!-- ===== HEADER ===== --><div id="header"><button onclick="toggleUsers()">☰</button>
+</style></head><body><div id="header"><button onclick="toggleUsers()">☰</button>
 
-<div id="title">Tulip Chat</div><div><button onclick="location.reload()">🔄</button>
+<div>Tulip Chat</div><div>
+<button onclick="location.reload()">🔄</button>
+</div></div><div id="usersPanel"><h3>Online</h3><div id="onlineList"></div></div><div id="chat"></div><div id="input"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
 
-<button onclick="toggleInbox()">📥</button>
-
-</div></div><!-- USERS --><div id="usersPanel"><h3>Online Users</h3><div id="onlineList"></div></div><!-- INBOX --><div id="inboxPanel"><h3>Inbox</h3><div id="dmList">No messages</div></div><!-- CHAT --><div id="chat"></div><!-- INPUT --><div id="inputBar"><input id="text" placeholder="Type message"><button class="sendBtn" onclick="send()">Send</button>
-
-<input type="file" id="file" hidden accept="image/*,.gif"><button class="sendBtn" onclick="upload()">GIF</button>
+<input type="file" id="file" hidden accept="image/*,.gif"><button onclick="upload()">GIF</button>
 
 <span id="progress"></span>
 
 </div><script src="/socket.io/socket.io.js"></script><script>
 
-/* ===== SOCKET ===== */
-
 const socket = io()
 
-let username = localStorage.getItem("username") || prompt("Enter name")
-let gender = localStorage.getItem("gender") || prompt("male / female")
-
-localStorage.setItem("username",username)
-localStorage.setItem("gender",gender)
+let username = prompt("Enter name")
+let gender = prompt("male / female")
 
 socket.emit("join",{username,gender})
 
-/* ===== AVATAR ===== */
-
-function avatar(g){
-
-return g==="female"?"👩":"👨"
-
-}
-
-/* ===== SEND MESSAGE ===== */
+/* SEND */
 
 function send(){
 
@@ -199,19 +135,13 @@ let msg=text.value.trim()
 
 if(!msg)return
 
-if(msg==="/clear"){
-chat.innerHTML=""
-text.value=""
-return
-}
-
 socket.emit("message",{username,gender,msg})
 
 text.value=""
 
 }
 
-/* ===== RECEIVE MESSAGE ===== */
+/* RECEIVE */
 
 socket.on("message",(d)=>{
 
@@ -219,7 +149,7 @@ let div=document.createElement("div")
 
 div.className="msg"
 
-let icon=avatar(d.gender)
+let icon = d.gender==="female"?"👩":"👨"
 
 if(d.msg.includes("/uploads")){
 
@@ -237,7 +167,7 @@ chat.scrollTop=chat.scrollHeight
 
 })
 
-/* ===== ONLINE USERS ===== */
+/* ONLINE USERS */
 
 socket.on("onlineUsers",(users)=>{
 
@@ -247,8 +177,6 @@ users.forEach(u=>{
 
 let div=document.createElement("div")
 
-div.className="userItem"
-
 div.innerText=(u.gender==="female"?"👩":"👨")+" "+u.username
 
 onlineList.appendChild(div)
@@ -257,7 +185,7 @@ onlineList.appendChild(div)
 
 })
 
-/* ===== PANELS ===== */
+/* PANEL */
 
 function toggleUsers(){
 
@@ -265,13 +193,7 @@ usersPanel.classList.toggle("open")
 
 }
 
-function toggleInbox(){
-
-inboxPanel.classList.toggle("open")
-
-}
-
-/* ===== FILE UPLOAD ===== */
+/* FILE UPLOAD */
 
 function upload(){
 
@@ -306,9 +228,7 @@ let res=JSON.parse(xhr.responseText)
 socket.emit("message",{
 
 username,
-
 gender,
-
 msg:res.url
 
 })
