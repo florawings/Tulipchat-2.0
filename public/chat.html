@@ -4,7 +4,6 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>Tulip Chat</title>
 
 <style>
@@ -103,7 +102,6 @@ border-radius:6px;
 const socket = io()
 
 const chat = document.getElementById("chat")
-
 const msg = document.getElementById("msg")
 
 let name = localStorage.getItem("name")
@@ -116,9 +114,9 @@ localStorage.setItem("name",name)
 
 }
 
-socket.emit("join",{name})
+/* join chat */
 
-let uploadMsg=null
+socket.emit("join",{name})
 
 /* send text */
 
@@ -126,43 +124,16 @@ function send(){
 
 if(!msg.value) return
 
-socket.emit("message",{name,text:msg.value})
+socket.emit("message",{
+name:name,
+text:msg.value
+})
 
 msg.value=""
 
 }
 
-/* history */
-
-socket.on("history",(data)=>{
-
-chat.innerHTML=""
-
-data.forEach(m=>{
-
-if(m.system){
-
-addMsg(m.text,true)
-
-}
-
-else if(m.text){
-
-addMsg(m.name+": "+m.text)
-
-}
-
-else if(m.image){
-
-addImage(m.name,m.image)
-
-}
-
-})
-
-})
-
-/* live events */
+/* receive text */
 
 socket.on("message",(data)=>{
 
@@ -170,15 +141,27 @@ addMsg(data.name+": "+data.text)
 
 })
 
+/* join message */
+
 socket.on("system",(text)=>{
 
 addMsg(text,true)
 
 })
 
+/* receive image */
+
 socket.on("image",(data)=>{
 
-addImage(data.name,data.url)
+let div=document.createElement("div")
+
+div.className="msg"
+
+div.innerHTML=data.name+"<br><img src='"+data.url+"'>"
+
+chat.appendChild(div)
+
+chat.scrollTop=chat.scrollHeight
 
 })
 
@@ -220,31 +203,19 @@ let xhr=new XMLHttpRequest()
 
 xhr.open("POST","/upload",true)
 
-xhr.upload.onprogress=function(e){
+let progress=document.createElement("div")
 
-let percent=Math.round((e.loaded/e.total)*100)
+progress.className="msg system"
 
-if(!uploadMsg){
+progress.innerText="Uploading "+type+"..."
 
-uploadMsg=document.createElement("div")
-
-uploadMsg.className="msg system"
-
-chat.appendChild(uploadMsg)
-
-}
-
-uploadMsg.innerText="Uploading "+type+" "+percent+"%"
-
-}
+chat.appendChild(progress)
 
 xhr.onload=function(){
 
+progress.remove()
+
 let data=JSON.parse(xhr.responseText)
-
-uploadMsg.remove()
-
-uploadMsg=null
 
 socket.emit("image",{
 name:name,
@@ -267,7 +238,7 @@ location.reload()
 
 }
 
-/* ui */
+/* add message */
 
 function addMsg(text,system){
 
@@ -278,20 +249,6 @@ div.className="msg"
 if(system) div.className+=" system"
 
 div.innerText=text
-
-chat.appendChild(div)
-
-chat.scrollTop=chat.scrollHeight
-
-}
-
-function addImage(user,url){
-
-let div=document.createElement("div")
-
-div.className="msg"
-
-div.innerHTML=user+"<br><img src='"+url+"'>"
 
 chat.appendChild(div)
 
