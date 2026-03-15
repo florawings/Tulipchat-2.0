@@ -9,26 +9,25 @@ const server = http.createServer(app)
 const io = new Server(server)
 
 app.use(express.static("public"))
+app.use(express.json())
 
-/* upload system */
+let users={}
+let usernames={}
+
+/* file upload */
 
 const storage = multer.diskStorage({
-destination: "public/uploads",
-filename: (req,file,cb)=>{
+destination:"public/uploads",
+filename:(req,file,cb)=>{
 cb(null,Date.now()+path.extname(file.originalname))
 }
 })
 
 const upload = multer({storage})
 
-app.post("/upload", upload.single("file"), (req,res)=>{
+app.post("/upload",upload.single("file"),(req,res)=>{
 res.json({url:"/uploads/"+req.file.filename})
 })
-
-/* memory users */
-
-let users={}
-let usernames={}
 
 /* socket */
 
@@ -86,8 +85,6 @@ io.emit("online",Object.values(usernames))
 
 })
 
-const PORT = process.env.PORT || 3000
-
-server.listen(PORT,()=>{
-console.log("Tulip Chat running "+PORT)
+server.listen(3000,()=>{
+console.log("Tulip Chat server running")
 })
