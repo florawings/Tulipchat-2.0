@@ -1,29 +1,119 @@
-<h2>Admin Panel</h2>
+const express = require("express")
+const app = express()
+const http = require("http").createServer(app)
+const io = require("socket.io")(http)
 
-<button onclick="loadUsers()">Load Users</button>
+const User = require("./models/User")
 
-<div id="users"></div>
+app.use(express.json())
+app.use(express.static("public"))
 
-<script>
+let onlineUsers = []
 
-async function loadUsers(){
+io.on("connection",(socket)=>{
 
-let res = await fetch("/admin/users")
+socket.on("join",(data)=>{
 
-let users = await res.json()
+socket.username = data.username
+socket.role = data.role
+socket.gender = data.gender
 
-usersDiv.innerHTML=""
+onlineUsers.push({
+id:socket.id,
+username:data.username,
+role:data.role
+})
 
-users.forEach(u=>{
-
-let div = document.createElement("div")
-
-div.innerText = u.username + " ("+u.gender+")"
-
-users.appendChild(div)
+io.emit("onlineUsers",onlineUsers)
 
 })
 
+/* MESSAGE */
+
+socket.on("message",async(data)=>{
+
+const user = await User.findOne({username:data.username})
+
+if(user.status === "muted"){
+
+socket.emit("system","You are muted")
+
+return
+
 }
 
-</script>
+if(user.status === "banned"){
+
+socket.disconnect()
+
+return
+
+}
+
+io.emit("message",data)
+
+})
+
+/* BAN USER */
+
+socket.on("banUser",async(data)=>{
+
+if(data.role !== "owner" && data.role !== "superadmin") return
+
+await User.updateOne(
+{username:data.target},
+{$set:{status:"banned"}}
+)
+
+io.emit("system",data.target+" banned")
+
+})
+
+/* MUTE USER */
+
+socket.on("muteUser",async(data)=>{
+
+if(data.role !== "owner" && data.role !== "superadmin") return
+
+await User.updateOne(
+{username:data.target},
+{$set:{status:"muted"}}
+)
+
+io.emit("system",data.target+" muted")
+
+})
+
+/* KICK USER */
+
+socket.on("kickUser",(data)=>{
+
+if(data.role !== "owner" && data.role !== "superadmin") return
+
+onlineUsers.forEach(u=>{
+
+if(u.username === data.target){
+
+io.to(u.id).disconnectSockets()
+
+}
+
+})
+
+})
+
+socket.on("disconnect",()=>{
+
+onlineUsers = onlineUsers.filter(u=>u.id !== socket.id)
+
+io.emit("onlineUsers",onlineUsers)
+
+})
+
+})
+
+http.listen(3000,()=>{
+
+console.log("Server running")
+
+})
