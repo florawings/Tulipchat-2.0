@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>Tulip Chat</title>
 
@@ -12,7 +11,7 @@
 body{
 margin:0;
 font-family:Arial;
-background:#f2f2f2;
+background:#f4f4f4;
 display:flex;
 flex-direction:column;
 height:100vh;
@@ -25,41 +24,35 @@ padding:15px;
 font-size:20px;
 display:flex;
 justify-content:space-between;
-align-items:center;
 }
 
 #messages{
 flex:1;
-overflow:auto;
+overflow-y:auto;
 padding:10px;
+display:flex;
+flex-direction:column;
 }
 
 .message{
 background:white;
 padding:10px;
-margin-bottom:8px;
 border-radius:6px;
-max-width:85%;
+margin-bottom:8px;
+max-width:80%;
 }
 
 .system{
 text-align:center;
-color:#777;
-}
-
-img.chatImage{
-max-width:200px;
-border-radius:6px;
-margin-top:5px;
+color:#666;
 }
 
 #sendBar{
 display:flex;
+gap:6px;
 padding:10px;
 background:white;
 border-top:1px solid #ddd;
-position:sticky;
-bottom:0;
 }
 
 #messageInput{
@@ -71,18 +64,18 @@ font-size:16px;
 }
 
 button{
-margin-left:6px;
 padding:10px 14px;
-border:none;
 background:#ff2d6f;
 color:white;
+border:none;
 border-radius:6px;
 font-size:16px;
-cursor:pointer;
 }
 
-button:hover{
-opacity:0.9;
+img{
+max-width:200px;
+border-radius:6px;
+margin-top:5px;
 }
 
 </style>
@@ -107,29 +100,94 @@ opacity:0.9;
 
 <button onclick="sendMessage()">Send</button>
 
-<input type="file" id="imageUpload" style="display:none">
+<input type="file" id="imageUpload" hidden>
 
-<button onclick="uploadImage()">📷</button>
+<button onclick="openImage()">📷</button>
 
 <button onclick="sendGIF()">GIF</button>
 
 </div>
 
-
 <script src="/socket.io/socket.io.js"></script>
-<script src="client.js"></script>
 
 <script>
 
-function logout(){
+const socket = io();
 
-localStorage.removeItem("username");
+let username = localStorage.getItem("username");
 
-window.location="login.html";
+if(!username){
+username = prompt("Enter name");
+localStorage.setItem("username",username);
+}
+
+socket.emit("join",username);
+
+const messages = document.getElementById("messages");
+const input = document.getElementById("messageInput");
+
+function addMessage(data){
+
+let div = document.createElement("div");
+
+if(data.type==="system"){
+
+div.className="system";
+div.innerHTML=data.text;
 
 }
 
-function uploadImage(){
+else if(data.type==="image"){
+
+div.className="message";
+div.innerHTML="<b>"+data.user+":</b><br><img src='"+data.text+"'>";
+
+}
+
+else{
+
+div.className="message";
+div.innerHTML="<b>"+data.user+":</b> "+data.text;
+
+}
+
+messages.appendChild(div);
+
+messages.scrollTop=messages.scrollHeight;
+
+}
+
+socket.on("message",(data)=>{
+
+addMessage(data);
+
+});
+
+function sendMessage(){
+
+let text=input.value.trim();
+
+if(!text) return;
+
+socket.emit("message",{
+
+user:username,
+text:text,
+type:"text"
+
+});
+
+input.value="";
+
+}
+
+input.addEventListener("keypress",(e)=>{
+
+if(e.key==="Enter") sendMessage();
+
+});
+
+function openImage(){
 
 document.getElementById("imageUpload").click();
 
@@ -144,9 +202,11 @@ const reader=new FileReader();
 reader.onload=function(){
 
 socket.emit("message",{
+
 user:username,
 text:reader.result,
 type:"image"
+
 });
 
 };
@@ -162,10 +222,20 @@ const url=prompt("Paste GIF link");
 if(!url) return;
 
 socket.emit("message",{
+
 user:username,
 text:url,
 type:"image"
+
 });
+
+}
+
+function logout(){
+
+localStorage.removeItem("username");
+
+location.href="login.html";
 
 }
 
