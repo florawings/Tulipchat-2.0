@@ -1,76 +1,128 @@
 body{
 margin:0;
-display:flex;
-height:100vh;
-font-family:Arial;
+font-family:system-ui;
+background:#0b0b0f;
 color:white;
-background-size:cover;
-background-position:center;
+height:100vh;
+overflow:hidden;
+display:flex;
 }
 
-/* THEMES */
-
-body.normal{
-background-image:url("https://images.unsplash.com/photo-1518199266791-5375a83190b7");
-}
-
-body.adult{
-background-image:url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e");
-}
-
-body.private{
-background-image:url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee");
-}
+/* SIDEBAR */
 
 #sidebar{
-width:200px;
-background:rgba(0,0,0,.8);
-padding:10px;
+position:fixed;
+top:0;
+left:-250px;
+width:250px;
+height:100%;
+background:linear-gradient(180deg,#1a001f,#2b0033);
+padding:15px;
+transition:0.3s;
+z-index:10;
+overflow:auto;
 }
+
+#sidebar.open{
+left:0;
+}
+
+.user{
+padding:10px;
+margin-bottom:6px;
+border-radius:8px;
+background:#2c0036;
+cursor:pointer;
+}
+
+.user:hover{
+background:#4b0060;
+}
+
+/* MAIN CHAT */
 
 #chat{
 flex:1;
 display:flex;
 flex-direction:column;
+height:100vh;
 }
+
+/* TOPBAR */
+
+#topbar{
+background:linear-gradient(90deg,#ff4da6,#b366ff);
+padding:12px;
+font-weight:bold;
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+#menu{
+font-size:22px;
+cursor:pointer;
+}
+
+/* MESSAGE AREA */
 
 #messages{
 flex:1;
-overflow-y:auto;
+overflow:auto;
 padding:10px;
+display:flex;
+flex-direction:column;
+gap:8px;
 }
+
+/* BUBBLES */
 
 .msg{
-background:rgba(255,105,180,.2);
-padding:10px;
-border-radius:10px;
-margin-bottom:10px;
+padding:10px 14px;
+border-radius:18px;
 max-width:70%;
+word-wrap:break-word;
 }
 
-.system{
-opacity:.6;
-font-style:italic;
+.me{
+background:linear-gradient(90deg,#ff4da6,#b366ff);
+align-self:flex-end;
 }
+
+.other{
+background:#2b2b2b;
+align-self:flex-start;
+}
+
+/* INPUT BAR */
 
 #input{
 display:flex;
-padding:10px;
-background:rgba(0,0,0,.7);
+padding:8px;
+background:#111;
+gap:6px;
 }
 
 #text{
 flex:1;
 padding:10px;
-border-radius:20px;
 border:none;
+border-radius:20px;
+background:#222;
+color:white;
+outline:none;
 }
 
 button{
-margin-left:5px;
-padding:10px;
-background:#ff4da6;
+padding:10px 14px;
 border:none;
+border-radius:20px;
+background:linear-gradient(90deg,#ff4da6,#b366ff);
 color:white;
-border-radius:10px;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{
+opacity:0.9;
 }
