@@ -4,7 +4,10 @@ const messageSchema = new mongoose.Schema({
 
 username:String,
 msg:String,
-time:{type:Date,default:Date.now}
+time:{
+type:Date,
+default:Date.now
+}
 
 })
 
