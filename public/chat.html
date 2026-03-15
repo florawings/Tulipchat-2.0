@@ -1,16 +1,15 @@
 <!DOCTYPE html><html>
-<head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tulip Chat</title><style>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>Tulip Chat</title><style>
 
-*{
-box-sizing:border-box;
-}
+*{box-sizing:border-box;}
 
 body{
 margin:0;
 font-family:Arial;
-background:#0e0e0e;
 display:flex;
 height:100vh;
+background:#0f0f0f;
 color:white;
 overflow:hidden;
 }
@@ -18,7 +17,7 @@ overflow:hidden;
 /* sidebar */
 
 #sidebar{
-width:200px;
+width:220px;
 background:black;
 padding:15px;
 }
@@ -29,10 +28,10 @@ margin-top:0;
 }
 
 .room{
-padding:8px;
+padding:10px;
 background:#111;
+margin-bottom:8px;
 border-radius:6px;
-margin-bottom:6px;
 cursor:pointer;
 }
 
@@ -57,7 +56,7 @@ overflow-y:auto;
 padding:15px;
 }
 
-.message{
+.msg{
 background:rgba(0,0,0,0.6);
 padding:10px;
 border-radius:10px;
@@ -65,26 +64,17 @@ margin-bottom:10px;
 max-width:70%;
 }
 
-.message img{
+.msg img{
 max-width:200px;
 border-radius:10px;
 }
 
-.message video{
-max-width:220px;
-border-radius:10px;
-}
-
-/* input bar */
+/* input */
 
 #inputBar{
 display:flex;
 padding:10px;
 background:black;
-position:fixed;
-bottom:0;
-left:200px;
-right:0;
 }
 
 #text{
@@ -105,104 +95,14 @@ color:white;
 cursor:pointer;
 }
 
-#file{
-margin-left:6px;
-}
-
 #progress{
 margin-left:10px;
 font-size:12px;
 }
 
-</style></head><body><div id="sidebar"><h2>Tulip Chat</h2><div class="room" onclick="joinRoom('normal')">Normal Room</div><div class="room" onclick="joinRoom('adult')">Adult Room</div><h3>Online Users</h3><div id="online"></div></div><div id="chat"><div id="messages"></div></div><div id="inputBar"><input id="text" placeholder="Type message"><button onclick="sendMsg()">Send</button>
+</style></head><body><div id="sidebar"><h2>Tulip Chat</h2><div class="room" onclick="joinRoom('normal')">Normal Room</div><div class="room" onclick="joinRoom('adult')">Adult Room</div><h3>Online Users</h3><div id="online"></div></div><div id="chat"><div id="messages"></div><div id="inputBar"><input id="text" placeholder="Type message"><button onclick="sendMsg()">Send</button>
 
 <input type="file" id="file"><span id="progress"></span>
 
-</div><script src="/socket.io/socket.io.js"></script><script>
-
-const socket=io()
-
-let room="normal"
-
-let username=localStorage.getItem("username")||prompt("Enter username")
-
-function joinRoom(r){
-
-room=r
-
-socket.emit("join",r)
-
-}
-
-function addMsg(html){
-
-let div=document.createElement("div")
-
-div.className="message"
-
-div.innerHTML=html
-
-document.getElementById("messages").appendChild(div)
-
-document.getElementById("messages").scrollTop=999999
-
-}
-
-function sendMsg(){
-
-let text=document.getElementById("text").value
-
-if(!text)return
-
-socket.emit("message",{room,user:username,msg:text})
-
-document.getElementById("text").value=""
-
-}
-
-socket.on("message",(data)=>{
-
-addMsg("<b>"+data.user+":</b> "+data.msg)
-
-})
-
-/* file upload */
-
-document.getElementById("file").onchange=function(){
-
-let file=this.files[0]
-
-let form=new FormData()
-
-form.append("file",file)
-
-let xhr=new XMLHttpRequest()
-
-xhr.open("POST","/upload")
-
-xhr.upload.onprogress=e=>{
-
-let p=Math.round((e.loaded/e.total)*100)
-
-document.getElementById("progress").innerText=p+"%"
-
-}
-
-xhr.onload=()=>{
-
-let url=xhr.responseText
-
-if(file.type.startsWith("image")){
-
-socket.emit("message",{room,user:username,msg:"<img src='"+url+"'>"})
-
-}
-
-}
-
-xhr.send(form)
-
-}
-
-</script></body>
+</div></div><script src="/socket.io/socket.io.js"></script><script src="client.js"></script></body>
 </html>
