@@ -1,5 +1,5 @@
 <!DOCTYPE html><html>
-<head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat</title><style>
+<head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tulip Chat</title><style>
 
 body{
 margin:0;
@@ -10,7 +10,23 @@ height:100vh;
 overflow:hidden;
 }
 
-/* sidebar */
+/* TOP BAR */
+
+#topbar{
+background:linear-gradient(90deg,#ff4da6,#c44dff);
+padding:12px;
+display:flex;
+align-items:center;
+gap:10px;
+font-weight:bold;
+}
+
+#menu{
+font-size:22px;
+cursor:pointer;
+}
+
+/* SIDEBAR */
 
 #sidebar{
 position:fixed;
@@ -18,10 +34,10 @@ left:-260px;
 top:0;
 width:260px;
 height:100%;
-background:linear-gradient(180deg,#220022,#3d003d);
+background:#1b001b;
 padding:15px;
 transition:0.3s;
-z-index:10;
+overflow:auto;
 }
 
 #sidebar.open{
@@ -30,28 +46,17 @@ left:0;
 
 .user{
 padding:10px;
+border-radius:8px;
 margin-bottom:6px;
-border-radius:10px;
-background:#3a003f;
+background:#300030;
 cursor:pointer;
 }
 
-/* top */
-
-#top{
-background:linear-gradient(90deg,#ff4da6,#c44dff);
-padding:12px;
-display:flex;
-align-items:center;
-gap:10px;
+.user:hover{
+background:#520052;
 }
 
-#menu{
-font-size:22px;
-cursor:pointer;
-}
-
-/* messages */
+/* CHAT AREA */
 
 #messages{
 height:calc(100vh - 120px);
@@ -62,10 +67,13 @@ flex-direction:column;
 gap:8px;
 }
 
+/* BUBBLES */
+
 .msg{
-padding:10px 15px;
-border-radius:18px;
+padding:10px 14px;
+border-radius:16px;
 max-width:70%;
+word-wrap:break-word;
 }
 
 .me{
@@ -78,15 +86,15 @@ background:#2c2c2c;
 align-self:flex-start;
 }
 
-/* input */
+/* INPUT */
 
-#input{
+#inputbar{
 position:fixed;
 bottom:0;
 width:100%;
-background:#1b001b;
-display:flex;
+background:#1a001a;
 padding:10px;
+display:flex;
 gap:6px;
 }
 
@@ -105,33 +113,85 @@ border:none;
 border-radius:20px;
 background:linear-gradient(90deg,#ff4da6,#c44dff);
 color:white;
+cursor:pointer;
 }
 
-</style></head><body><div id="sidebar">
-<h3>Online Users</h3>
-<div id="users"></div>
-</div><div id="top">
+#progress{
+font-size:12px;
+padding-left:6px;
+}
+
+/* DM MODAL */
+
+#dmModal{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.8);
+display:none;
+flex-direction:column;
+}
+
+#dmTop{
+background:#ff4da6;
+padding:10px;
+display:flex;
+justify-content:space-between;
+}
+
+#dmMessages{
+flex:1;
+overflow:auto;
+padding:10px;
+}
+
+#dmInput{
+display:flex;
+padding:10px;
+gap:6px;
+background:#1a001a;
+}
+
+</style></head><body><div id="topbar">
 <span id="menu">☰</span>
 Tulip Chat
-</div><div id="messages"></div><div id="input">
-<input id="text" placeholder="Type message">
-<button onclick="send()">Send</button>
-</div><script src="/socket.io/socket.io.js"></script><script>
+</div><div id="sidebar"><h3>Online Users</h3><div id="users"></div></div><div id="messages"></div><div id="inputbar"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
+
+<input type="file" id="file"><span id="progress"></span>
+
+</div><!-- DM WINDOW --><div id="dmModal"><div id="dmTop"><span id="dmUser"></span>
+
+<button onclick="closeDM()">X</button>
+
+</div><div id="dmMessages"></div><div id="dmInput"><input id="dmText" placeholder="DM message"><button onclick="sendDM()">Send</button>
+
+</div></div><script src="/socket.io/socket.io.js"></script><script>
 
 const socket=io()
 
 let username=localStorage.getItem("username")
+let gender=localStorage.getItem("gender")
+let age=localStorage.getItem("age")
+
+/* LOGIN */
 
 if(!username){
 
- username=prompt("Enter your name")
+ username=prompt("Enter name")
+ age=prompt("Enter age")
+ gender=prompt("Gender (Male/Female)")
+
  localStorage.setItem("username",username)
+ localStorage.setItem("age",age)
+ localStorage.setItem("gender",gender)
 
 }
 
-socket.emit("join",{name:username})
+socket.emit("join",{name:username,gender})
 
-/* sidebar toggle */
+/* SIDEBAR */
 
 const menu=document.getElementById("menu")
 const sidebar=document.getElementById("sidebar")
@@ -140,7 +200,7 @@ menu.onclick=()=>{
  sidebar.classList.toggle("open")
 }
 
-/* send message */
+/* SEND PUBLIC MESSAGE */
 
 function send(){
 
@@ -153,7 +213,7 @@ function send(){
 
 }
 
-/* receive */
+/* RECEIVE MESSAGE */
 
 socket.on("message",(data)=>{
 
@@ -167,7 +227,7 @@ socket.on("message",(data)=>{
 
 })
 
-/* online users */
+/* ONLINE USERS */
 
 socket.on("online",(list)=>{
 
@@ -180,14 +240,10 @@ socket.on("online",(list)=>{
 
   u.className="user"
 
-  u.innerText=list[id]
+  u.innerText=list[id].name+" ("+list[id].gender+")"
 
   u.onclick=()=>{
-
-   let text=prompt("DM message")
-
-   socket.emit("dm",{to:id,msg:text,user:username})
-
+   openDM(id,list[id].name)
   }
 
   box.appendChild(u)
@@ -196,13 +252,85 @@ socket.on("online",(list)=>{
 
 })
 
-/* receive dm */
+/* DM */
+
+let currentDM=null
+
+function openDM(id,name){
+
+ currentDM=id
+
+ document.getElementById("dmModal").style.display="flex"
+
+ document.getElementById("dmUser").innerText=name
+
+ document.getElementById("dmMessages").innerHTML=""
+
+}
+
+function closeDM(){
+
+ document.getElementById("dmModal").style.display="none"
+
+}
+
+function sendDM(){
+
+ let text=document.getElementById("dmText").value
+
+ socket.emit("dm",{to:currentDM,msg:text,user:username})
+
+ document.getElementById("dmText").value=""
+
+}
+
+/* RECEIVE DM */
 
 socket.on("dm",(data)=>{
 
- alert("DM from "+data.user+": "+data.msg)
+ let div=document.createElement("div")
+
+ div.className="msg "+(data.user===username?"me":"other")
+
+ div.innerText=data.user+": "+data.msg
+
+ document.getElementById("dmMessages").appendChild(div)
 
 })
+
+/* FILE UPLOAD */
+
+document.getElementById("file").onchange=async function(){
+
+ let file=this.files[0]
+
+ let form=new FormData()
+
+ form.append("file",file)
+
+ let xhr=new XMLHttpRequest()
+
+ xhr.open("POST","/upload")
+
+ xhr.upload.onprogress=(e)=>{
+
+  let percent=Math.round((e.loaded/e.total)*100)
+
+  document.getElementById("progress").innerText=percent+"%"
+
+ }
+
+ xhr.onload=()=>{
+
+  let res=JSON.parse(xhr.response)
+
+  socket.emit("message",{user:username,msg:res.url})
+
+ }
+
+ xhr.send(form)
+
+}
 
 </script></body>
 </html>
