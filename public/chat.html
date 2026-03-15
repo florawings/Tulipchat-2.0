@@ -1,233 +1,68 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat</title><style>
-
-body{
-margin:0;
-font-family:Arial;
-display:flex;
-height:100vh;
-overflow:hidden;
-color:white;
-background-size:cover;
-background-position:center;
-}
-
-/* THEMES */
-
-body.normal{
-background-image:url("https://images.unsplash.com/photo-1518199266791-5375a83190b7");
-}
-
-body.adult{
-background-image:url("https://images.unsplash.com/photo-1500534314209-a25ddb2bd429");
-}
-
-body.private{
-background-image:url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e");
-}
-
-/* SIDEBAR */
-
-#sidebar{
-width:200px;
-background:rgba(0,0,0,.8);
-padding:10px;
-overflow:auto;
-}
-
-#sidebar div{
-padding:8px;
-cursor:pointer;
-border-bottom:1px solid #444;
-}
-
-#sidebar div:hover{
-background:#ff4da6;
-}
-
-/* CHAT AREA */
+<!DOCTYPE html>
+<html>
 
-#chat{
-flex:1;
-display:flex;
-flex-direction:column;
-height:100vh;
-}
+<head>
 
-#messages{
-flex:1;
-overflow-y:auto;
-padding:10px;
-}
+<title>Tulip Chat</title>
 
-.msg{
-background:rgba(255,105,180,.3);
-padding:10px;
-border-radius:10px;
-margin-bottom:10px;
-max-width:70%;
-}
+<link rel="stylesheet" href="style.css">
 
-.system{
-opacity:.6;
-font-style:italic;
-}
+</head>
 
-/* INPUT BAR */
+<body>
 
-#input{
-display:flex;
-position:fixed;
-bottom:0;
-left:200px;
-right:0;
-background:black;
-padding:10px;
-}
+<div style="display:flex;height:100vh">
 
-#text{
-flex:1;
-padding:10px;
-border-radius:20px;
-border:none;
-}
+<!-- SIDEBAR -->
 
-button{
-margin-left:5px;
-padding:10px;
-border:none;
-border-radius:10px;
-background:#ff4da6;
-color:white;
-}
+<div style="width:200px;background:black;color:white;padding:10px">
 
-#progress{
-font-size:12px;
-margin-left:10px;
-}
+<h3>Tulip Chat</h3>
 
-</style></head><body class="normal"><div id="sidebar"><h3>Tulip Chat</h3><div onclick="joinRoom('normal')">Normal Room</div><div onclick="joinRoom('adult')">Adult Room</div><div onclick="joinRoom('private')">Private Room</div><h4>Online Users</h4><div id="online"></div></div><div id="chat"><div id="messages"></div></div><div id="input"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
+<div onclick="joinRoom('normal')">Normal Room</div>
 
-<input type="file" id="file"><div id="progress"></div></div><script src="/socket.io/socket.io.js"></script><script>
+<div onclick="joinRoom('adult')">Adult Room</div>
 
-const socket=io()
+<div onclick="joinRoom('private')">Private Room</div>
 
-let username=localStorage.getItem("username")
+<h4>Online Users</h4>
 
-if(!username){
-username=prompt("Enter username")
-localStorage.setItem("username",username)
-}
+<div id="online"></div>
 
-let room="normal"
+</div>
 
-socket.emit("join",{username,room})
+<!-- CHAT -->
 
-function joinRoom(r){
+<div style="flex:1;padding:10px">
 
-room=r
-document.body.className=r
-messages.innerHTML=""
+<div id="messages" style="height:80vh;overflow:auto"></div>
 
-socket.emit("join",{username,room})
+<input id="text">
 
-}
+<button onclick="sendMessage()">Send</button>
 
-function add(html,type){
+</div>
 
-let div=document.createElement("div")
+</div>
 
-div.className="msg "+(type||"")
+<!-- DM WINDOW -->
 
-div.innerHTML=html
+<div id="dmBox" style="position:fixed;right:10px;bottom:10px;width:300px;background:white;color:black;display:none">
 
-messages.appendChild(div)
+<h4 id="dmUser"></h4>
 
-messages.scrollTop=messages.scrollHeight
+<div id="dmMessages" style="height:200px;overflow:auto"></div>
 
-}
+<input id="dmText">
 
-function send(){
+<button onclick="sendDM()">Send</button>
 
-let text=document.getElementById("text").value
+</div>
 
-if(!text)return
+<script src="/socket.io/socket.io.js"></script>
 
-socket.emit("message",{user:username,msg:text,room})
+<script src="client.js"></script>
 
-text.value=""
+</body>
 
-}
-
-socket.on("message",(data)=>{
-
-add("<b>"+data.user+"</b> ["+data.room+"]<br>"+data.msg)
-
-})
-
-socket.on("system",(msg)=>{
-
-add(msg,"system")
-
-})
-
-socket.on("online",(list)=>{
-
-online.innerHTML="Online:"+list.length+"<br>"+list.join("<br>")
-
-})
-
-/* FILE UPLOAD */
-
-file.onchange=function(){
-
-let f=this.files[0]
-
-let form=new FormData()
-
-form.append("file",f)
-
-let xhr=new XMLHttpRequest()
-
-xhr.open("POST","/upload")
-
-xhr.upload.onprogress=(e)=>{
-
-let p=Math.round((e.loaded/e.total)*100)
-
-progress.innerText="Upload "+p+"%"
-
-}
-
-xhr.onload=()=>{
-
-let res=JSON.parse(xhr.response)
-
-let url=res.url
-
-let ext=url.split(".").pop()
-
-let media=""
-
-if(ext=="mp4"){
-
-media=`<video src="${url}" controls width="200"></video>`
-
-}
-
-else{
-
-media=`<img src="${url}" width="200">`
-
-}
-
-socket.emit("message",{user:username,msg:media,room})
-
-progress.innerText=""
-
-}
-
-xhr.send(form)
-
-}
-
-</script></body></html>
+</html>
