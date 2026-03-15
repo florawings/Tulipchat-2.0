@@ -1,14 +1,13 @@
 <!DOCTYPE html><html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1"><title>Tulip Chat</title><style>
+<head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tulip Chat</title><style>
 
 *{box-sizing:border-box;}
 
 body{
 margin:0;
 font-family:Arial;
-display:flex;
 height:100vh;
+display:flex;
 background:#0f0f0f;
 color:white;
 overflow:hidden;
@@ -17,9 +16,14 @@ overflow:hidden;
 /* sidebar */
 
 #sidebar{
-width:220px;
+width:230px;
 background:black;
 padding:15px;
+transition:0.3s;
+}
+
+#sidebar.hide{
+margin-left:-230px;
 }
 
 #sidebar h2{
@@ -29,14 +33,30 @@ margin-top:0;
 
 .room{
 padding:10px;
-background:#111;
 margin-bottom:8px;
+background:#111;
 border-radius:6px;
 cursor:pointer;
 }
 
 .room:hover{
 background:#222;
+}
+
+/* top bar */
+
+#topbar{
+height:45px;
+background:#111;
+display:flex;
+align-items:center;
+padding:0 10px;
+}
+
+#menu{
+font-size:22px;
+cursor:pointer;
+margin-right:10px;
 }
 
 /* chat */
@@ -69,7 +89,20 @@ max-width:200px;
 border-radius:10px;
 }
 
-/* input */
+.msg video{
+max-width:220px;
+border-radius:10px;
+}
+
+/* typing */
+
+#typing{
+font-size:12px;
+color:#ccc;
+padding-left:15px;
+}
+
+/* input bar */
 
 #inputBar{
 display:flex;
@@ -95,14 +128,105 @@ color:white;
 cursor:pointer;
 }
 
-#progress{
-margin-left:10px;
-font-size:12px;
+/* dm */
+
+#dmBox{
+position:fixed;
+right:20px;
+bottom:20px;
+width:260px;
+background:#111;
+border-radius:10px;
+display:none;
+flex-direction:column;
 }
 
-</style></head><body><div id="sidebar"><h2>Tulip Chat</h2><div class="room" onclick="joinRoom('normal')">Normal Room</div><div class="room" onclick="joinRoom('adult')">Adult Room</div><h3>Online Users</h3><div id="online"></div></div><div id="chat"><div id="messages"></div><div id="inputBar"><input id="text" placeholder="Type message"><button onclick="sendMsg()">Send</button>
+#dmHeader{
+background:#ff4da6;
+padding:10px;
+}
+
+#dmMessages{
+height:200px;
+overflow:auto;
+padding:10px;
+}
+
+#dmInput{
+display:flex;
+padding:10px;
+}
+
+#dmText{
+flex:1;
+padding:8px;
+border:none;
+border-radius:10px;
+}
+
+/* emoji */
+
+#emojiBox{
+position:absolute;
+bottom:60px;
+background:#222;
+padding:10px;
+border-radius:10px;
+display:none;
+}
+
+#emojiBox span{
+font-size:20px;
+cursor:pointer;
+margin:3px;
+}
+
+</style></head><body><div id="sidebar"><h2>Tulip Chat</h2><div class="room" onclick="joinRoom('normal')">Normal Room</div><div class="room" onclick="joinRoom('adult')">Adult Room</div><h3>Online Users</h3><div id="online"></div></div><div id="chat"><div id="topbar"><span id="menu" onclick="toggleMenu()">☰</span>
+
+<span id="roomName">Normal Room</span>
+
+</div><div id="messages"></div><div id="typing"></div><div id="inputBar"><input id="text" placeholder="Type message"><button onclick="sendMsg()">Send</button>
+
+<button onclick="toggleEmoji()">😊</button>
+
+<button onclick="sendGif()">GIF</button>
 
 <input type="file" id="file"><span id="progress"></span>
 
-</div></div><script src="/socket.io/socket.io.js"></script><script src="client.js"></script></body>
-</html>
+</div></div><div id="emojiBox"><span onclick="emoji('😀')">😀</span>
+<span onclick="emoji('❤️')">❤️</span>
+<span onclick="emoji('🔥')">🔥</span>
+<span onclick="emoji('😂')">😂</span>
+<span onclick="emoji('😍')">😍</span>
+
+</div><div id="dmBox"><div id="dmHeader">DM</div><div id="dmMessages"></div><div id="dmInput"><input id="dmText"><button onclick="sendDM()">Send</button>
+
+</div></div><script src="/socket.io/socket.io.js"></script><script src="client.js"></script><script>
+
+function toggleMenu(){
+document.getElementById("sidebar").classList.toggle("hide")
+}
+
+function toggleEmoji(){
+let box=document.getElementById("emojiBox")
+box.style.display=box.style.display==="block"?"none":"block"
+}
+
+function emoji(e){
+document.getElementById("text").value+=e
+}
+
+function sendGif(){
+
+let url=prompt("Paste GIF link")
+
+socket.emit("message",{
+room:room,
+user:username,
+msg:"<img src='"+url+"'>"
+})
+
+}
+
+</script></body>
+  </html>
