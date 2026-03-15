@@ -1,46 +1,20 @@
 <!DOCTYPE html><html>
-<head>
-<meta charset="UTF-8">
-<title>Tulip Chat</title><style>
-
-*{
-box-sizing:border-box;
-}
+<head><title>Tulip Chat</title><style>
 
 body{
 margin:0;
-font-family:'Segoe UI',sans-serif;
 display:flex;
 height:100vh;
+font-family:sans-serif;
 background:linear-gradient(135deg,#ffd6e7,#ffe9f3,#f5e6ff);
 }
 
-/* sidebar */
-
 #sidebar{
-width:230px;
+width:220px;
 background:rgba(255,255,255,0.6);
-backdrop-filter:blur(10px);
 padding:15px;
-box-shadow:2px 0 10px rgba(0,0,0,0.1);
+backdrop-filter:blur(10px);
 }
-
-#sidebar h3{
-margin-top:0;
-color:#ff4d8d;
-}
-
-#sidebar button{
-background:#ff4d8d;
-border:none;
-padding:8px 12px;
-color:white;
-border-radius:6px;
-cursor:pointer;
-margin-bottom:10px;
-}
-
-/* chat area */
 
 #chatArea{
 flex:1;
@@ -48,23 +22,18 @@ display:flex;
 flex-direction:column;
 }
 
-/* messages */
-
 #messages{
 flex:1;
-overflow-y:auto;
+overflow:auto;
 padding:20px;
 }
 
-/* chat bubble */
-
 .message{
 background:white;
-padding:10px 14px;
-border-radius:18px;
+padding:10px;
+border-radius:10px;
 margin-bottom:10px;
 max-width:70%;
-box-shadow:0 3px 8px rgba(0,0,0,0.08);
 }
 
 .me{
@@ -73,78 +42,55 @@ color:white;
 margin-left:auto;
 }
 
-/* input area */
-
 #inputArea{
 display:flex;
-padding:12px;
-background:rgba(255,255,255,0.7);
-backdrop-filter:blur(6px);
+padding:10px;
+background:white;
 }
 
 #msgInput{
 flex:1;
 padding:10px;
-border-radius:20px;
-border:1px solid #ddd;
-outline:none;
-font-size:14px;
+border-radius:10px;
+border:1px solid #ccc;
 }
 
-/* buttons */
-
 button{
-margin-left:6px;
+margin-left:5px;
 padding:8px 12px;
 border:none;
 background:#ff4d8d;
 color:white;
-border-radius:10px;
-cursor:pointer;
-}
-
-button:hover{
-background:#ff2f78;
-}
-
-/* images */
-
-img.chatImg{
-max-width:200px;
-border-radius:10px;
-margin-top:5px;
+border-radius:8px;
 }
 
 </style></head><body><div id="sidebar"><h3>🌷 Tulip Chat</h3><button onclick="logout()">Logout</button>
 
 <p id="onlineCount">0 users online</p><ul id="userList"></ul></div><div id="chatArea"><div id="messages"></div><div id="inputArea"><input id="msgInput" placeholder="Type message"><button onclick="sendMsg()">Send</button>
 
-<input type="file" id="imgInput" style="display:none"><button onclick="document.getElementById('imgInput').click()">📷</button>
-
-<button onclick="sendGif()">GIF</button>
-
 </div></div><script src="/socket.io/socket.io.js"></script><script>
 
-const socket = io()
+const socket=io()
 
-let username = localStorage.getItem("username")
+let username=localStorage.getItem("username")
 
 if(!username){
-location.href="/"
+
+location="/"
+
 }
 
-function addMessage(html,type=""){
+socket.emit("join",username)
 
-const box=document.createElement("div")
+function addMessage(text,type=""){
 
-box.className="message "+type
+let div=document.createElement("div")
 
-box.innerHTML=html
+div.className="message "+type
 
-document.getElementById("messages").appendChild(box)
+div.innerHTML=text
 
-document.getElementById("messages").scrollTop=
-document.getElementById("messages").scrollHeight
+document.getElementById("messages").appendChild(div)
 
 }
 
@@ -171,65 +117,6 @@ addMessage("<b>"+data.user+":</b> "+data.msg)
 
 })
 
-
-document.getElementById("msgInput")
-.addEventListener("keypress",(e)=>{
-
-if(e.key==="Enter") sendMsg()
-
-})
-
-
-function sendGif(){
-
-let url=prompt("Paste GIF URL")
-
-if(!url) return
-
-socket.emit("chat message",{
-user:username,
-msg:"<img class='chatImg' src='"+url+"'>"
-})
-
-}
-
-
-document.getElementById("imgInput")
-.addEventListener("change",async function(){
-
-let file=this.files[0]
-
-let form=new FormData()
-
-form.append("image",file)
-
-let res=await fetch("/upload",{
-method:"POST",
-body:form
-})
-
-let data=await res.json()
-
-socket.emit("chat message",{
-user:username,
-msg:"<img class='chatImg' src='"+data.url+"'>"
-})
-
-})
-
-
-function logout(){
-
-localStorage.removeItem("username")
-
-location.href="/"
-
-}
-
-
-socket.emit("join",username)
-
-
 socket.on("user list",(users)=>{
 
 document.getElementById("onlineCount").innerText=
@@ -250,6 +137,14 @@ ul.appendChild(li)
 })
 
 })
+
+function logout(){
+
+localStorage.removeItem("username")
+
+location="/"
+
+}
 
 </script></body>
 </html>
