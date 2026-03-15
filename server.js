@@ -25,16 +25,21 @@ res.json({url:"/uploads/"+req.file.filename})
 
 /* USERS */
 
-const users = {}
+const users={}
 
 io.on("connection",(socket)=>{
 
 socket.on("join",(data)=>{
 
-users[socket.id] = data.user
+users[socket.id]={
+name:data.user,
+gender:data.gender
+}
+
+/* OLD ROOMS LEAVE */
 
 for (let room of socket.rooms) {
-if(room !== socket.id){
+if(room!==socket.id){
 socket.leave(room)
 }
 }
@@ -50,20 +55,30 @@ msg:data.user+" joined the room"
 
 })
 
+/* ROOM MESSAGE */
+
 socket.on("message",(data)=>{
 io.to(data.room).emit("message",data)
 })
 
+/* DM */
+
 socket.on("dm",(data)=>{
+
 io.to(data.to).emit("dm",{
 from:data.from,
 msg:data.msg
 })
+
 })
+
+/* TYPING */
 
 socket.on("typing",(data)=>{
 socket.to(data.room).emit("typing",data.user)
 })
+
+/* DISCONNECT */
 
 socket.on("disconnect",()=>{
 delete users[socket.id]
@@ -73,5 +88,5 @@ io.emit("onlineUsers",users)
 })
 
 server.listen(3000,()=>{
-console.log("Tulip Chat running")
+console.log("Tulip Chat Running")
 })
