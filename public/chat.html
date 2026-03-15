@@ -1,251 +1,116 @@
 <!DOCTYPE html><html>
-<head><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tulip Chat</title><style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial;
-}
+<head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat 5.0</title><style>
 
 body{
-
+margin:0;
+font-family:Arial;
 height:100vh;
 display:flex;
 flex-direction:column;
 
 background:
-linear-gradient(rgba(0,0,0,0.55),rgba(0,0,0,0.55)),
+linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),
 url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee");
 
 background-size:cover;
-background-position:center;
-
 color:white;
-
 }
 
 /* header */
 
 #header{
-
-height:55px;
+height:50px;
 background:#111;
-
 display:flex;
 align-items:center;
-
-padding:0 15px;
-
-}
-
-#menuBtn{
-
-font-size:22px;
-margin-right:15px;
-cursor:pointer;
-
-}
-
-/* chat */
-
-#messages{
-
-flex:1;
-overflow-y:auto;
-
-padding:15px;
-
-}
-
-/* bubble */
-
-.message{
-
-display:flex;
-
-margin-bottom:12px;
-
-}
-
-.avatar{
-
-width:40px;
-height:40px;
-
-border-radius:50%;
-
-background:#444;
-
-margin-right:10px;
-
-}
-
-.bubble{
-
-background:rgba(0,0,0,0.65);
-
-padding:10px 12px;
-
-border-radius:10px;
-
-max-width:75%;
-
-}
-
-.name{
-
-font-weight:bold;
-
-color:#ffb84d;
-
-}
-
-/* media */
-
-.chatMedia{
-
-max-width:240px;
-
-border-radius:8px;
-
-margin-top:6px;
-
-}
-
-/* input */
-
-#inputArea{
-
-display:flex;
-
-padding:10px;
-
-background:rgba(0,0,0,0.8);
-
-}
-
-#msgInput{
-
-flex:1;
-
-padding:10px;
-
-border-radius:20px;
-
-border:none;
-
-outline:none;
-
-}
-
-button{
-
-margin-left:6px;
-
-padding:8px 12px;
-
-border:none;
-
-border-radius:8px;
-
-background:#ff3b6b;
-
-color:white;
-
-cursor:pointer;
-
+padding:0 10px;
 }
 
 /* sidebar */
 
 #sidebar{
-
 position:fixed;
-
+left:-250px;
 top:0;
-left:-260px;
-
-width:260px;
+width:250px;
 height:100%;
-
-background:rgba(0,0,0,0.9);
-
-padding:15px;
-
+background:#000;
 transition:0.3s;
-
-z-index:10;
-
+padding:20px;
 }
 
 #sidebar.show{
-
 left:0;
-
 }
 
 .menuItem{
-
 padding:10px;
-
-border-bottom:1px solid rgba(255,255,255,0.1);
-
+border-bottom:1px solid #333;
 cursor:pointer;
-
 }
 
-/* profile panel */
+/* chat */
 
-#profilePanel{
-
-position:fixed;
-
-right:-260px;
-top:0;
-
-width:260px;
-height:100%;
-
-background:rgba(0,0,0,0.9);
-
+#messages{
+flex:1;
+overflow-y:auto;
 padding:15px;
-
-transition:0.3s;
-
-z-index:10;
-
 }
 
-#profilePanel.show{
-
-right:0;
-
+.message{
+background:rgba(0,0,0,0.6);
+padding:10px;
+border-radius:10px;
+margin-bottom:10px;
 }
 
-</style></head><body><div id="sidebar"><h3>Current room</h3><div class="menuItem">Adult room</div>
-<div class="menuItem">Room list</div>
-<div class="menuItem">Friends wall</div>
-<div class="menuItem">News</div>
-<div class="menuItem">Games</div>
-<div class="menuItem">Leaderboard</div>
-<div class="menuItem">Rules</div>
-<div class="menuItem">Support ticket</div></div><div id="profilePanel"><h3>Profile</h3><div class="menuItem">Chat options</div>
-<div class="menuItem">Level info</div>
-<div class="menuItem">Wallet</div>
-<div class="menuItem">Admin panel</div>
-<div class="menuItem">Reload</div>
-<div class="menuItem">Leave room</div>
-<div class="menuItem">Logout</div></div><div id="header"><span id="menuBtn" onclick="toggleMenu()">☰</span>
+.chatMedia{
+max-width:220px;
+border-radius:8px;
+}
 
-Tulip Chat
+/* input */
 
-<span style="margin-left:auto;cursor:pointer" onclick="toggleProfile()">⚙</span>
+#inputArea{
+display:flex;
+padding:10px;
+background:#111;
+}
+
+#msgInput{
+flex:1;
+padding:10px;
+border:none;
+border-radius:20px;
+}
+
+button{
+margin-left:6px;
+padding:8px 12px;
+background:#ff3b6b;
+border:none;
+color:white;
+border-radius:8px;
+}
+
+#onlineUsers{
+font-size:12px;
+margin-left:auto;
+}
+
+</style></head><body><div id="sidebar"><h3>Rooms</h3><div class="menuItem" onclick="joinRoom('adult')">Adult room</div>
+<div class="menuItem" onclick="joinRoom('normal')">Normal room</div>
+<div class="menuItem" onclick="joinRoom('private')">Private room</div><hr><h3>Friends</h3><div id="friends"></div></div><div id="header"><span onclick="toggleMenu()">☰</span>
+
+<span style="margin-left:10px">Tulip Chat</span>
+
+<span id="onlineUsers"></span>
 
 </div><div id="messages"></div><div id="inputArea"><input id="msgInput" placeholder="Type here"><button onclick="sendMsg()">Send</button>
 
-<input type="file" id="fileInput" accept="image/*,video/*,image/gif" style="display:none"><button onclick="fileInput.click()">📷</button>
+<button onclick="addEmoji()">😀</button>
+
+<input type="file" id="fileInput" style="display:none"><button onclick="fileInput.click()">📷</button>
 
 </div><script src="/socket.io/socket.io.js"></script><script>
 
@@ -256,14 +121,13 @@ let username=localStorage.getItem("username")
 if(!username){
 
 username=prompt("Enter name")
-
 localStorage.setItem("username",username)
 
 }
 
-socket.emit("join",username)
+let room="adult"
 
-/* menus */
+socket.emit("join",{username,room})
 
 function toggleMenu(){
 
@@ -271,27 +135,24 @@ sidebar.classList.toggle("show")
 
 }
 
-function toggleProfile(){
+/* room */
 
-profilePanel.classList.toggle("show")
+function joinRoom(r){
+
+room=r
+messages.innerHTML=""
+
+socket.emit("join",{username,room})
 
 }
 
 /* message */
 
-function addMsg(user,msg){
+function addMsg(html){
 
 let div=document.createElement("div")
-
 div.className="message"
-
-div.innerHTML=`
-<div class="avatar"></div>
-<div class="bubble">
-<div class="name">${user}</div>
-${msg}
-</div>
-`
+div.innerHTML=html
 
 messages.appendChild(div)
 
@@ -299,27 +160,75 @@ messages.scrollTop=messages.scrollHeight
 
 }
 
-/* send */
-
 function sendMsg(){
 
 let msg=msgInput.value
 
-if(msg=="")return
+socket.emit("chat message",{
 
-socket.emit("chat message",{user:username,msg:msg})
+user:username,
+msg:msg,
+room:room
+
+})
 
 msgInput.value=""
 
 }
 
-/* receive */
-
 socket.on("chat message",(data)=>{
 
-addMsg(data.user,data.msg)
+addMsg("<b>"+data.user+"</b><br>"+data.msg+
+"<br><span onclick='react(this,\"❤️\")'>❤️</span> "+
+"<span onclick='react(this,\"🔥\")'>🔥</span> "+
+"<span onclick='react(this,\"👍\")'>👍</span>"
+)
 
 })
+
+socket.on("system",(msg)=>{
+
+addMsg("<i>"+msg+"</i>")
+
+})
+
+/* online */
+
+socket.on("online",(list)=>{
+
+onlineUsers.innerText="Online: "+list.length
+
+})
+
+/* typing */
+
+msgInput.oninput=()=>{
+
+socket.emit("typing",username)
+
+}
+
+socket.on("typing",(u)=>{
+
+addMsg("<i>"+u+" typing...</i>")
+
+})
+
+/* emoji */
+
+function addEmoji(){
+
+msgInput.value+="😊"
+
+}
+
+/* reactions */
+
+function react(el,emoji){
+
+el.innerText=emoji+"✔"
+
+}
 
 /* upload */
 
@@ -329,7 +238,7 @@ let file=this.files[0]
 
 let form=new FormData()
 
-form.append("image",file)
+form.append("file",file)
 
 fetch("/upload",{method:"POST",body:form})
 
@@ -338,7 +247,6 @@ fetch("/upload",{method:"POST",body:form})
 .then(data=>{
 
 let url=data.url
-
 let ext=url.split('.').pop()
 
 let media=""
@@ -353,7 +261,13 @@ media=`<img class="chatMedia" src="${url}">`
 
 }
 
-socket.emit("chat message",{user:username,msg:media})
+socket.emit("chat message",{
+
+user:username,
+msg:media,
+room:room
+
+})
 
 })
 
