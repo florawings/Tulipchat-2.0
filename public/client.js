@@ -1,15 +1,21 @@
 const socket = io()
 
+/* USER DATA */
+
 let username = localStorage.getItem("username")
+let gender = localStorage.getItem("gender")
 
 if(!username){
-username = prompt("Enter your name")
-localStorage.setItem("username",username)
+location.href="/login.html"
 }
 
 let room="normal"
 
-socket.emit("join",{user:username,room})
+/* JOIN ROOM */
+
+socket.emit("join",{user:username,room,gender})
+
+/* ROOM CHANGE */
 
 function joinRoom(r){
 
@@ -17,9 +23,11 @@ room=r
 
 document.getElementById("roomName").innerText=r+" room"
 
-socket.emit("join",{user:username,room})
+socket.emit("join",{user:username,room,gender})
 
 }
+
+/* SEND MESSAGE */
 
 function send(){
 
@@ -37,17 +45,24 @@ document.getElementById("text").value=""
 
 }
 
+/* RECEIVE MESSAGE */
+
 socket.on("message",(data)=>{
 
 let div=document.createElement("div")
 
 div.className="msg"
 
-div.innerHTML="<b>"+data.user+"</b>: "+data.msg
+div.innerHTML="<b>"+data.user+"</b><br>"+data.msg
 
 document.getElementById("messages").appendChild(div)
 
+document.getElementById("messages").scrollTop=
+document.getElementById("messages").scrollHeight
+
 })
+
+/* ONLINE USERS LIST */
 
 socket.on("onlineUsers",(list)=>{
 
@@ -57,15 +72,17 @@ box.innerHTML=""
 
 for(let id in list){
 
+let user=list[id]
+
 let u=document.createElement("div")
 
 u.className="user"
 
-u.innerText=list[id]
+u.innerText=user.name+" ("+user.gender+")"
 
 u.onclick=()=>{
 
-let msg=prompt("Send DM to "+list[id])
+let msg=prompt("Send DM to "+user.name)
 
 if(msg){
 
@@ -85,11 +102,15 @@ box.appendChild(u)
 
 })
 
+/* RECEIVE DM */
+
 socket.on("dm",(data)=>{
 
 alert("DM from "+data.from+": "+data.msg)
 
 })
+
+/* TYPING */
 
 document.getElementById("text").addEventListener("input",()=>{
 
@@ -106,6 +127,8 @@ document.getElementById("typing").innerText=""
 },2000)
 
 })
+
+/* IMAGE / GIF UPLOAD */
 
 document.getElementById("file").onchange=function(){
 
@@ -143,4 +166,4 @@ document.getElementById("progress").innerText=""
 
 xhr.send(form)
 
-                      }
+}
