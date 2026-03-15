@@ -18,6 +18,11 @@ type:String,
 default:"user"
 },
 
+status:{
+type:String,
+default:"active"
+},
+
 blocked:[
 {
 type:String
