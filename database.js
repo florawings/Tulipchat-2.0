@@ -1,12 +1,9 @@
 const mongoose = require("mongoose")
 
-mongoose.connect(process.env.MONGO_URI,{
-useNewUrlParser:true,
-useUnifiedTopology:true
+mongoose.connect("mongodb://127.0.0.1/tulipchat")
+
+mongoose.connection.on("connected",()=>{
+console.log("Database connected")
 })
-.then(()=>{
-console.log("MongoDB connected")
-})
-.catch(err=>{
-console.log(err)
-})
+
+module.exports = mongoose
