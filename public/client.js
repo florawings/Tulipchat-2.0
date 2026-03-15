@@ -1,50 +1,36 @@
 const socket = io()
 
+let username = localStorage.getItem("username")
+
+if(!username){
+username = prompt("Enter your name")
+localStorage.setItem("username",username)
+}
+
 let room="normal"
-let blocked=[]
 
-let username=localStorage.getItem("user") || prompt("Enter username")
-
-socket.emit("user",username)
-socket.emit("join","normal")
+socket.emit("join",{user:username,room})
 
 function joinRoom(r){
 
-if(r==="adult" && localStorage.getItem("age")!=="18"){
-alert("18+ only")
-return
-}
-
 room=r
 
-document.getElementById("messages").innerHTML=""
+document.getElementById("roomName").innerText=r+" room"
 
-socket.emit("join",room)
-
-}
-
-function addMsg(html){
-
-let div=document.createElement("div")
-
-div.className="msg"
-
-div.innerHTML=html
-
-document.getElementById("messages").appendChild(div)
+socket.emit("join",{user:username,room})
 
 }
 
-function sendMsg(){
+function send(){
 
 let text=document.getElementById("text").value
 
 if(!text) return
 
 socket.emit("message",{
-room:room,
 user:username,
-msg:text
+msg:text,
+room
 })
 
 document.getElementById("text").value=""
@@ -53,29 +39,73 @@ document.getElementById("text").value=""
 
 socket.on("message",(data)=>{
 
-if(blocked.includes(data.user)) return
+let div=document.createElement("div")
 
-addMsg("<b>"+data.user+":</b> "+data.msg+" <button onclick='blockUser(\""+data.user+"\")'>Block</button> <button onclick='reportUser(\""+data.user+"\")'>Report</button>")
+div.className="msg"
+
+div.innerHTML="<b>"+data.user+"</b>: "+data.msg
+
+document.getElementById("messages").appendChild(div)
 
 })
 
-function blockUser(user){
+socket.on("onlineUsers",(list)=>{
 
-blocked.push(user)
+let box=document.getElementById("users")
 
-alert(user+" blocked")
+box.innerHTML=""
+
+for(let id in list){
+
+let u=document.createElement("div")
+
+u.className="user"
+
+u.innerText=list[id]
+
+u.onclick=()=>{
+
+let msg=prompt("Send DM to "+list[id])
+
+if(msg){
+
+socket.emit("dm",{
+to:id,
+from:username,
+msg
+})
 
 }
 
-function reportUser(user){
+}
 
-socket.emit("report",{user:user,by:username})
-
-alert("User reported")
+box.appendChild(u)
 
 }
 
-/* upload */
+})
+
+socket.on("dm",(data)=>{
+
+alert("DM from "+data.from+": "+data.msg)
+
+})
+
+document.getElementById("text").addEventListener("input",()=>{
+
+socket.emit("typing",{user:username,room})
+
+})
+
+socket.on("typing",(user)=>{
+
+document.getElementById("typing").innerText=user+" typing..."
+
+setTimeout(()=>{
+document.getElementById("typing").innerText=""
+},2000)
+
+})
 
 document.getElementById("file").onchange=function(){
 
@@ -89,26 +119,28 @@ let xhr=new XMLHttpRequest()
 
 xhr.open("POST","/upload")
 
-xhr.upload.onprogress=e=>{
+xhr.upload.onprogress=(e)=>{
 
-let p=Math.round((e.loaded/e.total)*100)
+let percent=Math.round((e.loaded/e.total)*100)
 
-document.getElementById("progress").innerText=p+"%"
+document.getElementById("progress").innerText=percent+"%"
 
 }
 
 xhr.onload=()=>{
 
-let url=xhr.responseText
+let res=JSON.parse(xhr.responseText)
 
 socket.emit("message",{
-room:room,
 user:username,
-msg:"<img src='"+url+"'>"
+msg:'<img src="'+res.url+'">',
+room
 })
+
+document.getElementById("progress").innerText=""
 
 }
 
 xhr.send(form)
 
-  }
+                      }
