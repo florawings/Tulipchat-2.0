@@ -1,52 +1,51 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Tulip Chat</title>
+
+<script src="/socket.io/socket.io.js"></script>
 
 <style>
 
 body{
 margin:0;
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-background:#0f1022;
 font-family:Arial;
-color:white;
+display:flex;
+height:100vh;
 }
 
-.box{
-background:#1e1f38;
-padding:30px;
-border-radius:12px;
-width:260px;
-text-align:center;
+#users{
+width:200px;
+background:#111;
+color:white;
+padding:10px;
+}
+
+#chat{
+flex:1;
+display:flex;
+flex-direction:column;
+}
+
+#messages{
+flex:1;
+overflow:auto;
+padding:10px;
+}
+
+#sendBox{
+display:flex;
 }
 
 input{
-width:100%;
+flex:1;
 padding:10px;
-margin-bottom:10px;
-border:none;
-border-radius:6px;
 }
 
 button{
-width:100%;
 padding:10px;
-border:none;
-border-radius:6px;
-background:#4a7cff;
-color:white;
-cursor:pointer;
-margin-bottom:8px;
-}
-
-.small{
-font-size:12px;
-color:#aaa;
 }
 
 </style>
@@ -55,87 +54,82 @@ color:#aaa;
 
 <body>
 
-<div class="box">
+<div id="users">
 
-<h2>Tulip Chat</h2>
+<h3>Online</h3>
 
-<input id="username" placeholder="Username">
-
-<input id="email" placeholder="Email (optional)">
-
-<input id="password" type="password" placeholder="Password (optional)">
-
-<button onclick="login()">Login</button>
-
-<button onclick="register()">Register</button>
-
-<button onclick="guestLogin()">Guest Login</button>
-
-<div class="small">
-Guest login requires only username
-</div>
+<ul id="userList"></ul>
 
 </div>
 
+<div id="chat">
+
+<div id="messages"></div>
+
+<div id="sendBox">
+
+<input id="msg">
+
+<button onclick="send()">Send</button>
+
+</div>
+
+</div>
 
 <script>
 
-function login(){
+const socket=io()
 
-let name=document.getElementById("username").value
-let email=document.getElementById("email").value
+let username=localStorage.getItem("username")
 
-if(!name){
-alert("Enter username")
-return
-}
+if(!username){
 
-localStorage.setItem("username",name)
-localStorage.setItem("email",email)
-
-window.location="chat.html"
+location="/login.html"
 
 }
 
-function register(){
+socket.emit("join",username)
 
-let name=document.getElementById("username").value
-let email=document.getElementById("email").value
-let pass=document.getElementById("password").value
+socket.on("chat message",(data)=>{
 
-if(!name || !email || !pass){
-alert("Fill all fields")
-return
-}
+let div=document.createElement("div")
 
-let user={
-name:name,
-email:email,
-password:pass
-}
+div.innerText=data.username+": "+data.msg
 
-localStorage.setItem("userAccount",JSON.stringify(user))
+document.getElementById("messages").appendChild(div)
 
-alert("Registration successful")
+})
 
-localStorage.setItem("username",name)
+socket.on("onlineUsers",(users)=>{
 
-window.location="chat.html"
+let list=document.getElementById("userList")
 
-}
+list.innerHTML=""
 
-function guestLogin(){
+users.forEach(u=>{
 
-let name=document.getElementById("username").value
+let li=document.createElement("li")
 
-if(!name){
-alert("Enter guest name")
-return
-}
+li.innerText=u
 
-localStorage.setItem("username","Guest-"+name)
+list.appendChild(li)
 
-window.location="chat.html"
+})
+
+})
+
+function send(){
+
+let msg=document.getElementById("msg").value
+
+socket.emit("chat message",{
+
+username,
+msg
+
+})
+
+document.getElementById("msg").value=""
 
 }
 
