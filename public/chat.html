@@ -1,10 +1,89 @@
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat</title><style>
+
+body{
+margin:0;
+display:flex;
+height:100vh;
+background:#111;
+color:white;
+font-family:Arial;
+}
+
+#sidebar{
+width:220px;
+background:#000;
+padding:10px;
+}
+
+.room{
+padding:10px;
+border-bottom:1px solid #333;
+cursor:pointer;
+}
+
+#chat{
+flex:1;
+display:flex;
+flex-direction:column;
+}
+
+#messages{
+flex:1;
+overflow-y:auto;
+padding:15px;
+}
+
+.msg{
+background:#1c1c1c;
+padding:10px;
+border-radius:10px;
+margin-bottom:10px;
+max-width:70%;
+}
+
+.system{
+opacity:.6;
+font-style:italic;
+}
+
+#input{
+display:flex;
+padding:10px;
+background:#000;
+}
+
+#text{
+flex:1;
+padding:10px;
+border-radius:20px;
+border:none;
+}
+
+button{
+margin-left:5px;
+padding:10px;
+background:#ff2e63;
+border:none;
+color:white;
+border-radius:8px;
+}
+
+</style></head><body><div id="sidebar"><h2>Tulip Chat</h2><div class="room" onclick="joinRoom('adult')">Adult Room</div><div class="room" onclick="joinRoom('normal')">Normal Room</div><div class="room" onclick="joinRoom('private')">Private Room</div><h3>Online Users</h3><div id="online"></div></div><div id="chat"><div id="messages"></div><div id="typing"></div><div id="input"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
+
+<button onclick="emoji()">😀</button>
+
+<input type="file" id="file"></div></div><script src="/socket.io/socket.io.js"></script><script>
+
 const socket = io()
 
 let username = localStorage.getItem("username")
 
 if(!username){
-username = prompt("Username")
+
+username = prompt("Enter username")
+
 localStorage.setItem("username",username)
+
 }
 
 let room = "adult"
@@ -15,7 +94,7 @@ function joinRoom(r){
 
 room = r
 
-messages.innerHTML = ""
+messages.innerHTML=""
 
 socket.emit("join",{username,room})
 
@@ -23,21 +102,21 @@ socket.emit("join",{username,room})
 
 function add(html,type){
 
-let div = document.createElement("div")
+let div=document.createElement("div")
 
-div.className = "msg "+(type||"")
+div.className="msg "+(type||"")
 
-div.innerHTML = html
+div.innerHTML=html
 
 messages.appendChild(div)
 
-messages.scrollTop = messages.scrollHeight
+messages.scrollTop=messages.scrollHeight
 
 }
 
 function send(){
 
-let text = document.getElementById("text").value
+let text=document.getElementById("text").value
 
 if(!text) return
 
@@ -91,6 +170,14 @@ let xhr=new XMLHttpRequest()
 
 xhr.open("POST","/upload")
 
+xhr.upload.onprogress=(e)=>{
+
+let p=Math.round((e.loaded/e.total)*100)
+
+typing.innerText="upload "+p+"%"
+
+}
+
 xhr.onload=()=>{
 
 let res=JSON.parse(xhr.response)
@@ -102,12 +189,14 @@ let ext=url.split(".").pop()
 let media=""
 
 if(ext==="mp4"){
-media="<video src="${url}" controls autoplay loop width="200"></video>"
+media=`<video src="${url}" controls autoplay loop width="200"></video>`
 }else{
-media="<img src="${url}" width="200">"
+media=`<img src="${url}" width="200">`
 }
 
 socket.emit("message",{user:username,msg:media,room})
+
+typing.innerText=""
 
 }
 
@@ -116,5 +205,9 @@ xhr.send(form)
 }
 
 function emoji(){
+
 text.value+="🔥"
+
 }
+
+</script></body></html>
