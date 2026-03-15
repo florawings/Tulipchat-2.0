@@ -1,47 +1,36 @@
 body{
 margin:0;
-font-family:Arial;
-background:#eee;
-}
-
-.top{
-background:black;
-color:white;
-padding:10px;
-font-size:18px;
-}
-
-.container{
 display:flex;
-height:90vh;
-}
-
-/* LEFT USERS PANEL */
-
-.users{
-width:22%;
-background:#111;
+font-family:Arial;
+background:#1e1e2f;
 color:white;
-overflow:auto;
+}
+
+#sidebar{
+width:220px;
+background:#111;
+}
+
+#sidebar h2{
 padding:10px;
-}
-
-.users div{
-padding:8px;
 border-bottom:1px solid #333;
-cursor:pointer;
 }
 
-.users div:hover{
-background:#222;
+.user{
+padding:10px;
+border-bottom:1px solid #333;
 }
 
-/* CHAT */
-
-.chat{
+#main{
 flex:1;
 display:flex;
 flex-direction:column;
+height:100vh;
+}
+
+#header{
+background:#2c2c44;
+padding:12px;
 }
 
 #messages{
@@ -50,26 +39,59 @@ overflow:auto;
 padding:10px;
 }
 
-.msg{
-background:white;
-margin-bottom:8px;
+.message{
+background:#333;
 padding:8px;
 border-radius:6px;
+margin-bottom:8px;
+max-width:70%;
 }
 
-/* INPUT */
+.my{
+background:#4e7cff;
+margin-left:auto;
+}
 
-.input{
+.system{
+text-align:center;
+color:#aaa;
+margin:5px;
+}
+
+#sendBar{
 display:flex;
-padding:8px;
-background:white;
-}
-
-.input input{
-flex:1;
+gap:5px;
 padding:10px;
+background:#111;
 }
 
-.input button{
-margin-left:5px;
+#sendBar input{
+flex:1;
+padding:8px;
+border-radius:4px;
+border:none;
+}
+
+button{
+background:#4e7cff;
+border:none;
+padding:8px 12px;
+color:white;
+border-radius:5px;
+cursor:pointer;
+}
+
+img{
+max-width:200px;
+border-radius:6px;
+margin-top:5px;
+}
+
+#emojiPanel{
+position:absolute;
+bottom:70px;
+right:100px;
+background:#222;
+padding:10px;
+display:none;
 }
