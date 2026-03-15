@@ -1,96 +1,75 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const mongoose = require("mongoose");
-const path = require("path");
+const express = require("express")
+const http = require("http")
+const { Server } = require("socket.io")
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+const app = express()
+const server = http.createServer(app)
+const io = new Server(server)
 
-const PORT = process.env.PORT || 3000;
+app.use(express.static("public"))
 
-// static files
-app.use(express.static(path.join(__dirname, "public")));
-app.use(express.json());
+let users = []
 
-// ===== MongoDB =====
-mongoose.connect(
-"mongodb+srv://effportal_db_user:wAaE19Wqq3XFMbJH@cluster0.mrighsb.mongodb.net/tulipchat?retryWrites=true&w=majority"
-)
-.then(()=>console.log("MongoDB Connected"))
-.catch(err=>console.log("MongoDB Error:",err));
-
-// ===== Message Schema =====
-const Message = mongoose.model("Message",{
-user:String,
-text:String,
-type:String,
-time:Date
-});
-
-let users = {};
-
-// ===== Socket =====
 io.on("connection",(socket)=>{
 
-console.log("user connected");
+console.log("user connected")
 
-// join
-socket.on("join", async (username)=>{
+// JOIN
+socket.on("join",(username)=>{
 
-users[socket.id]=username;
+socket.username = username
+users.push(username)
 
-io.emit("onlineUsers",Object.values(users));
+io.emit("users",users)
 
-io.emit("message",{
-user:"System",
-text:username+" joined chat",
-type:"system"
-});
+io.emit("chat message",{
+type:"system",
+text: username + " joined chat"
+})
 
-let old = await Message.find().sort({time:1}).limit(50);
-socket.emit("oldMessages",old);
+})
 
-});
+// MESSAGE
+socket.on("chat message",(data)=>{
 
-// send message
-socket.on("message",async(data)=>{
+io.emit("chat message",data)
 
-let msg = new Message({
-user:data.user,
-text:data.text,
-type:data.type || "text",
-time:new Date()
-});
+})
 
-await msg.save();
+// DM
+socket.on("dm",(data)=>{
 
-io.emit("message",msg);
+io.emit("dm",data)
 
-});
+})
 
-// disconnect
+// TYPING
+socket.on("typing",(name)=>{
+
+socket.broadcast.emit("typing",name)
+
+})
+
+// DISCONNECT
 socket.on("disconnect",()=>{
 
-let name = users[socket.id];
+users = users.filter(u => u !== socket.username)
 
-delete users[socket.id];
+io.emit("users",users)
 
-io.emit("onlineUsers",Object.values(users));
+if(socket.username){
 
-if(name){
-io.emit("message",{
-user:"System",
-text:name+" left chat",
-type:"system"
-});
+io.emit("chat message",{
+type:"system",
+text: socket.username + " left chat"
+})
+
 }
 
-});
+})
 
-});
+})
 
-server.listen(PORT,()=>{
-console.log("Server running on "+PORT);
-});
+server.listen(3000,()=>{
+console.log("server running")
+})
