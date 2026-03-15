@@ -1,21 +1,19 @@
-<!DOCTYPE html><html>
-<head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat</title><style>
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat</title><style>
 
 body{
 margin:0;
 font-family:Arial;
 display:flex;
 height:100vh;
-background:black;
+background:#0f0f0f;
 color:white;
-overflow:hidden;
 }
 
 /* SIDEBAR */
 
 #sidebar{
-width:220px;
-background:#000;
+width:200px;
+background:black;
 padding:15px;
 }
 
@@ -23,7 +21,7 @@ padding:15px;
 padding:10px;
 background:#111;
 border-radius:6px;
-margin-bottom:8px;
+margin-bottom:10px;
 cursor:pointer;
 }
 
@@ -37,18 +35,14 @@ background:#222;
 flex:1;
 display:flex;
 flex-direction:column;
-background:url("https://images.unsplash.com/photo-1518199266791-5375a83190b7") center/cover;
+max-width:700px;
+margin:auto;
 }
 
 #topbar{
-height:50px;
-background:#111;
-display:flex;
-align-items:center;
-padding-left:15px;
+background:#000;
+padding:12px;
 }
-
-/* MESSAGES */
 
 #messages{
 flex:1;
@@ -57,28 +51,21 @@ padding:15px;
 }
 
 .msg{
-background:rgba(0,0,0,0.6);
+background:#1f1f1f;
 padding:10px;
 border-radius:10px;
 margin-bottom:10px;
-max-width:70%;
-}
-
-.system{
-text-align:center;
-color:#aaa;
-margin:10px 0;
 }
 
 .msg img{
 max-width:220px;
 border-radius:10px;
-margin-top:6px;
+margin-top:5px;
 }
 
 /* INPUT */
 
-#inputBar{
+#input{
 display:flex;
 padding:10px;
 background:black;
@@ -93,50 +80,29 @@ outline:none;
 }
 
 button{
-margin-left:6px;
+margin-left:5px;
 padding:10px;
 border:none;
-border-radius:6px;
 background:#ff4da6;
 color:white;
+border-radius:6px;
 cursor:pointer;
 }
 
 #progress{
-margin-left:10px;
 font-size:12px;
+margin-left:10px;
 }
 
-/* ADULT WARNING */
-
-#adultWarning{
-position:fixed;
-top:0;
-left:0;
-right:0;
-bottom:0;
-background:rgba(0,0,0,0.9);
-display:none;
-align-items:center;
-justify-content:center;
-}
-
-#adultBox{
-background:#111;
-padding:25px;
-border-radius:10px;
-text-align:center;
-}
-
-</style></head><body><div id="sidebar"><h3 style="color:#ff4da6">Tulip Chat</h3><div class="room" onclick="joinRoom('normal')">Normal Room</div><div class="room" onclick="adultCheck()">Adult Room</div></div><div id="chat"><div id="topbar">
+</style></head><body><div id="sidebar"><h3 style="color:#ff4da6">Tulip Chat</h3><div class="room" onclick="joinRoom('normal')">
+Normal Room
+</div><div class="room" onclick="adultRoom()">
+Adult Room
+</div></div><div id="chat"><div id="topbar">
 <span id="roomName">Normal Room</span>
-</div><div id="messages"></div><div id="inputBar"><input id="text" placeholder="Type message"><button onclick="sendMsg()">Send</button>
+</div><div id="messages"></div><div id="input"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
 
 <input type="file" id="file" accept="image/*"><span id="progress"></span>
-
-</div></div><div id="adultWarning"><div id="adultBox"><h3>🔞 Adult Room</h3><p>You must be 18+ to enter</p><button onclick="enterAdult()">I am 18+</button>
-
-<button onclick="closeAdult()">Cancel</button>
 
 </div></div><script src="/socket.io/socket.io.js"></script><script>
 
@@ -156,8 +122,6 @@ let room="normal"
 
 socket.emit("join",{user:username,room})
 
-addSystem(username+" joined the room")
-
 function joinRoom(r){
 
 room=r
@@ -166,39 +130,31 @@ document.getElementById("roomName").innerText=r+" room"
 
 socket.emit("join",{user:username,room})
 
-addSystem(username+" joined the room")
-
 }
 
-function adultCheck(){
+function adultRoom(){
 
-document.getElementById("adultWarning").style.display="flex"
+let ok=confirm("18+ only. Continue?")
 
-}
-
-function enterAdult(){
-
-document.getElementById("adultWarning").style.display="none"
-
+if(ok){
 joinRoom("adult")
+}
 
 }
 
-function closeAdult(){
+/* SEND TEXT */
 
-document.getElementById("adultWarning").style.display="none"
-
-}
-
-/* MESSAGE SEND */
-
-function sendMsg(){
+function send(){
 
 let text=document.getElementById("text").value
 
 if(!text) return
 
-socket.emit("message",{user:username,msg:text,room})
+socket.emit("message",{
+user:username,
+msg:text,
+room
+})
 
 document.getElementById("text").value=""
 
@@ -208,29 +164,15 @@ document.getElementById("text").value=""
 
 socket.on("message",(data)=>{
 
-let box=document.createElement("div")
-
-box.className="msg"
-
-box.innerHTML="<b>"+data.user+"</b>: "+data.msg
-
-document.getElementById("messages").appendChild(box)
-
-})
-
-/* SYSTEM MSG */
-
-function addSystem(msg){
-
 let div=document.createElement("div")
 
-div.className="system"
+div.className="msg"
 
-div.innerText=msg
+div.innerHTML="<b>"+data.user+"</b>: "+data.msg
 
 document.getElementById("messages").appendChild(div)
 
-}
+})
 
 /* IMAGE / GIF UPLOAD */
 
@@ -258,7 +200,15 @@ xhr.onload=()=>{
 
 let res=JSON.parse(xhr.responseText)
 
-socket.emit("message",{user:username,msg:'<img src="'+res.url+'">',room})
+socket.emit("message",{
+
+user:username,
+
+msg:'<img src="'+res.url+'">',
+
+room
+
+})
 
 document.getElementById("progress").innerText=""
 
