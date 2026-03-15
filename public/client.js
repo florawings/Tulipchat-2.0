@@ -1,26 +1,45 @@
 const socket = io()
 
 let room="normal"
-let username = localStorage.getItem("user") || prompt("username")
+let blocked=[]
+
+let username=localStorage.getItem("user") || prompt("Enter username")
 
 socket.emit("user",username)
 socket.emit("join","normal")
 
 function joinRoom(r){
 
+if(r==="adult" && localStorage.getItem("age")!=="18"){
+alert("18+ only")
+return
+}
+
 room=r
+
 document.getElementById("messages").innerHTML=""
+
 socket.emit("join",room)
 
 }
 
-/* send message */
+function addMsg(html){
+
+let div=document.createElement("div")
+
+div.className="msg"
+
+div.innerHTML=html
+
+document.getElementById("messages").appendChild(div)
+
+}
 
 function sendMsg(){
 
 let text=document.getElementById("text").value
 
-if(!text)return
+if(!text) return
 
 socket.emit("message",{
 room:room,
@@ -32,50 +51,55 @@ document.getElementById("text").value=""
 
 }
 
-/* typing */
-
-document.getElementById("text").addEventListener("keypress",()=>{
-socket.emit("typing",{room:room,user:username})
-})
-
-socket.on("typing",(msg)=>{
-document.getElementById("typing").innerText=msg
-setTimeout(()=>{
-document.getElementById("typing").innerText=""
-},1000)
-})
-
-/* receive */
-
 socket.on("message",(data)=>{
 
-addMsg("<b>"+data.user+"</b>: "+data.msg)
+if(blocked.includes(data.user)) return
+
+addMsg("<b>"+data.user+":</b> "+data.msg+" <button onclick='blockUser(\""+data.user+"\")'>Block</button> <button onclick='reportUser(\""+data.user+"\")'>Report</button>")
 
 })
 
-/* emoji */
+function blockUser(user){
 
-function emoji(e){
-document.getElementById("text").value+=e
-}
+blocked.push(user)
 
-/* add message */
-
-function addMsg(html){
-
-let div=document.createElement("div")
-div.className="msg"
-div.innerHTML=html
-
-document.getElementById("messages").appendChild(div)
+alert(user+" blocked")
 
 }
 
-/* gif */
+function reportUser(user){
 
-function sendGif(){
+socket.emit("report",{user:user,by:username})
 
-let url=prompt("Paste GIF link")
+alert("User reported")
+
+}
+
+/* upload */
+
+document.getElementById("file").onchange=function(){
+
+let file=this.files[0]
+
+let form=new FormData()
+
+form.append("file",file)
+
+let xhr=new XMLHttpRequest()
+
+xhr.open("POST","/upload")
+
+xhr.upload.onprogress=e=>{
+
+let p=Math.round((e.loaded/e.total)*100)
+
+document.getElementById("progress").innerText=p+"%"
+
+}
+
+xhr.onload=()=>{
+
+let url=xhr.responseText
 
 socket.emit("message",{
 room:room,
@@ -85,17 +109,6 @@ msg:"<img src='"+url+"'>"
 
 }
 
-/* friend request */
+xhr.send(form)
 
-function addFriend(user){
-
-socket.emit("friend_request",{
-from:username,
-to:user
-})
-
-}
-
-socket.on("friend_request",(data)=>{
-alert(data.from+" sent friend request")
-})
+  }
