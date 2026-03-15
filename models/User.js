@@ -7,6 +7,8 @@ type:String,
 unique:true
 },
 
+email:String,
+
 password:String,
 
 gender:String,
@@ -14,7 +16,13 @@ gender:String,
 role:{
 type:String,
 default:"user"
+},
+
+blocked:[
+{
+type:String
 }
+]
 
 })
 
