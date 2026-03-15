@@ -1,148 +1,268 @@
 <!DOCTYPE html><html>
-<head>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>Tulip Chat</title>
-<style>
-html,body{margin:0;height:100%;overflow:hidden;font-family:Arial;background:#f5e3ea}/* HEADER */
-#header{
-display:flex;align-items:center;justify-content:space-between;
-background:#ff3d6e;color:white;padding:10px
+<head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>Tulip Chat</title><style>
+
+html,body{
+margin:0;
+height:100%;
+font-family:Arial;
+background:#f5e3ea;
 }
-#leftHead{display:flex;align-items:center;gap:8px}
-#title{font-weight:bold}
-.topBtn{background:none;border:none;color:white;font-size:20px}
+
+/* HEADER */
+
+#header{
+display:flex;
+align-items:center;
+justify-content:space-between;
+background:#ff3d6e;
+color:white;
+padding:10px;
+}
+
+.topBtn{
+background:none;
+border:none;
+color:white;
+font-size:20px;
+}
 
 /* SIDEBAR */
+
 #sidebar{
-position:fixed;left:-220px;top:0;width:200px;height:100%;
-background:white;padding:15px;transition:.3s;z-index:10;border-right:1px solid #ddd
+position:fixed;
+left:-220px;
+top:0;
+width:200px;
+height:100%;
+background:white;
+padding:15px;
+transition:0.3s;
+z-index:10;
 }
-#sidebar.open{left:0}
-#users .u{padding:6px 0;border-bottom:1px solid #eee;cursor:pointer}
+
+#sidebar.open{
+left:0;
+}
 
 /* CHAT */
+
 #chatBox{
-height:68vh;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px
+height:70vh;
+overflow:auto;
+padding:20px;
+display:flex;
+flex-direction:column;
+gap:10px;
 }
+
 .msg{
-background:#ff3d6e;color:white;padding:10px 14px;border-radius:18px;max-width:75%
+background:#ff3d6e;
+color:white;
+padding:10px 16px;
+border-radius:20px;
+max-width:70%;
 }
-.msg img{max-width:200px;border-radius:10px}
+
+.msg img{
+max-width:200px;
+border-radius:10px;
+}
 
 /* INPUT */
-#inputArea{display:flex;gap:6px;padding:10px}
-#text{flex:1;padding:10px;border-radius:20px;border:1px solid #ccc}
-.btn{background:#ff3d6e;color:white;border:none;padding:10px 14px;border-radius:10px}
 
-/* INBOX BADGE */
-#inboxWrap{position:relative}
-#dmCount{
-position:absolute;right:-6px;top:-6px;background:red;color:white;
-font-size:11px;padding:2px 6px;border-radius:10px
+#inputArea{
+display:flex;
+gap:6px;
+padding:10px;
 }
-</style>
 
-</head>
-<body><div id="header">
-  <div id="leftHead">
-    <button class="topBtn" onclick="toggleMenu()">☰</button>
-    <div id="title">🌷 Tulip Chat</div>
-  </div>
-  <div style="display:flex;gap:8px">
-    <button class="topBtn" onclick="goBack()">⬅</button>
-    <span id="inboxWrap">
-      <button class="topBtn" onclick="openInbox()">📥</button>
-      <span id="dmCount">0</span>
-    </span>
-    <button class="topBtn" onclick="refreshChat()">🔄</button>
-  </div>
-</div><div id="sidebar">
-  <h3>Online Users</h3>
-  <div id="online">0 users online</div>
-  <div id="users"></div>
-</div><div id="chatBox"></div><div id="inputArea">
-  <input id="text" placeholder="Type message">
-  <button class="btn" onclick="send()">Send</button>
-  <input type="file" id="file" hidden>
-  <button class="btn" onclick="pick()">📷</button>
+#text{
+flex:1;
+padding:10px;
+border-radius:20px;
+border:1px solid #ccc;
+}
+
+button{
+background:#ff3d6e;
+color:white;
+border:none;
+padding:10px 14px;
+border-radius:10px;
+}
+
+</style></head><body><div id="header"><button class="topBtn" onclick="toggleMenu()">☰</button>
+
+<div>Tulip Chat</div><div><button class="topBtn" onclick="refreshChat()">🔄</button>
+
+<button class="topBtn" onclick="openInbox()">📥</button>
+
+</div></div><div id="sidebar"><h3>Online Users</h3><div id="online">0 users</div><div id="users"></div></div><div id="chatBox"></div><div id="inputArea"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
+
+<button onclick="gif()">GIF</button>
+
+<input type="file" id="file" hidden><button onclick="pick()">📷</button>
+
 </div><script src="/socket.io/socket.io.js"></script><script>
-const socket=io()
 
-const name=localStorage.getItem("username")
-const gender=localStorage.getItem("gender")
+const socket = io()
 
-if(!name){ location.href="login.html" }
+let name = localStorage.getItem("username")
+let gender = localStorage.getItem("gender")
 
-let dmCount=0
-
-function avatar(g){ return g==="female"?"👩":"👨" }
+if(!name){
+location.href="login.html"
+}
 
 socket.emit("join",{name,gender})
 
-function send(){
-const msg=document.getElementById("text").value
-if(!msg) return
-socket.emit("message",{user:name,gender,msg})
-text.value=""
+function avatar(g){
+return g==="female"?"👩":"👨"
 }
+
+/* SEND MESSAGE */
+
+function send(){
+
+let msg=text.value
+
+socket.emit("message",{user:name,gender,msg})
+
+text.value=""
+
+}
+
+/* RECEIVE MESSAGE */
 
 socket.on("message",(d)=>{
-const div=document.createElement("div")
+
+let div=document.createElement("div")
+
 div.className="msg"
-const icon=avatar(d.gender)
+
+let icon=avatar(d.gender)
+
 if(d.msg && d.msg.startsWith("/uploads")){
+
 div.innerHTML=icon+" "+d.user+"<br><img src='"+d.msg+"'>"
+
 }else{
+
 div.innerText=icon+" "+d.user+": "+d.msg
+
 }
+
 chatBox.appendChild(div)
+
 chatBox.scrollTop=chatBox.scrollHeight
+
 })
 
-socket.on("clearChat",()=>{ chatBox.innerHTML="" })
+/* ONLINE USERS */
 
 socket.on("online",(list)=>{
+
 users.innerHTML=""
+
 let count=0
+
 for(let id in list){
+
 count++
-const u=document.createElement("div")
-u.className="u"
+
+let u=document.createElement("div")
+
 u.innerText=avatar(list[id].gender)+" "+list[id].name
-u.onclick=()=>startDM(id,list[id].name)
+
+u.onclick=()=>startDM(id)
+
 users.appendChild(u)
-}
-online.innerText=count+" users online"
-})
 
-function startDM(id,name){
-socket.emit("openDM",{to:id,name})
 }
 
-socket.on("dm",(data)=>{
-dmCount++
-document.getElementById("dmCount").innerText=dmCount
+online.innerText=count+" users"
+
 })
 
-function openInbox(){ location.href="dm.html" }
+/* DM */
 
-function pick(){ file.click() }
+function startDM(id){
+
+let msg=prompt("Send DM")
+
+if(msg){
+
+socket.emit("dm",{to:id,from:name,msg})
+
+}
+
+}
+
+/* GIF */
+
+function gif(){
+
+let url=prompt("Paste GIF link")
+
+if(url){
+
+socket.emit("message",{user:name,gender,msg:url})
+
+}
+
+}
+
+/* FILE */
+
+function pick(){
+
+file.click()
+
+}
 
 file.onchange=()=>{
-const f=file.files[0]
-const fd=new FormData()
+
+let f=file.files[0]
+
+let fd=new FormData()
+
 fd.append("file",f)
+
 fetch("/upload",{method:"POST",body:fd})
+
 .then(r=>r.json())
+
 .then(d=>{
+
 socket.emit("message",{user:name,gender,msg:d.url})
+
 })
+
 }
 
-function toggleMenu(){ sidebar.classList.toggle("open") }
+/* MENU */
 
-function refreshChat(){ location.reload() }
+function toggleMenu(){
 
-function goBack(){ sidebar.classList.remove("open") }
+sidebar.classList.toggle("open")
+
+}
+
+/* REFRESH */
+
+function refreshChat(){
+
+location.reload()
+
+}
+
+/* INBOX */
+
+function openInbox(){
+
+alert("Inbox feature next update")
+
+}
+
 </script></body>
 </html>
