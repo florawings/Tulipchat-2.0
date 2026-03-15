@@ -1,61 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
+
 <title>Tulip Chat</title>
 
 <script src="/socket.io/socket.io.js"></script>
 
 <style>
 
-/* ---------- GLOBAL ---------- */
-
 body{
 margin:0;
 font-family:Arial;
-background:#0f1226;
-color:white;
-height:100vh;
 display:flex;
-overflow:hidden;
+height:100vh;
+background:#0f1330;
+color:white;
 }
 
-/* ---------- SIDEBAR ---------- */
+/* sidebar */
 
 #sidebar{
-width:250px;
-background:#050505;
+width:220px;
+background:black;
 padding:10px;
-display:flex;
-flex-direction:column;
-}
-
-#logo{
-font-size:20px;
-text-align:center;
-margin-bottom:10px;
-}
-
-#profile{
-text-align:center;
-margin-bottom:15px;
-}
-
-#profile img{
-width:70px;
-height:70px;
-border-radius:50%;
-object-fit:cover;
-}
-
-#onlineCount{
-margin:10px 0;
-font-size:14px;
-}
-
-#users{
-flex:1;
-overflow-y:auto;
 }
 
 .user{
@@ -64,44 +31,33 @@ cursor:pointer;
 border-bottom:1px solid #222;
 }
 
-.user:hover{
-background:#111;
-}
+/* chat */
 
-/* ---------- CHAT AREA ---------- */
-
-#chatArea{
+#chat{
 flex:1;
 display:flex;
 flex-direction:column;
-background:#15193a;
 }
 
 #messages{
 flex:1;
-overflow-y:auto;
-padding:15px;
+overflow:auto;
+padding:20px;
 }
 
 .msg{
-background:#2c2f5b;
+background:#3b4fff;
 padding:8px;
 margin:6px 0;
-border-radius:8px;
-max-width:70%;
+border-radius:6px;
 }
 
-.mymsg{
-background:#4b6fff;
-margin-left:auto;
-}
+/* input */
 
-/* ---------- INPUT ---------- */
-
-#inputBar{
+#inputArea{
 display:flex;
 padding:10px;
-background:#11143a;
+background:#111;
 }
 
 #msg{
@@ -118,17 +74,22 @@ border:none;
 background:#4b6fff;
 color:white;
 border-radius:6px;
-cursor:pointer;
 }
 
-/* ---------- DM POPUP ---------- */
+#typing{
+font-size:12px;
+opacity:0.7;
+margin-left:10px;
+}
+
+/* DM */
 
 #dmBox{
 position:fixed;
 right:20px;
 bottom:20px;
 width:250px;
-background:#1c1f4d;
+background:#1e2145;
 border-radius:10px;
 display:none;
 flex-direction:column;
@@ -141,7 +102,7 @@ background:#4b6fff;
 
 #dmMessages{
 height:150px;
-overflow-y:auto;
+overflow:auto;
 padding:8px;
 }
 
@@ -155,57 +116,46 @@ flex:1;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<!-- ---------- SIDEBAR ---------- -->
-
 <div id="sidebar">
 
-<div id="logo">🌷 Tulip Chat</div>
+<h3>🌷 Tulip Chat</h3>
 
-<div id="profile">
+<button onclick="logout()">Logout</button>
 
-<img id="avatar" src="https://i.imgur.com/7k12EPD.png">
-
-<br>
-
-<input type="file" id="uploadPic">
-
-</div>
-
-<div id="onlineCount">0 users online</div>
+<h4 id="onlineCount">0 users</h4>
 
 <div id="users"></div>
 
 </div>
 
-<!-- ---------- CHAT ---------- -->
-
-<div id="chatArea">
+<div id="chat">
 
 <div id="messages"></div>
 
-<div id="inputBar">
+<div id="typing"></div>
 
-<input id="msg" placeholder="Type message">
+<div id="inputArea">
+
+<input id="msg" placeholder="Type message" oninput="typing()">
 
 <button onclick="sendMsg()">Send</button>
 
-<button onclick="emoji()">😊</button>
+<button onclick="gif()">GIF</button>
 
-<button onclick="gift()">🎁</button>
-
-</div>
+<button onclick="photo()">📷</button>
 
 </div>
 
-<!-- ---------- DM POPUP ---------- -->
+</div>
 
 <div id="dmBox">
 
-<div id="dmHeader"></div>
+<div id="dmHeader">DM</div>
 
 <div id="dmMessages"></div>
 
@@ -221,43 +171,33 @@ flex:1;
 
 <script>
 
-/* ---------- SOCKET ---------- */
-
 const socket = io()
 
 let username = localStorage.getItem("username")
 
 if(!username){
-
 location="/login.html"
-
 }
 
 socket.emit("join",username)
 
-/* ---------- MESSAGE RECEIVE ---------- */
+/* receive message */
 
 socket.on("chat message",(data)=>{
 
-let box=document.createElement("div")
+let div=document.createElement("div")
 
-box.className="msg"
+div.className="msg"
 
-if(data.username===username){
+div.innerText=data.username+": "+data.msg
 
-box.classList.add("mymsg")
+document.getElementById("messages").appendChild(div)
 
-}
-
-box.innerText=data.username + ": " + data.msg
-
-document.getElementById("messages").appendChild(box)
-
-scrollBottom()
+scroll()
 
 })
 
-/* ---------- ONLINE USERS ---------- */
+/* online users */
 
 socket.on("onlineUsers",(users)=>{
 
@@ -266,36 +206,34 @@ let list=document.getElementById("users")
 list.innerHTML=""
 
 document.getElementById("onlineCount").innerText=
-users.length + " users online"
+users.length+" users online"
 
 users.forEach(u=>{
 
-let div=document.createElement("div")
+let d=document.createElement("div")
 
-div.className="user"
+d.className="user"
 
-div.innerText=u
+d.innerText=u
 
-div.onclick=()=>openDM(u)
+d.onclick=()=>openDM(u)
 
-list.appendChild(div)
-
-})
+list.appendChild(d)
 
 })
 
-/* ---------- SEND MESSAGE ---------- */
+})
+
+/* send message */
 
 function sendMsg(){
 
-let text=document.getElementById("msg").value
-
-if(text==="") return
+let msg=document.getElementById("msg").value
 
 socket.emit("chat message",{
 
-username:username,
-msg:text
+username,
+msg
 
 })
 
@@ -303,9 +241,29 @@ document.getElementById("msg").value=""
 
 }
 
-/* ---------- SCROLL ---------- */
+/* typing */
 
-function scrollBottom(){
+function typing(){
+
+socket.emit("typing",username)
+
+}
+
+socket.on("typing",(u)=>{
+
+document.getElementById("typing").innerText=u+" typing..."
+
+setTimeout(()=>{
+
+document.getElementById("typing").innerText=""
+
+},1500)
+
+})
+
+/* scroll */
+
+function scroll(){
 
 let m=document.getElementById("messages")
 
@@ -313,26 +271,32 @@ m.scrollTop=m.scrollHeight
 
 }
 
-/* ---------- EMOJI ---------- */
+/* GIF */
 
-function emoji(){
+function gif(){
 
-document.getElementById("msg").value += "😊"
+let link=prompt("Paste GIF link")
+
+if(link){
+
+socket.emit("chat message",{
+username,
+msg:link
+})
 
 }
 
-/* ---------- GIFT ---------- */
-
-function gift(){
-
-document.getElementById("msg").value += "🎁"
-
 }
 
-/* ---------- PROFILE PIC ---------- */
+/* photo */
 
-document.getElementById("uploadPic")
-.addEventListener("change",(e)=>{
+function photo(){
+
+let input=document.createElement("input")
+
+input.type="file"
+
+input.onchange=e=>{
 
 let file=e.target.files[0]
 
@@ -340,15 +304,22 @@ let reader=new FileReader()
 
 reader.onload=function(){
 
-document.getElementById("avatar").src=reader.result
+socket.emit("chat message",{
+username,
+msg:reader.result
+})
 
 }
 
 reader.readAsDataURL(file)
 
-})
+}
 
-/* ---------- DM SYSTEM ---------- */
+input.click()
+
+}
+
+/* DM */
 
 let dmUser=""
 
@@ -360,33 +331,43 @@ document.getElementById("dmBox").style.display="flex"
 
 document.getElementById("dmHeader").innerText="DM : "+user
 
-document.getElementById("dmMessages").innerHTML=""
-
 }
 
 function sendDM(){
 
 let txt=document.getElementById("dmText").value
 
-if(txt==="") return
+socket.emit("dm",{
 
-let div=document.createElement("div")
+to:dmUser,
+from:username,
+msg:txt
 
-div.innerText="Me: "+txt
-
-document.getElementById("dmMessages").appendChild(div)
+})
 
 document.getElementById("dmText").value=""
 
 }
 
-/* ---------- KEEP ALIVE ---------- */
+socket.on("dm",(data)=>{
 
-setInterval(()=>{
+let div=document.createElement("div")
 
-socket.emit("ping")
+div.innerText=data.from+": "+data.msg
 
-},20000)
+document.getElementById("dmMessages").appendChild(div)
+
+})
+
+/* logout */
+
+function logout(){
+
+localStorage.removeItem("username")
+
+location="/login.html"
+
+}
 
 </script>
 
