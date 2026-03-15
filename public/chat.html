@@ -1,66 +1,121 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat</title><style>
 
-<head>
+body{
+margin:0;
+font-family:Arial;
+display:flex;
+height:100vh;
+overflow:hidden;
+color:white;
+background-size:cover;
+background-position:center;
+}
 
-<meta name="viewport" content="width=device-width,initial-scale=1">
+/* THEMES */
 
-<title>Tulip Chat</title>
+body.normal{
+background-image:url("https://images.unsplash.com/photo-1518199266791-5375a83190b7");
+}
 
-<link rel="stylesheet" href="style.css">
+body.adult{
+background-image:url("https://images.unsplash.com/photo-1500534314209-a25ddb2bd429");
+}
 
-</head>
+body.private{
+background-image:url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e");
+}
 
-<body>
+/* SIDEBAR */
 
-<div id="sidebar">
+#sidebar{
+width:200px;
+background:rgba(0,0,0,.8);
+padding:10px;
+overflow:auto;
+}
 
-<h2>Tulip Chat</h2>
+#sidebar div{
+padding:8px;
+cursor:pointer;
+border-bottom:1px solid #444;
+}
 
-<div onclick="joinRoom('normal')">Normal Room</div>
+#sidebar div:hover{
+background:#ff4da6;
+}
 
-<div onclick="joinRoom('adult')">Adult Room</div>
+/* CHAT AREA */
 
-<div onclick="joinRoom('private')">Private Room</div>
+#chat{
+flex:1;
+display:flex;
+flex-direction:column;
+height:100vh;
+}
 
-<h3>Online Users</h3>
+#messages{
+flex:1;
+overflow-y:auto;
+padding:10px;
+}
 
-<div id="online"></div>
+.msg{
+background:rgba(255,105,180,.3);
+padding:10px;
+border-radius:10px;
+margin-bottom:10px;
+max-width:70%;
+}
 
-</div>
+.system{
+opacity:.6;
+font-style:italic;
+}
 
-<div id="chat">
+/* INPUT BAR */
 
-<div id="messages"></div>
+#input{
+display:flex;
+position:fixed;
+bottom:0;
+left:200px;
+right:0;
+background:black;
+padding:10px;
+}
 
-<div id="typing"></div>
+#text{
+flex:1;
+padding:10px;
+border-radius:20px;
+border:none;
+}
 
-<div id="input">
+button{
+margin-left:5px;
+padding:10px;
+border:none;
+border-radius:10px;
+background:#ff4da6;
+color:white;
+}
 
-<input id="text" placeholder="Type message">
+#progress{
+font-size:12px;
+margin-left:10px;
+}
 
-<button onclick="send()">Send</button>
+</style></head><body class="normal"><div id="sidebar"><h3>Tulip Chat</h3><div onclick="joinRoom('normal')">Normal Room</div><div onclick="joinRoom('adult')">Adult Room</div><div onclick="joinRoom('private')">Private Room</div><h4>Online Users</h4><div id="online"></div></div><div id="chat"><div id="messages"></div></div><div id="input"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
 
-<input type="file" id="file">
+<input type="file" id="file"><div id="progress"></div></div><script src="/socket.io/socket.io.js"></script><script>
 
-</div>
+const socket=io()
 
-</div>
-
-<script src="/socket.io/socket.io.js"></script>
-
-<script>
-
-const socket = io()
-
-let username = localStorage.getItem("username")
+let username=localStorage.getItem("username")
 
 if(!username){
-
-username = prompt("Enter username")
-
+username=prompt("Enter username")
 localStorage.setItem("username",username)
-
 }
 
 let room="normal"
@@ -70,34 +125,10 @@ socket.emit("join",{username,room})
 function joinRoom(r){
 
 room=r
-
+document.body.className=r
 messages.innerHTML=""
 
-setTheme(r)
-
 socket.emit("join",{username,room})
-
-}
-
-function setTheme(r){
-
-if(r=="normal"){
-
-document.body.className="normal"
-
-}
-
-if(r=="adult"){
-
-document.body.className="adult"
-
-}
-
-if(r=="private"){
-
-document.body.className="private"
-
-}
 
 }
 
@@ -141,21 +172,39 @@ add(msg,"system")
 
 socket.on("online",(list)=>{
 
-online.innerHTML="Online: "+list.length+"<br>"+list.join("<br>")
+online.innerHTML="Online:"+list.length+"<br>"+list.join("<br>")
 
 })
+
+/* FILE UPLOAD */
 
 file.onchange=function(){
 
 let f=this.files[0]
 
-let reader=new FileReader()
+let form=new FormData()
 
-reader.onload=function(){
+form.append("file",f)
 
-let url=reader.result
+let xhr=new XMLHttpRequest()
 
-let ext=f.name.split(".").pop()
+xhr.open("POST","/upload")
+
+xhr.upload.onprogress=(e)=>{
+
+let p=Math.round((e.loaded/e.total)*100)
+
+progress.innerText="Upload "+p+"%"
+
+}
+
+xhr.onload=()=>{
+
+let res=JSON.parse(xhr.response)
+
+let url=res.url
+
+let ext=url.split(".").pop()
 
 let media=""
 
@@ -173,14 +222,12 @@ media=`<img src="${url}" width="200">`
 
 socket.emit("message",{user:username,msg:media,room})
 
-}
-
-reader.readAsDataURL(f)
+progress.innerText=""
 
 }
 
-</script>
+xhr.send(form)
 
-</body>
+}
 
-</html>
+</script></body></html>
