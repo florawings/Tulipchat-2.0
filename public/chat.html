@@ -22,8 +22,14 @@ display:flex;
 justify-content:space-between;
 }
 
+#users{
+background:#fff;
+padding:8px;
+font-size:14px;
+}
+
 #chat{
-height:72vh;
+height:68vh;
 overflow:auto;
 padding:10px;
 }
@@ -60,9 +66,32 @@ background:#ff2d7a;
 color:white;
 }
 
-img{
-max-width:220px;
+/* thumbnail */
+
+.chat-img{
+max-width:150px;
 border-radius:6px;
+cursor:pointer;
+}
+
+/* fullscreen viewer */
+
+#viewer{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.9);
+justify-content:center;
+align-items:center;
+z-index:1000;
+}
+
+#viewer img{
+max-width:95%;
+max-height:95%;
 }
 
 </style>
@@ -79,6 +108,8 @@ border-radius:6px;
 
 </header>
 
+<div id="users">Online:</div>
+
 <div id="chat"></div>
 
 <div class="bottom">
@@ -93,6 +124,12 @@ border-radius:6px;
 <input type="file" id="gifInput" hidden accept="image/gif">
 <button onclick="openGif()">GIF</button>
 
+</div>
+
+<!-- fullscreen viewer -->
+
+<div id="viewer">
+<img id="viewerImg">
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -114,11 +151,9 @@ localStorage.setItem("name",name)
 
 }
 
-/* join chat */
-
 socket.emit("join",{name})
 
-/* send text */
+/* send message */
 
 function send(){
 
@@ -141,11 +176,20 @@ addMsg(data.name+": "+data.text)
 
 })
 
-/* join message */
+/* system message */
 
 socket.on("system",(text)=>{
 
 addMsg(text,true)
+
+})
+
+/* online users */
+
+socket.on("users",(list)=>{
+
+document.getElementById("users").innerText =
+"Online: "+list.join(", ")
 
 })
 
@@ -157,7 +201,8 @@ let div=document.createElement("div")
 
 div.className="msg"
 
-div.innerHTML=data.name+"<br><img src='"+data.url+"'>"
+div.innerHTML=data.name+
+"<br><img class='chat-img' src='"+data.url+"' onclick=\"openViewer('"+data.url+"')\">"
 
 chat.appendChild(div)
 
@@ -181,19 +226,19 @@ document.getElementById("gifInput").click()
 
 imageInput.onchange=function(){
 
-uploadFile(this.files[0],"Image")
+uploadFile(this.files[0])
 
 }
 
 gifInput.onchange=function(){
 
-uploadFile(this.files[0],"GIF")
+uploadFile(this.files[0])
 
 }
 
 /* upload */
 
-function uploadFile(file,type){
+function uploadFile(file){
 
 let formData=new FormData()
 
@@ -203,17 +248,7 @@ let xhr=new XMLHttpRequest()
 
 xhr.open("POST","/upload",true)
 
-let progress=document.createElement("div")
-
-progress.className="msg system"
-
-progress.innerText="Uploading "+type+"..."
-
-chat.appendChild(progress)
-
 xhr.onload=function(){
-
-progress.remove()
 
 let data=JSON.parse(xhr.responseText)
 
@@ -225,16 +260,6 @@ url:data.url
 }
 
 xhr.send(formData)
-
-}
-
-/* logout */
-
-function logout(){
-
-localStorage.clear()
-
-location.reload()
 
 }
 
@@ -253,6 +278,33 @@ div.innerText=text
 chat.appendChild(div)
 
 chat.scrollTop=chat.scrollHeight
+
+}
+
+/* fullscreen viewer */
+
+function openViewer(src){
+
+let viewer=document.getElementById("viewer")
+let img=document.getElementById("viewerImg")
+
+img.src=src
+
+viewer.style.display="flex"
+
+}
+
+document.getElementById("viewer").onclick=function(){
+
+this.style.display="none"
+
+}
+
+function logout(){
+
+localStorage.clear()
+
+location.reload()
 
 }
 
