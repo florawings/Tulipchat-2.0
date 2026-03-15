@@ -6,113 +6,91 @@ const path = require("path");
 
 const app = express();
 const server = http.createServer(app);
-
-const io = new Server(server, {
-  cors: {
-    origin: "*"
-  }
-});
+const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+// static files
 app.use(express.static(path.join(__dirname, "public")));
+app.use(express.json());
 
-mongoose.connect("mongodb+srv://effportal_db_user:wAaE19Wqq3XFMbJH@cluster0.mrighsb.mongodb.net/tulipchat?retryWrites=true&w=majority")
-.then(() => console.log("MongoDB Connected"))
-.catch(err => console.log("MongoDB Error:", err));
+// ===== MongoDB =====
+mongoose.connect(
+"mongodb+srv://effportal_db_user:wAaE19Wqq3XFMbJH@cluster0.mrighsb.mongodb.net/tulipchat?retryWrites=true&w=majority"
+)
+.then(()=>console.log("MongoDB Connected"))
+.catch(err=>console.log("MongoDB Error:",err));
 
-const messageSchema = new mongoose.Schema({
-  user: String,
-  text: String,
-  type: String,
-  to: String,
-  time: Date
+// ===== Message Schema =====
+const Message = mongoose.model("Message",{
+user:String,
+text:String,
+type:String,
+time:Date
 });
-
-const Message = mongoose.model("Message", messageSchema);
 
 let users = {};
 
-io.on("connection", (socket) => {
+// ===== Socket =====
+io.on("connection",(socket)=>{
 
-  console.log("User connected");
+console.log("user connected");
 
-  socket.on("join", async (username) => {
+// join
+socket.on("join", async (username)=>{
 
-    users[socket.id] = username;
+users[socket.id]=username;
 
-    io.emit("onlineUsers", Object.values(users));
+io.emit("onlineUsers",Object.values(users));
 
-    io.emit("message", {
-      user: "System",
-      text: username + " joined chat",
-      type: "system"
-    });
+io.emit("message",{
+user:"System",
+text:username+" joined chat",
+type:"system"
+});
 
-    const oldMessages = await Message.find().sort({time:1}).limit(100);
-
-    socket.emit("oldMessages", oldMessages);
-  });
-
-  socket.on("message", async (data) => {
-
-    const msg = new Message({
-      user: data.user,
-      text: data.text,
-      type: data.type || "text",
-      time: new Date()
-    });
-
-    await msg.save();
-
-    io.emit("message", msg);
-  });
-
-  socket.on("dm", async (data) => {
-
-    const msg = new Message({
-      user: data.from,
-      text: data.text,
-      type: "dm",
-      to: data.to,
-      time: new Date()
-    });
-
-    await msg.save();
-
-    for (let id in users) {
-
-      if (users[id] === data.to || users[id] === data.from) {
-
-        io.to(id).emit("dm", msg);
-
-      }
-
-    }
-
-  });
-
-  socket.on("disconnect", () => {
-
-    const username = users[socket.id];
-
-    delete users[socket.id];
-
-    io.emit("onlineUsers", Object.values(users));
-
-    io.emit("message", {
-      user: "System",
-      text: username + " left chat",
-      type: "system"
-    });
-
-  });
+let old = await Message.find().sort({time:1}).limit(50);
+socket.emit("oldMessages",old);
 
 });
 
-server.listen(PORT, () => {
+// send message
+socket.on("message",async(data)=>{
 
-  console.log("Server running on port " + PORT);
+let msg = new Message({
+user:data.user,
+text:data.text,
+type:data.type || "text",
+time:new Date()
+});
 
+await msg.save();
+
+io.emit("message",msg);
+
+});
+
+// disconnect
+socket.on("disconnect",()=>{
+
+let name = users[socket.id];
+
+delete users[socket.id];
+
+io.emit("onlineUsers",Object.values(users));
+
+if(name){
+io.emit("message",{
+user:"System",
+text:name+" left chat",
+type:"system"
+});
+}
+
+});
+
+});
+
+server.listen(PORT,()=>{
+console.log("Server running on "+PORT);
 });
