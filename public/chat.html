@@ -1,13 +1,15 @@
 <!DOCTYPE html><html>
-<head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tulip Chat</title><style>
-
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tulip Chat</title><style>
 body{
 margin:0;
 font-family:Arial;
-background:#f2dce3;
 height:100vh;
 display:flex;
 flex-direction:column;
+background:#f2dce3;
+overflow:hidden;
 }
 
 /* HEADER */
@@ -20,7 +22,6 @@ display:flex;
 align-items:center;
 justify-content:space-between;
 padding:0 12px;
-flex-shrink:0;
 }
 
 #header button{
@@ -34,15 +35,15 @@ font-size:18px;
 
 #usersPanel{
 position:fixed;
-left:-230px;
+left:-240px;
 top:50px;
-width:220px;
+width:230px;
 height:100%;
 background:white;
-padding:10px;
-transition:0.3s;
-overflow:auto;
+transition:.3s;
 box-shadow:0 0 10px rgba(0,0,0,0.2);
+overflow:auto;
+padding:10px;
 z-index:1000;
 }
 
@@ -50,7 +51,27 @@ z-index:1000;
 left:0;
 }
 
-/* CHAT */
+/* INBOX PANEL */
+
+#inboxPanel{
+position:fixed;
+right:-260px;
+top:50px;
+width:250px;
+height:100%;
+background:white;
+transition:.3s;
+box-shadow:0 0 10px rgba(0,0,0,0.2);
+overflow:auto;
+padding:10px;
+z-index:1000;
+}
+
+#inboxPanel.open{
+right:0;
+}
+
+/* CHAT AREA */
 
 #chat{
 flex:1;
@@ -73,7 +94,7 @@ font-size:14px;
 }
 
 .msg img{
-max-width:180px;
+max-width:200px;
 border-radius:8px;
 }
 
@@ -81,11 +102,11 @@ border-radius:8px;
 
 #input{
 height:60px;
-background:white;
 display:flex;
 align-items:center;
-padding:6px;
 gap:6px;
+padding:6px;
+background:white;
 }
 
 #text{
@@ -107,14 +128,18 @@ border-radius:8px;
 font-size:12px;
 color:#333;
 }
+</style></head><body><div id="header"><button onclick="toggleUsers()">☰</button>
 
-</style></head><body><div id="header"><button onclick="toggleMenu()">☰</button>
-
-<div>Tulip Chat</div><div><button onclick="location.reload()">🔄</button>
-
-<button onclick="alert('DM inbox coming')">📥</button>
-
-</div></div><div id="usersPanel"><h3>Online Users</h3><div id="onlineList"></div></div><div id="chat"></div><div id="input"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
+<div>Tulip Chat</div><div>
+<button onclick="location.reload()">🔄</button>
+<button onclick="toggleInbox()">📥</button>
+</div></div><div id="usersPanel">
+<h3>Online Users</h3>
+<div id="onlineList"></div>
+</div><div id="inboxPanel">
+<h3>Inbox</h3>
+<div id="dmList"></div>
+</div><div id="chat"></div><div id="input"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
 
 <input type="file" id="file" hidden accept="image/*,.gif"><button onclick="upload()">GIF</button>
 
@@ -140,8 +165,7 @@ return g==="female"?"👩":"👨"
 
 function send(){
 
-let msg=text.value.trim()
-
+let msg = text.value.trim()
 if(!msg) return
 
 socket.emit("message",{username,gender,msg})
@@ -160,13 +184,9 @@ div.className="msg"
 let icon=avatar(d.gender)
 
 if(d.msg.includes("/uploads")){
-
 div.innerHTML=icon+" "+d.username+"<br><img src='"+d.msg+"'>"
-
 }else{
-
 div.innerText=icon+" "+d.username+": "+d.msg
-
 }
 
 chat.appendChild(div)
@@ -184,7 +204,6 @@ onlineList.innerHTML=""
 users.forEach(u=>{
 
 let div=document.createElement("div")
-
 div.innerText=(u.gender==="female"?"👩":"👨")+" "+u.username
 
 onlineList.appendChild(div)
@@ -193,12 +212,14 @@ onlineList.appendChild(div)
 
 })
 
-/* MENU TOGGLE */
+/* PANELS */
 
-function toggleMenu(){
-
+function toggleUsers(){
 usersPanel.classList.toggle("open")
+}
 
+function toggleInbox(){
+inboxPanel.classList.toggle("open")
 }
 
 /* FILE UPLOAD */
@@ -214,25 +235,20 @@ let f=file.files[0]
 let fd=new FormData()
 fd.append("file",f)
 
-let xhr = new XMLHttpRequest()
+let xhr=new XMLHttpRequest()
 
 xhr.open("POST","/upload")
 
-xhr.upload.onprogress = function(e){
+xhr.upload.onprogress=(e)=>{
 
-if(e.lengthComputable){
-
-let percent = Math.round((e.loaded/e.total)*100)
-
-progress.innerText = percent + "%"
+let percent=Math.round((e.loaded/e.total)*100)
+progress.innerText=percent+"%"
 
 }
 
-}
+xhr.onload=()=>{
 
-xhr.onload = function(){
-
-let res = JSON.parse(xhr.responseText)
+let res=JSON.parse(xhr.responseText)
 
 socket.emit("message",{
 username,
