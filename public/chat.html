@@ -3,18 +3,19 @@ const socket = io()
 let username = localStorage.getItem("username")
 
 if(!username){
-username = prompt("Enter username")
+username = prompt("Username")
 localStorage.setItem("username",username)
 }
 
-let room="adult"
+let room = "adult"
 
 socket.emit("join",{username,room})
 
 function joinRoom(r){
 
-room=r
-messages.innerHTML=""
+room = r
+
+messages.innerHTML = ""
 
 socket.emit("join",{username,room})
 
@@ -22,21 +23,21 @@ socket.emit("join",{username,room})
 
 function add(html,type){
 
-let div=document.createElement("div")
+let div = document.createElement("div")
 
-div.className="msg "+(type||"")
+div.className = "msg "+(type||"")
 
-div.innerHTML=html
+div.innerHTML = html
 
 messages.appendChild(div)
 
-messages.scrollTop=messages.scrollHeight
+messages.scrollTop = messages.scrollHeight
 
 }
 
 function send(){
 
-let text=document.getElementById("text").value
+let text = document.getElementById("text").value
 
 if(!text) return
 
@@ -60,19 +61,19 @@ add(msg,"system")
 
 socket.on("online",(list)=>{
 
-document.getElementById("online").innerText="Online: "+list.length
+online.innerText="Online: "+list.length
 
 })
 
-document.getElementById("text").addEventListener("input",()=>{
+text.addEventListener("input",()=>{
 
 socket.emit("typing",{user:username,room})
 
 })
 
-socket.on("typing",(data)=>{
+socket.on("typing",(d)=>{
 
-typing.innerText=data.user+" typing..."
+typing.innerText=d.user+" typing..."
 
 setTimeout(()=>typing.innerText="",1000)
 
@@ -89,14 +90,6 @@ form.append("file",f)
 let xhr=new XMLHttpRequest()
 
 xhr.open("POST","/upload")
-
-xhr.upload.onprogress=(e)=>{
-
-let p=Math.round((e.loaded/e.total)*100)
-
-typing.innerText="upload "+p+"%"
-
-}
 
 xhr.onload=()=>{
 
@@ -116,8 +109,6 @@ media="<img src="${url}" width="200">"
 
 socket.emit("message",{user:username,msg:media,room})
 
-typing.innerText=""
-
 }
 
 xhr.send(form)
@@ -125,5 +116,5 @@ xhr.send(form)
 }
 
 function emoji(){
-text.value+="😊"
+text.value+="🔥"
 }
