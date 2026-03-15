@@ -1,17 +1,12 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>Tulip Chat</title>
 
 <style>
-
-/* ===========================
-GLOBAL STYLE
-=========================== */
 
 *{
 box-sizing:border-box;
@@ -23,25 +18,22 @@ font-family:Arial;
 body{
 height:100vh;
 display:flex;
-background:#f0f2f5;
+background:#f2f2f2;
 overflow:hidden;
 }
 
-/* ===========================
-SIDEBAR
-=========================== */
+/* SIDEBAR */
 
 #sidebar{
-width:240px;
-background:#1d1f2f;
+width:220px;
+background:#1e1e2f;
 color:white;
 display:flex;
 flex-direction:column;
 }
 
-#sidebarHeader{
+#sidebar h2{
 padding:15px;
-font-size:20px;
 border-bottom:1px solid #333;
 }
 
@@ -51,18 +43,16 @@ overflow:auto;
 }
 
 .user{
-padding:12px;
-border-bottom:1px solid #333;
+padding:10px;
 cursor:pointer;
+border-bottom:1px solid #333;
 }
 
 .user:hover{
-background:#2a2c44;
+background:#2c2c44;
 }
 
-/* ===========================
-MAIN CHAT
-=========================== */
+/* MAIN */
 
 #main{
 flex:1;
@@ -80,27 +70,27 @@ display:flex;
 justify-content:space-between;
 }
 
-/* MESSAGE AREA */
+/* MESSAGES */
 
 #messages{
 flex:1;
 overflow:auto;
-padding:12px;
+padding:10px;
 display:flex;
 flex-direction:column;
 }
 
 .message{
-padding:10px;
-border-radius:8px;
-margin-bottom:10px;
-max-width:70%;
 background:white;
+padding:10px;
+margin-bottom:10px;
+border-radius:6px;
+max-width:70%;
 }
 
 .my{
-background:#d4ffd4;
-align-self:flex-end;
+background:#d8ffd8;
+margin-left:auto;
 }
 
 .system{
@@ -109,13 +99,13 @@ color:#777;
 margin:10px;
 }
 
-.timestamp{
+.time{
 font-size:11px;
-color:#888;
+color:#999;
 margin-top:4px;
 }
 
-/* INPUT BAR */
+/* SEND BAR */
 
 #sendBar{
 display:flex;
@@ -138,17 +128,10 @@ color:white;
 border:none;
 padding:10px 14px;
 border-radius:6px;
-cursor:pointer;
 }
-
-button:hover{
-opacity:0.8;
-}
-
-/* IMAGE */
 
 img{
-max-width:220px;
+max-width:200px;
 border-radius:6px;
 margin-top:6px;
 }
@@ -159,10 +142,10 @@ margin-top:6px;
 position:fixed;
 right:10px;
 bottom:10px;
-width:320px;
+width:300px;
 background:white;
 border-radius:10px;
-box-shadow:0 0 12px rgba(0,0,0,0.3);
+box-shadow:0 0 10px rgba(0,0,0,0.3);
 display:none;
 flex-direction:column;
 }
@@ -171,10 +154,11 @@ flex-direction:column;
 background:#ff2d6f;
 color:white;
 padding:10px;
+display:flex;
+justify-content:space-between;
 }
 
 #dmMessages{
-flex:1;
 height:200px;
 overflow:auto;
 padding:10px;
@@ -191,36 +175,32 @@ padding:8px;
 border:1px solid #ccc;
 }
 
-/* EMOJI PANEL */
+#dmClose{
+cursor:pointer;
+}
+
+/* EMOJI */
 
 #emojiPanel{
 position:absolute;
-bottom:60px;
+bottom:70px;
 right:120px;
 background:white;
 border:1px solid #ccc;
 border-radius:6px;
 display:none;
 padding:6px;
-max-width:200px;
-flex-wrap:wrap;
 }
 
 .emoji{
 cursor:pointer;
-padding:4px;
 font-size:20px;
+padding:4px;
 }
-
-/* DARK MODE */
 
 .dark{
 background:#111;
 color:white;
-}
-
-.dark #messages{
-background:#111;
 }
 
 .dark .message{
@@ -230,14 +210,6 @@ color:white;
 
 .dark .my{
 background:#2e6f3e;
-}
-
-/* TYPING */
-
-#typing{
-font-size:12px;
-color:#888;
-margin-left:10px;
 }
 
 </style>
@@ -250,7 +222,7 @@ margin-left:10px;
 
 <div id="sidebar">
 
-<div id="sidebarHeader">Online</div>
+<h2>Online</h2>
 
 <div id="users"></div>
 
@@ -276,19 +248,19 @@ margin-left:10px;
 
 <div id="messages"></div>
 
-<div id="typing"></div>
-
 <div id="sendBar">
 
 <input id="messageInput" placeholder="message">
 
 <button onclick="sendMessage()">Send</button>
 
-<input type="file" id="imageUpload" hidden>
+<input type="file" id="imageUpload" hidden accept="image/*">
 
 <button onclick="openImage()">📷</button>
 
-<button onclick="sendGIF()">GIF</button>
+<input type="file" id="gifUpload" hidden accept="image/gif">
+
+<button onclick="openGIF()">GIF</button>
 
 <button onclick="toggleEmoji()">😊</button>
 
@@ -296,11 +268,21 @@ margin-left:10px;
 
 </div>
 
+<!-- EMOJI PANEL -->
+
 <div id="emojiPanel"></div>
+
+<!-- DM WINDOW -->
 
 <div id="dmWindow">
 
-<div id="dmHeader"></div>
+<div id="dmHeader">
+
+<span id="dmTitle">DM</span>
+
+<span id="dmClose" onclick="closeDM()">✖</span>
+
+</div>
 
 <div id="dmMessages"></div>
 
@@ -330,17 +312,13 @@ localStorage.setItem("username",username)
 
 }
 
-/* JOIN */
-
 socket.emit("join",username)
-
-/* ELEMENTS */
 
 const messages=document.getElementById("messages")
 const usersDiv=document.getElementById("users")
 const input=document.getElementById("messageInput")
 
-/* ADD MESSAGE */
+/* MESSAGE UI */
 
 function addMessage(data){
 
@@ -368,7 +346,7 @@ div.innerHTML="<b>"+data.user+"</b>: "+data.text
 }
 
 let time=document.createElement("div")
-time.className="timestamp"
+time.className="time"
 time.innerText=new Date().toLocaleTimeString()
 
 div.appendChild(time)
@@ -381,17 +359,13 @@ messages.scrollTop=messages.scrollHeight
 
 }
 
-/* RECEIVE */
-
 socket.on("chat message",(data)=>{
 
 addMessage(data)
 
-saveLocal(data)
-
 })
 
-/* SEND */
+/* SEND MESSAGE */
 
 function sendMessage(){
 
@@ -411,27 +385,9 @@ input.value=""
 
 }
 
-/* ENTER SEND */
-
-input.addEventListener("keypress",e=>{
-
-socket.emit("typing",username)
+input.addEventListener("keypress",(e)=>{
 
 if(e.key==="Enter") sendMessage()
-
-})
-
-/* TYPING */
-
-socket.on("typing",(name)=>{
-
-document.getElementById("typing").innerText=name+" typing..."
-
-setTimeout(()=>{
-
-document.getElementById("typing").innerText=""
-
-},2000)
 
 })
 
@@ -465,23 +421,35 @@ reader.readAsDataURL(file)
 
 })
 
-/* GIF */
+/* GIF FROM MOBILE */
 
-function sendGIF(){
+function openGIF(){
 
-const url=prompt("Paste GIF link")
+document.getElementById("gifUpload").click()
 
-if(!url) return
+}
+
+document.getElementById("gifUpload").addEventListener("change",function(){
+
+const file=this.files[0]
+
+const reader=new FileReader()
+
+reader.onload=function(){
 
 socket.emit("chat message",{
 
 user:username,
-text:url,
+text:reader.result,
 type:"image"
 
 })
 
 }
+
+reader.readAsDataURL(file)
+
+})
 
 /* USERS */
 
@@ -494,6 +462,7 @@ list.forEach(u=>{
 let div=document.createElement("div")
 
 div.className="user"
+
 div.innerText=u
 
 div.onclick=()=>openDM(u)
@@ -514,9 +483,17 @@ currentDM=user
 
 document.getElementById("dmWindow").style.display="flex"
 
-document.getElementById("dmHeader").innerText="DM : "+user
+document.getElementById("dmTitle").innerText="DM : "+user
 
 document.getElementById("dmMessages").innerHTML=""
+
+}
+
+function closeDM(){
+
+document.getElementById("dmWindow").style.display="none"
+
+currentDM=null
 
 }
 
@@ -550,26 +527,6 @@ document.getElementById("dmMessages").appendChild(div)
 
 })
 
-/* LOCAL STORAGE */
-
-function saveLocal(data){
-
-let history=JSON.parse(localStorage.getItem("chatHistory")||"[]")
-
-history.push(data)
-
-localStorage.setItem("chatHistory",JSON.stringify(history))
-
-}
-
-window.onload=()=>{
-
-let history=JSON.parse(localStorage.getItem("chatHistory")||"[]")
-
-history.forEach(addMessage)
-
-}
-
 /* EMOJI */
 
 const emojiPanel=document.getElementById("emojiPanel")
@@ -596,11 +553,12 @@ emojiPanel.appendChild(span)
 
 function toggleEmoji(){
 
-emojiPanel.style.display=emojiPanel.style.display==="flex"?"none":"flex"
+emojiPanel.style.display=
+emojiPanel.style.display==="block"?"none":"block"
 
 }
 
-/* DARK MODE */
+/* DARK */
 
 function toggleDark(){
 
@@ -621,4 +579,4 @@ location.href="login.html"
 </script>
 
 </body>
-</html>
+  </html>
