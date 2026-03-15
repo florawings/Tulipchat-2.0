@@ -1,78 +1,45 @@
 const express = require("express")
-const app = express()
-
-const http = require("http").createServer(app)
-
-const { Server } = require("socket.io")
-const io = new Server(http)
-
+const http = require("http")
+const {Server} = require("socket.io")
 const multer = require("multer")
-const mongoose = require("mongoose")
 const path = require("path")
-const fs = require("fs")
+const mongoose = require("mongoose")
 
-// ----------------------------
-// MongoDB Connection
-// ----------------------------
+const app = express()
+const server = http.createServer(app)
+const io = new Server(server)
+
+app.use(express.static("public"))
+app.use("/uploads",express.static("uploads"))
+
+/* ---------------- MongoDB CONNECT ---------------- */
 
 mongoose.connect(
-"mongodb+srv://epffoportal_db_user:wAaE19Wqq3XFMbJH@cluster0.mighbsf.mongodb.net/tulipchat?retryWrites=true&w=majority"
+"mongodb+srv://epffoportal_db_user:wAaE19Wqq3XFMbJH@cluster0.mighbsf.mongodb.net/tulipchat"
 )
 
-mongoose.connection.on("connected",()=>{
-console.log("MongoDB connected")
-})
-
-mongoose.connection.on("error",(err)=>{
-console.log("MongoDB error",err)
-})
-
-// ----------------------------
-// Message Schema
-// ----------------------------
-
-const Message = mongoose.model("Message",{
-
+const messageSchema = new mongoose.Schema({
 name:String,
 text:String,
 image:String,
 system:Boolean,
 time:{type:Date,default:Date.now}
-
 })
 
-// ----------------------------
-// Upload folder
-// ----------------------------
+const Message = mongoose.model("Message",messageSchema)
 
-if(!fs.existsSync("uploads")){
-fs.mkdirSync("uploads")
-}
-
-app.use(express.static("public"))
-app.use("/uploads",express.static("uploads"))
-
-// ----------------------------
-// Multer config
-// ----------------------------
+/* ---------------- FILE UPLOAD ---------------- */
 
 const storage = multer.diskStorage({
-
-destination:(req,file,cb)=>{
-cb(null,"uploads")
+destination:function(req,file,cb){
+cb(null,"uploads/")
 },
-
-filename:(req,file,cb)=>{
+filename:function(req,file,cb){
 cb(null,Date.now()+path.extname(file.originalname))
 }
-
 })
 
 const upload = multer({storage})
-
-// ----------------------------
-// Upload API
-// ----------------------------
 
 app.post("/upload",upload.single("file"),(req,res)=>{
 
@@ -82,105 +49,65 @@ url:"/uploads/"+req.file.filename
 
 })
 
-// ----------------------------
-// Users
-// ----------------------------
+/* ---------------- SOCKET CHAT ---------------- */
 
-let users = {}
-
-// ----------------------------
-// Socket connection
-// ----------------------------
+let users = []
 
 io.on("connection",(socket)=>{
 
-// USER JOIN
-
 socket.on("join",async(data)=>{
 
-users[socket.id]=data
+socket.username=data.name
 
-io.emit("users",users)
+users.push(data.name)
 
-let joinMsg=data.name+" joined the chat"
-
-let msg=new Message({
-system:true,
-text:joinMsg
-})
-
-await msg.save()
+const joinMsg = `${data.name} joined the chat`
 
 io.emit("system",joinMsg)
 
-// SEND CHAT HISTORY
+await Message.create({
+text:joinMsg,
+system:true
+})
 
-let history=await Message.find().sort({_id:1}).limit(100)
+const history = await Message.find().sort({time:1}).limit(100)
 
 socket.emit("history",history)
 
 })
 
-// TEXT MESSAGE
-
 socket.on("message",async(data)=>{
 
-let msg=new Message({
+io.emit("message",data)
+
+await Message.create({
 name:data.name,
 text:data.text
 })
 
-await msg.save()
-
-io.emit("message",data)
-
 })
-
-// IMAGE / GIF
 
 socket.on("image",async(data)=>{
 
-let msg=new Message({
+io.emit("image",data)
+
+await Message.create({
 name:data.name,
 image:data.url
 })
 
-await msg.save()
-
-io.emit("image",data)
-
 })
-
-// USER DISCONNECT
 
 socket.on("disconnect",()=>{
 
-let user=users[socket.id]
-
-if(user){
-
-let leaveMsg=user.name+" left the chat"
-
-io.emit("system",leaveMsg)
-
-}
-
-delete users[socket.id]
-
-io.emit("users",users)
+users = users.filter(u=>u!==socket.username)
 
 })
 
 })
 
-// ----------------------------
-// Server Start
-// ----------------------------
+server.listen(3000,()=>{
 
-const PORT=process.env.PORT || 10000
-
-http.listen(PORT,()=>{
-
-console.log("Tulip Chat running on port "+PORT)
+console.log("Server running")
 
 })
