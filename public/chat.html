@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>Tulip Chat</title>
@@ -12,13 +13,12 @@ margin:0;
 font-family:Arial;
 display:flex;
 height:100vh;
-overflow:hidden;
 }
 
-/* LEFT USER PANEL */
+/* LEFT USERS PANEL */
 
 #usersPanel{
-width:130px;
+width:120px;
 background:#fafafa;
 border-right:1px solid #ddd;
 overflow-y:auto;
@@ -26,7 +26,6 @@ overflow-y:auto;
 
 #usersPanel h3{
 text-align:center;
-margin:10px 0;
 font-size:14px;
 }
 
@@ -34,14 +33,13 @@ font-size:14px;
 padding:8px;
 border-bottom:1px solid #eee;
 cursor:pointer;
-font-size:13px;
 }
 
 .user:hover{
 background:#eee;
 }
 
-/* MAIN CHAT AREA */
+/* MAIN AREA */
 
 #main{
 flex:1;
@@ -57,8 +55,6 @@ color:white;
 padding:12px;
 display:flex;
 justify-content:space-between;
-align-items:center;
-font-weight:bold;
 }
 
 /* CHAT */
@@ -66,7 +62,7 @@ font-weight:bold;
 #chat{
 flex:1;
 overflow-y:auto;
-background:#f2f2f2;
+background:#f1f1f1;
 padding:10px;
 }
 
@@ -129,14 +125,13 @@ z-index:999;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<!-- DM POPUP -->
 <div id="dmPopup"></div>
 
-<!-- USERS PANEL -->
 <div id="usersPanel">
 
 <h3>Online</h3>
@@ -145,7 +140,6 @@ z-index:999;
 
 </div>
 
-<!-- MAIN -->
 <div id="main">
 
 <div id="header">
@@ -185,8 +179,6 @@ const popup = document.getElementById("dmPopup")
 
 let username = localStorage.getItem("name")
 
-/* JOIN */
-
 socket.emit("join",username)
 
 /* SEND MESSAGE */
@@ -219,7 +211,7 @@ chat.scrollTop=chat.scrollHeight
 
 })
 
-/* ONLINE USERS */
+/* USERS */
 
 socket.on("users",(users)=>{
 
@@ -241,7 +233,7 @@ usersDiv.appendChild(div)
 
 })
 
-/* START DM */
+/* DM */
 
 function startDM(user){
 
@@ -254,8 +246,6 @@ socket.emit("dm",{to:user,msg:msg})
 }
 
 }
-
-/* RECEIVE DM */
 
 socket.on("dm",(data)=>{
 
@@ -296,8 +286,6 @@ socket.emit("image",reader.result)
 reader.readAsDataURL(file)
 
 }
-
-/* RECEIVE IMAGE */
 
 socket.on("image",(data)=>{
 
