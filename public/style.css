@@ -1,22 +1,21 @@
 body{
 margin:0;
-height:100vh;
 display:flex;
-font-family:Arial;
-background:#0f0f0f;
+height:100vh;
+background:#111;
 color:white;
-overflow:hidden;
+font-family:Arial;
 }
 
 #sidebar{
-width:200px;
-background:#111;
+width:220px;
+background:#000;
 padding:10px;
 }
 
 .room{
 padding:10px;
-border-bottom:1px solid #222;
+border-bottom:1px solid #333;
 cursor:pointer;
 }
 
@@ -41,7 +40,7 @@ max-width:70%;
 }
 
 .system{
-opacity:.7;
+opacity:.6;
 font-style:italic;
 }
 
@@ -65,4 +64,5 @@ background:#ff2e63;
 border:none;
 color:white;
 border-radius:8px;
+cursor:pointer;
 }
