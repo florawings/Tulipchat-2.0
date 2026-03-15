@@ -1,208 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tulip Chat</title>
-
-<link rel="stylesheet" href="style.css">
 
 <style>
 
 body{
 margin:0;
-font-family:Arial;
-background:#181828;
-color:white;
-display:flex;
 height:100vh;
-overflow:hidden;
-}
-
-#sidebar{
-width:260px;
-background:#111;
 display:flex;
-flex-direction:column;
-}
-
-#profile{
-padding:15px;
-border-bottom:1px solid #333;
-text-align:center;
-}
-
-#profile img{
-width:70px;
-height:70px;
-border-radius:50%;
-object-fit:cover;
-}
-
-#profile input{
-margin-top:10px;
-}
-
-#onlineCount{
-padding:10px;
-font-size:14px;
-border-bottom:1px solid #333;
-}
-
-#users{
-flex:1;
-overflow:auto;
-}
-
-.user{
-padding:10px;
-border-bottom:1px solid #333;
-cursor:pointer;
-}
-
-.user:hover{
-background:#222;
-}
-
-#main{
-flex:1;
-display:flex;
-flex-direction:column;
-}
-
-#header{
-height:50px;
-background:#222244;
-display:flex;
+justify-content:center;
 align-items:center;
-padding:0 15px;
-font-weight:bold;
+background:#0f1022;
+font-family:Arial;
+color:white;
 }
 
-#messages{
-flex:1;
-overflow:auto;
-padding:10px;
-}
-
-.message{
-background:#333;
-padding:10px;
-border-radius:8px;
-margin-bottom:8px;
-max-width:70%;
-}
-
-.my{
-background:#4e7cff;
-margin-left:auto;
-}
-
-.system{
+.box{
+background:#1e1f38;
+padding:30px;
+border-radius:12px;
+width:260px;
 text-align:center;
-color:#aaa;
 }
 
-.gift{
-text-align:center;
-font-size:18px;
-margin:5px;
-}
-
-#typing{
-font-size:12px;
-color:#aaa;
-padding-left:10px;
-}
-
-#sendBar{
-display:flex;
-gap:5px;
+input{
+width:100%;
 padding:10px;
-background:#111;
-}
-
-#sendBar input{
-flex:1;
-padding:10px;
-border-radius:6px;
+margin-bottom:10px;
 border:none;
+border-radius:6px;
 }
 
 button{
-background:#4e7cff;
+width:100%;
+padding:10px;
 border:none;
-padding:8px 12px;
+border-radius:6px;
+background:#4a7cff;
 color:white;
-border-radius:6px;
 cursor:pointer;
+margin-bottom:8px;
 }
 
-#emojiPanel{
-position:absolute;
-bottom:80px;
-right:140px;
-background:#222;
-padding:10px;
-display:none;
-border-radius:8px;
-}
-
-#emojiPanel span{
-font-size:20px;
-margin:5px;
-cursor:pointer;
-}
-
-#giftPanel{
-position:absolute;
-bottom:80px;
-right:20px;
-background:#222;
-padding:10px;
-display:none;
-border-radius:8px;
-}
-
-#giftPanel button{
-font-size:18px;
-margin:5px;
-}
-
-#dmWindow{
-position:fixed;
-right:0;
-top:0;
-width:320px;
-height:100%;
-background:#111;
-display:none;
-flex-direction:column;
-}
-
-#dmHeader{
-padding:10px;
-background:#222244;
-}
-
-#dmMessages{
-flex:1;
-overflow:auto;
-padding:10px;
-}
-
-#dmInputBar{
-display:flex;
-padding:10px;
-gap:5px;
-background:#111;
-}
-
-#dmInputBar input{
-flex:1;
-padding:8px;
-border-radius:6px;
-border:none;
+.small{
+font-size:12px;
+color:#aaa;
 }
 
 </style>
@@ -211,107 +55,88 @@ border:none;
 
 <body>
 
-<div id="sidebar">
+<div class="box">
 
-<div id="profile">
-<img id="profileImg">
-<input type="file" id="profileUpload">
-<div id="username"></div>
-</div>
+<h2>Tulip Chat</h2>
 
-<div id="onlineCount">0 users online</div>
+<input id="username" placeholder="Username">
 
-<div id="users"></div>
+<input id="email" placeholder="Email (optional)">
 
-</div>
+<input id="password" type="password" placeholder="Password (optional)">
 
-<div id="main">
+<button onclick="login()">Login</button>
 
-<div id="header">🌷 Tulip Chat</div>
+<button onclick="register()">Register</button>
 
-<div id="messages"></div>
+<button onclick="guestLogin()">Guest Login</button>
 
-<div id="typing"></div>
-
-<div id="sendBar">
-
-<input id="msgInput" placeholder="Type message">
-
-<button onclick="sendMsg()">Send</button>
-
-<button onclick="toggleEmoji()">😀</button>
-
-<button onclick="toggleGift()">🎁</button>
-
+<div class="small">
+Guest login requires only username
 </div>
 
 </div>
 
-<div id="emojiPanel">
-
-<span onclick="addEmoji('😀')">😀</span>
-<span onclick="addEmoji('😂')">😂</span>
-<span onclick="addEmoji('❤️')">❤️</span>
-<span onclick="addEmoji('🔥')">🔥</span>
-<span onclick="addEmoji('👍')">👍</span>
-
-</div>
-
-<div id="giftPanel">
-
-<button onclick="sendGift('🌹')">🌹</button>
-<button onclick="sendGift('❤️')">❤️</button>
-<button onclick="sendGift('💎')">💎</button>
-<button onclick="sendGift('🎁')">🎁</button>
-
-</div>
-
-<div id="dmWindow">
-
-<div id="dmHeader">
-<span id="dmUser">DM</span>
-<button onclick="closeDM()">Close</button>
-</div>
-
-<div id="dmMessages"></div>
-
-<div id="dmInputBar">
-<input id="dmInput">
-<button onclick="sendDM()">Send</button>
-</div>
-
-</div>
-
-<script src="/socket.io/socket.io.js"></script>
-<script src="client.js"></script>
 
 <script>
 
-function toggleEmoji(){
-let p=document.getElementById("emojiPanel")
-p.style.display=p.style.display==="block"?"none":"block"
+function login(){
+
+let name=document.getElementById("username").value
+let email=document.getElementById("email").value
+
+if(!name){
+alert("Enter username")
+return
 }
 
-function toggleGift(){
-let p=document.getElementById("giftPanel")
-p.style.display=p.style.display==="block"?"none":"block"
+localStorage.setItem("username",name)
+localStorage.setItem("email",email)
+
+window.location="chat.html"
+
 }
 
-function addEmoji(e){
-document.getElementById("msgInput").value+=e
+function register(){
+
+let name=document.getElementById("username").value
+let email=document.getElementById("email").value
+let pass=document.getElementById("password").value
+
+if(!name || !email || !pass){
+alert("Fill all fields")
+return
 }
 
-function sendGift(g){
-socket.emit("send gift",{user:username,gift:g})
+let user={
+name:name,
+email:email,
+password:pass
 }
 
-function openDM(user){
-document.getElementById("dmWindow").style.display="flex"
-document.getElementById("dmUser").innerText=user
+localStorage.setItem("userAccount",JSON.stringify(user))
+
+alert("Registration successful")
+
+localStorage.setItem("username",name)
+
+window.location="chat.html"
+
 }
 
-function closeDM(){
-document.getElementById("dmWindow").style.display="none"
+function guestLogin(){
+
+let name=document.getElementById("username").value
+
+if(!name){
+alert("Enter guest name")
+return
+}
+
+localStorage.setItem("username","Guest-"+name)
+
+window.location="chat.html"
+
 }
 
 </script>
