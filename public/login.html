@@ -1,133 +1,142 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tulip Chat</title>
+
+<title>Tulip Chat Login</title>
 
 <style>
 
 body{
 font-family:Arial;
-background:#f3f3f3;
-text-align:center;
-margin-top:60px;
+background:#0f1226;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
 }
 
 .box{
-background:white;
+background:#1e2145;
 padding:30px;
-width:90%;
-max-width:350px;
-margin:auto;
 border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,0.1);
+width:300px;
+text-align:center;
 }
 
-input,select{
+input{
 width:100%;
 padding:10px;
 margin:8px 0;
-border:1px solid #ccc;
 border-radius:6px;
+border:none;
 }
 
 button{
 width:100%;
-padding:12px;
-background:#ff2d7a;
-color:white;
+padding:10px;
+margin-top:10px;
 border:none;
+background:#4b6fff;
+color:white;
 border-radius:6px;
-font-size:16px;
-}
-
-h1{
-color:#ff2d7a;
-}
-
-.admin{
-margin-top:20px;
-font-size:14px;
-color:#666;
+cursor:pointer;
 }
 
 </style>
+
 </head>
 
 <body>
 
 <div class="box">
 
-<h1>🌷 Tulip Chat</h1>
+<h2 style="color:white">Tulip Chat</h2>
 
-<input id="name" placeholder="Username">
+<input id="username" placeholder="Username">
 
-<select id="gender">
-<option value="">Select Gender</option>
-<option>Male</option>
-<option>Female</option>
-</select>
+<input id="email" placeholder="Email">
 
-<input type="date" id="dob">
+<input id="password" type="password" placeholder="Password">
 
-<button onclick="enterChat()">Enter Chat</button>
+<button onclick="registerUser()">Register</button>
 
-<div class="admin">
-Owner / Super Admin Login
-</div>
+<button onclick="loginUser()">Login</button>
 
-<input id="adminpass" placeholder="Admin Password">
-<button onclick="adminLogin()">Admin Login</button>
+<button onclick="guestLogin()">Guest Login</button>
 
 </div>
 
 <script>
 
-function enterChat(){
+async function registerUser(){
 
-let name = document.getElementById("name").value
-let gender = document.getElementById("gender").value
-let dob = document.getElementById("dob").value
+let username=document.getElementById("username").value
+let email=document.getElementById("email").value
+let password=document.getElementById("password").value
 
-if(!name || !gender || !dob){
-alert("Fill all fields")
-return
+let res=await fetch("/api/register",{
+
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+username,
+email,
+password
+})
+
+})
+
+let data=await res.json()
+
+alert(data.status)
+
 }
 
-let birth = new Date(dob)
-let today = new Date()
+async function loginUser(){
 
-let age = today.getFullYear() - birth.getFullYear()
+let email=document.getElementById("email").value
+let password=document.getElementById("password").value
 
-if(age < 18){
-alert("18+ only allowed")
-return
+let res=await fetch("/api/login",{
+
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+email,
+password
+})
+
+})
+
+let data=await res.json()
+
+if(data.status==="ok"){
+
+localStorage.setItem("username",data.username)
+
+window.location="/chat.html"
+
+}else{
+
+alert("login failed")
+
 }
 
-localStorage.setItem("name",name)
-localStorage.setItem("gender",gender)
-
-window.location="chat.html"
-
 }
 
-function adminLogin(){
+function guestLogin(){
 
-let pass = document.getElementById("adminpass").value
+let username=document.getElementById("username").value
 
-if(pass==="tulipowner123"){
-localStorage.setItem("role","owner")
-window.location="chat.html"
-}
+localStorage.setItem("username",username)
 
-else if(pass==="superadmin123"){
-localStorage.setItem("role","superadmin")
-window.location="chat.html"
-}
-
-else{
-alert("Wrong password")
-}
+window.location="/chat.html"
 
 }
 
