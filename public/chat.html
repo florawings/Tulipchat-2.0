@@ -1,84 +1,78 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat</title><style>
+<!DOCTYPE html><html>
+<head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tulip Chat</title><style>
+
+*{
+box-sizing:border-box;
+}
 
 body{
 margin:0;
 font-family:Arial;
 background:#0f0f0f;
 color:white;
-display:flex;
 height:100vh;
-overflow:hidden;
+display:flex;
 }
 
-/* SIDEBAR */
+/* sidebar */
 
 #sidebar{
-width:220px;
-background:#1a1a1a;
-padding:10px;
+width:200px;
+background:black;
+padding:15px;
 display:flex;
 flex-direction:column;
 }
 
 #sidebar h3{
-margin-top:0;
 color:#ff4da6;
+margin-top:0;
 }
 
 .room{
 padding:8px;
 cursor:pointer;
 border-radius:6px;
-margin-bottom:5px;
+margin-bottom:6px;
 }
 
 .room:hover{
 background:#333;
 }
 
-/* ONLINE USERS */
-
-#online{
-flex:1;
-overflow:auto;
-}
-
-#online div{
-padding:6px;
-cursor:pointer;
-border-bottom:1px solid #333;
-}
-
-/* CHAT AREA */
+/* chat container */
 
 #chat{
 flex:1;
 display:flex;
 flex-direction:column;
+height:100vh;
+background:url("https://images.unsplash.com/photo-1518199266791-5375a83190b7") center/cover no-repeat;
 }
 
-/* MESSAGES */
+/* messages */
 
 #messages{
 flex:1;
 overflow-y:auto;
-padding:15px;
+padding:20px;
+backdrop-filter:blur(3px);
 }
 
 .message{
-background:#262626;
+background:rgba(0,0,0,0.6);
 padding:10px;
 border-radius:10px;
 margin-bottom:10px;
 max-width:70%;
 }
 
-/* INPUT BAR */
+/* input bar */
 
 #inputBar{
 display:flex;
 padding:10px;
-background:#1a1a1a;
+background:black;
 }
 
 #text{
@@ -91,7 +85,7 @@ outline:none;
 
 button{
 margin-left:6px;
-padding:10px;
+padding:10px 15px;
 border:none;
 border-radius:8px;
 background:#ff4da6;
@@ -100,55 +94,12 @@ cursor:pointer;
 }
 
 #file{
-margin-left:5px;
+margin-left:6px;
 }
 
-#progress{
-font-size:12px;
-margin-left:10px;
-}
+</style></head><body><div id="sidebar"><h3>Tulip Chat</h3><div class="room">Normal Room</div>
+<div class="room">Adult Room</div>
+<div class="room">Private Room</div><h4>Online Users</h4><div id="online"></div></div><div id="chat"><div id="messages"></div><div id="inputBar"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
 
-/* DM WINDOW */
-
-#dmBox{
-position:fixed;
-right:20px;
-bottom:20px;
-width:260px;
-background:#1a1a1a;
-border-radius:10px;
-display:none;
-flex-direction:column;
-}
-
-#dmHeader{
-background:#ff4da6;
-padding:10px;
-border-radius:10px 10px 0 0;
-}
-
-#dmMessages{
-height:180px;
-overflow:auto;
-padding:10px;
-}
-
-#dmInput{
-display:flex;
-padding:10px;
-}
-
-#dmText{
-flex:1;
-padding:8px;
-border:none;
-border-radius:10px;
-}
-
-</style></head><body><!-- SIDEBAR --><div id="sidebar"><h3>Tulip Chat</h3><div class="room" onclick="room='normal'">Normal Room</div><div class="room" onclick="room='adult'">Adult Room</div><div class="room" onclick="room='private'">Private Room</div><h4>Online Users</h4><div id="online"></div></div><!-- CHAT --><div id="chat"><div id="messages"></div><div id="inputBar"><input id="text" placeholder="Type message"><button onclick="sendMessage()">Send</button>
-
-<input type="file" id="file"><span id="progress"></span>
-
-</div></div><!-- DM --><div id="dmBox"><div id="dmHeader" id="dmUser">DM</div><div id="dmMessages"></div><div id="dmInput"><input id="dmText"><button onclick="sendDM()">Send</button>
-
-</div></div><script src="/socket.io/socket.io.js"></script><script src="client.js"></script></body></html>
+<input type="file" id="file"></div></div><script src="/socket.io/socket.io.js"></script><script src="client.js"></script></body>
+</html>
