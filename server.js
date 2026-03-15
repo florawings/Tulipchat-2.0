@@ -8,19 +8,27 @@ const io = new Server(server)
 
 app.use(express.static("public"))
 
-let users = []
+/* USERS STORE */
+
+let users = {}
+
+/* CONNECTION */
 
 io.on("connection",(socket)=>{
 
-console.log("user connected")
+console.log("connected:",socket.id)
 
-// JOIN
+/* JOIN */
+
 socket.on("join",(username)=>{
 
-socket.username = username
-users.push(username)
+users[socket.id] = username
 
-io.emit("users",users)
+/* SEND ONLINE USERS */
+
+io.emit("users",Object.values(users))
+
+/* JOIN MESSAGE */
 
 io.emit("chat message",{
 type:"system",
@@ -29,39 +37,51 @@ text: username + " joined chat"
 
 })
 
-// MESSAGE
+/* PUBLIC MESSAGE */
+
 socket.on("chat message",(data)=>{
+
+/* BROADCAST TO EVERYONE */
 
 io.emit("chat message",data)
 
 })
 
-// DM
+/* PRIVATE DM */
+
 socket.on("dm",(data)=>{
 
-io.emit("dm",data)
+let targetId = Object.keys(users).find(
+id => users[id] === data.to
+)
+
+if(targetId){
+
+io.to(targetId).emit("dm",data)
+
+}
+
+/* sender ko bhi show */
+
+socket.emit("dm",data)
 
 })
 
-// TYPING
-socket.on("typing",(name)=>{
+/* DISCONNECT */
 
-socket.broadcast.emit("typing",name)
-
-})
-
-// DISCONNECT
 socket.on("disconnect",()=>{
 
-users = users.filter(u => u !== socket.username)
+let username = users[socket.id]
 
-io.emit("users",users)
+delete users[socket.id]
 
-if(socket.username){
+io.emit("users",Object.values(users))
+
+if(username){
 
 io.emit("chat message",{
 type:"system",
-text: socket.username + " left chat"
+text: username + " left chat"
 })
 
 }
