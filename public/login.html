@@ -1,146 +1,75 @@
-<!DOCTYPE html>
-<html>
-<head>
-
-<title>Tulip Chat Login</title>
-
-<style>
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat Login</title><style>
 
 body{
-font-family:Arial;
-background:#0f1226;
+margin:0;
+font-family:system-ui;
+background:#111;
+color:white;
 display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
 }
 
-.box{
-background:#1e2145;
+#box{
+background:#1c1c1c;
 padding:30px;
 border-radius:10px;
-width:300px;
-text-align:center;
+width:280px;
 }
 
-input{
-width:100%;
-padding:10px;
-margin:8px 0;
-border-radius:6px;
-border:none;
+h2{
+color:#b983ff;
+margin-top:0;
 }
 
-button{
+input,select{
 width:100%;
 padding:10px;
 margin-top:10px;
 border:none;
-background:#4b6fff;
-color:white;
 border-radius:6px;
+background:#2b2b2b;
+color:white;
+}
+
+button{
+margin-top:15px;
+width:100%;
+padding:10px;
+border:none;
+border-radius:6px;
+background:#b983ff;
+color:white;
+font-weight:bold;
 cursor:pointer;
 }
 
-</style>
+</style></head><body><div id="box"><h2>Tulip Chat</h2><input id="name" placeholder="Enter name"><input id="age" type="number" placeholder="Age"><select id="gender">
+<option value="">Select gender</option>
+<option value="Male">Male</option>
+<option value="Female">Female</option>
+</select><button onclick="enter()">Enter Chat</button>
 
-</head>
+</div><script>
 
-<body>
+function enter(){
 
-<div class="box">
+let name=document.getElementById("name").value
+let age=document.getElementById("age").value
+let gender=document.getElementById("gender").value
 
-<h2 style="color:white">Tulip Chat</h2>
+if(!name || !age || !gender){
+alert("Fill all fields")
+return
+}
 
-<input id="username" placeholder="Username">
+localStorage.setItem("username",name)
+localStorage.setItem("age",age)
+localStorage.setItem("gender",gender)
 
-<input id="email" placeholder="Email">
-
-<input id="password" type="password" placeholder="Password">
-
-<button onclick="registerUser()">Register</button>
-
-<button onclick="loginUser()">Login</button>
-
-<button onclick="guestLogin()">Guest Login</button>
-
-</div>
-
-<script>
-
-async function registerUser(){
-
-let username=document.getElementById("username").value
-let email=document.getElementById("email").value
-let password=document.getElementById("password").value
-
-let res=await fetch("/api/register",{
-
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-username,
-email,
-password
-})
-
-})
-
-let data=await res.json()
-
-alert(data.status)
+location.href="/chat.html"
 
 }
 
-async function loginUser(){
-
-let email=document.getElementById("email").value
-let password=document.getElementById("password").value
-
-let res=await fetch("/api/login",{
-
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-email,
-password
-})
-
-})
-
-let data=await res.json()
-
-if(data.status==="ok"){
-
-localStorage.setItem("username",data.username)
-
-window.location="/chat.html"
-
-}else{
-
-alert("login failed")
-
-}
-
-}
-
-function guestLogin(){
-
-let username=document.getElementById("username").value
-
-localStorage.setItem("username",username)
-
-window.location="/chat.html"
-
-}
-
-</script>
-
-</body>
-</html>
+</script></body></html>
