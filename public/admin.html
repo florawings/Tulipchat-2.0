@@ -1,85 +1,29 @@
-<!DOCTYPE html>
-<html>
+<h2>Admin Panel</h2>
 
-<head>
+<button onclick="loadUsers()">Load Users</button>
 
-<title>Owner Panel</title>
-
-<style>
-
-body{
-font-family:Arial;
-background:#111;
-color:white;
-text-align:center;
-}
-
-.box{
-margin-top:100px;
-}
-
-button{
-padding:12px 20px;
-margin:10px;
-font-size:18px;
-cursor:pointer;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="box">
-
-<h1>👑 Owner Panel</h1>
-
-<h2 id="ownerName"></h2>
-
-<button onclick="openChat()">Open Chat</button>
-
-<button onclick="createRoom()">Create Room</button>
-
-<button onclick="viewUsers()">View Users</button>
-
-<button onclick="logout()">Logout</button>
-
-</div>
+<div id="users"></div>
 
 <script>
 
-let name = localStorage.getItem("name")
+async function loadUsers(){
 
-document.getElementById("ownerName").innerText=name
+let res = await fetch("/admin/users")
 
-function openChat(){
+let users = await res.json()
 
-location="chat.html"
+usersDiv.innerHTML=""
 
-}
+users.forEach(u=>{
 
-function createRoom(){
+let div = document.createElement("div")
 
-alert("Room system coming next")
+div.innerText = u.username + " ("+u.gender+")"
 
-}
+users.appendChild(div)
 
-function viewUsers(){
-
-alert("User list system coming next")
-
-}
-
-function logout(){
-
-localStorage.clear()
-
-location="login.html"
+})
 
 }
 
 </script>
-
-</body>
-</html>
