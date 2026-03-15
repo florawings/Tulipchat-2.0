@@ -1,6 +1,6 @@
 const express = require("express")
 const http = require("http")
-const {Server} = require("socket.io")
+const { Server } = require("socket.io")
 const multer = require("multer")
 
 const app = express()
@@ -28,7 +28,8 @@ app.use("/uploads",express.static("uploads"))
 
 /* users */
 
-let users = {}
+let users={}
+let friends={}
 
 io.on("connection",socket=>{
 
@@ -37,24 +38,39 @@ users[socket.id]=name
 io.emit("users",Object.values(users))
 })
 
-/* room join */
+/* join room */
 
 socket.on("join",room=>{
-
 socket.rooms.forEach(r=>{
 if(r!==socket.id){
 socket.leave(r)
 }
 })
-
 socket.join(room)
-
 })
 
 /* message */
 
 socket.on("message",data=>{
 io.to(data.room).emit("message",data)
+})
+
+/* typing */
+
+socket.on("typing",data=>{
+socket.to(data.room).emit("typing",data.user+" typing...")
+})
+
+/* dm */
+
+socket.on("dm",data=>{
+io.to(data.to).emit("dm",data)
+})
+
+/* friend request */
+
+socket.on("friend_request",data=>{
+io.emit("friend_request",data)
 })
 
 socket.on("disconnect",()=>{
@@ -64,6 +80,4 @@ io.emit("users",Object.values(users))
 
 })
 
-server.listen(3000,()=>{
-console.log("Server running")
-})
+server.listen(3000)
