@@ -1,40 +1,27 @@
 <!DOCTYPE html><html>
-<head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tulip Chat</title><style>
-
-*{
-box-sizing:border-box;
-}
+<head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat</title><style>
 
 body{
 margin:0;
 font-family:Arial;
-background:#0f0f0f;
-color:white;
 display:flex;
 height:100vh;
 overflow:hidden;
+background:black;
+color:white;
 }
-
-/* SIDEBAR */
 
 #sidebar{
-width:240px;
-background:black;
+width:220px;
+background:#000;
 padding:15px;
-display:flex;
-flex-direction:column;
-}
-
-#sidebar h2{
-color:#ff4da6;
-margin-top:0;
 }
 
 .room{
 padding:10px;
 background:#111;
-border-radius:6px;
 margin-bottom:8px;
+border-radius:6px;
 cursor:pointer;
 }
 
@@ -42,175 +29,172 @@ cursor:pointer;
 background:#222;
 }
 
-/* ONLINE USERS */
-
-#online{
-flex:1;
-overflow:auto;
-margin-top:10px;
-}
-
-.user{
-padding:6px;
-border-bottom:1px solid #333;
-cursor:pointer;
-}
-
-/* CHAT AREA */
-
 #chat{
 flex:1;
 display:flex;
 flex-direction:column;
-background:url("https://images.unsplash.com/photo-1518199266791-5375a83190b7") center/cover no-repeat;
+background:url("https://images.unsplash.com/photo-1518199266791-5375a83190b7") center/cover;
 }
-
-/* TOP BAR */
 
 #topbar{
 height:50px;
 background:#111;
 display:flex;
 align-items:center;
-padding:0 15px;
+padding-left:15px;
 }
-
-#roomName{
-font-weight:bold;
-}
-
-/* MESSAGES */
 
 #messages{
 flex:1;
-overflow-y:auto;
-padding:20px;
+overflow:auto;
+padding:15px;
 }
 
 .msg{
 background:rgba(0,0,0,0.6);
 padding:10px;
-border-radius:12px;
-margin-bottom:12px;
+margin-bottom:10px;
+border-radius:10px;
 max-width:70%;
 }
 
-/* IMAGE */
-
 .msg img{
-max-width:220px;
+max-width:200px;
 border-radius:10px;
 margin-top:5px;
 }
 
-/* INPUT BAR */
-
 #inputBar{
 display:flex;
 padding:10px;
-background:black;
+background:#000;
 }
 
 #text{
 flex:1;
 padding:10px;
-border:none;
 border-radius:20px;
+border:none;
 outline:none;
 }
 
 button{
 margin-left:6px;
-padding:10px 14px;
+padding:10px;
 border:none;
-border-radius:8px;
+border-radius:6px;
 background:#ff4da6;
 color:white;
 cursor:pointer;
 }
 
-button:hover{
-background:#ff2e8c;
-}
-
 #progress{
 margin-left:10px;
 font-size:12px;
-color:#ccc;
 }
 
-/* EMOJI BAR */
+</style></head><body><div id="sidebar"><h3 style="color:#ff4da6">Tulip Chat</h3><div class="room" onclick="joinRoom('normal')">Normal Room</div><div class="room" onclick="joinRoom('adult')">Adult Room</div></div><div id="chat"><div id="topbar">
+<span id="roomName">Normal Room</span>
+</div><div id="messages"></div><div id="inputBar"><input id="text" placeholder="Type message"><button onclick="sendMsg()">Send</button>
 
-#emojiBar{
-padding:6px;
-background:#111;
-text-align:center;
-}
-
-#emojiBar span{
-font-size:20px;
-margin:4px;
-cursor:pointer;
-}
-
-/* DM POPUP */
-
-#dmBox{
-position:fixed;
-right:20px;
-bottom:20px;
-width:260px;
-background:#111;
-border-radius:10px;
-display:none;
-flex-direction:column;
-}
-
-#dmHeader{
-background:#ff4da6;
-padding:10px;
-border-radius:10px 10px 0 0;
-}
-
-#dmMessages{
-height:200px;
-overflow:auto;
-padding:10px;
-}
-
-#dmInput{
-display:flex;
-padding:10px;
-}
-
-#dmText{
-flex:1;
-padding:8px;
-border:none;
-border-radius:10px;
-}
-
-</style></head><body><div id="sidebar"><h2>Tulip Chat</h2><div class="room" onclick="joinRoom('normal')">Normal Room</div><div class="room" onclick="joinRoom('adult')">🔞 Adult Room</div><h3>Online Users</h3><div id="online"></div></div><div id="chat"><div id="topbar"><span id="roomName">Normal Room</span>
-
-</div><div id="messages"></div><div id="emojiBar"><span onclick="emoji('😀')">😀</span>
-<span onclick="emoji('😂')">😂</span>
-<span onclick="emoji('❤️')">❤️</span>
-<span onclick="emoji('🔥')">🔥</span>
-<span onclick="emoji('😍')">😍</span>
-
-</div><div id="inputBar"><input id="text" placeholder="Type message"><button onclick="sendMsg()">Send</button>
+<button onclick="sendGIF()">GIF</button>
 
 <input type="file" id="file"><span id="progress"></span>
 
-</div></div><div id="dmBox"><div id="dmHeader">Private Chat</div><div id="dmMessages"></div><div id="dmInput"><input id="dmText"><button onclick="sendDM()">Send</button>
+</div></div><script src="/socket.io/socket.io.js"></script><script>
 
-</div></div><script src="/socket.io/socket.io.js"></script><script src="client.js"></script><script>
+const socket = io()
 
-function emoji(e){
+let username = localStorage.getItem("username")
 
-document.getElementById("text").value += e
+if(!username){
+
+username = prompt("Enter your name")
+
+localStorage.setItem("username",username)
 
 }
 
-</script></body>
-</html>
+let room="normal"
+
+socket.emit("join",{user:username,room})
+
+function joinRoom(r){
+
+room=r
+
+document.getElementById("roomName").innerText=r+" room"
+
+socket.emit("join",{user:username,room})
+
+}
+
+function sendMsg(){
+
+let text=document.getElementById("text").value
+
+if(!text) return
+
+socket.emit("message",{user:username,msg:text,room})
+
+document.getElementById("text").value=""
+
+}
+
+socket.on("message",(data)=>{
+
+let box=document.createElement("div")
+
+box.className="msg"
+
+box.innerHTML="<b>"+data.user+"</b>: "+data.msg
+
+document.getElementById("messages").appendChild(box)
+
+})
+
+function sendGIF(){
+
+let link=prompt("Paste GIF link")
+
+if(!link) return
+
+socket.emit("message",{user:username,msg:'<img src="'+link+'">',room})
+
+}
+
+document.getElementById("file").onchange=function(){
+
+let file=this.files[0]
+
+let form=new FormData()
+
+form.append("file",file)
+
+let xhr=new XMLHttpRequest()
+
+xhr.open("POST","/upload")
+
+xhr.upload.onprogress=(e)=>{
+
+let percent=Math.round((e.loaded/e.total)*100)
+
+document.getElementById("progress").innerText=percent+"%"
+
+}
+
+xhr.onload=()=>{
+
+let res=JSON.parse(xhr.responseText)
+
+socket.emit("message",{user:username,msg:'<img src="'+res.url+'">',room})
+
+document.getElementById("progress").innerText=""
+
+}
+
+xhr.send(form)
+
+}
+
+</script></body></html>
