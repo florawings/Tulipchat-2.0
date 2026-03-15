@@ -1,57 +1,15 @@
-<!DOCTYPE html>
-<html>
-
+<!DOCTYPE html><html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DM Inbox</title>
+<style>
+body{font-family:Arial;margin:0;background:#f5e3ea}
+#top{background:#ff3d6e;color:white;padding:10px}
+#box{padding:20px}
+</style>
+</head>
 <body>
-
-<h3>Private Chat</h3>
-
-<div id="chat"></div>
-
-<input id="msg">
-
-<button onclick="send()">Send</button>
-
-<script src="/socket.io/socket.io.js"></script>
-
-<script>
-
-const socket = io()
-
-const params = new URLSearchParams(location.search)
-
-const to = params.get("user")
-
-let name = localStorage.getItem("tulip_name")
-
-socket.emit("join",name)
-
-function send(){
-
-socket.emit("dm",{
-
-from:name,
-
-to:to,
-
-text:msg.value
-
-})
-
-msg.value=""
-
-}
-
-socket.on("dm",(data)=>{
-
-if(data.from==to){
-
-chat.innerHTML+=data.from+": "+data.text+"<br>"
-
-}
-
-})
-
-</script>
-
+<div id="top">📥 Inbox</div>
+<div id="box">DM messages will appear here.</div>
 </body>
 </html>
