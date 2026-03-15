@@ -1,94 +1,106 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-const multer = require("multer");
+const mongoose = require("mongoose");
 const path = require("path");
-const fs = require("fs");
-const { MongoClient } = require("mongodb");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// MongoDB connection
+const MONGO_URI = "mongodb+srv://epfportal_db_user:wAaE19Wqq3XFMbJH@cluster0.mrighsb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+
+mongoose.connect(MONGO_URI)
+.then(() => console.log("MongoDB connected"))
+.catch(err => console.log(err));
+
+// Message Schema
+const messageSchema = new mongoose.Schema({
+  username: String,
+  message: String,
+  image: String,
+  type: String,
+  to: String,
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const Message = mongoose.model("Message", messageSchema);
+
+// serve frontend
+app.use(express.static(path.join(__dirname, "public")));
+
+let onlineUsers = {};
+
+// socket connection
+io.on("connection", (socket) => {
+
+  socket.on("join", async (username) => {
+
+    socket.username = username;
+    onlineUsers[socket.id] = username;
+
+    io.emit("onlineUsers", Object.values(onlineUsers));
+
+    const messages = await Message.find().sort({ createdAt: 1 }).limit(100);
+    socket.emit("chatHistory", messages);
+
+    io.emit("message", {
+      username: "System",
+      message: username + " joined the chat"
+    });
+
+  });
+
+  socket.on("sendMessage", async (data) => {
+
+    const msg = new Message({
+      username: data.username,
+      message: data.message,
+      image: data.image || "",
+      type: data.type || "public",
+      to: data.to || ""
+    });
+
+    await msg.save();
+
+    if (data.type === "dm") {
+
+      for (let id in onlineUsers) {
+        if (onlineUsers[id] === data.to || onlineUsers[id] === data.username) {
+          io.to(id).emit("message", msg);
+        }
+      }
+
+    } else {
+      io.emit("message", msg);
+    }
+
+  });
+
+  socket.on("disconnect", () => {
+
+    const username = onlineUsers[socket.id];
+    delete onlineUsers[socket.id];
+
+    io.emit("onlineUsers", Object.values(onlineUsers));
+
+    if (username) {
+      io.emit("message", {
+        username: "System",
+        message: username + " left the chat"
+      });
+    }
+
+  });
+
+});
+
 const PORT = process.env.PORT || 3000;
 
-let db;
-let users = {};
-
-const client = new MongoClient(
-"mongodb+srv://epfportal_db_user:wAaE19Wqq3XFMbJH@cluster0.mrighsb.mongodb.net/?retryWrites=true&w=majority"
-);
-
-async function startDB(){
-try{
-await client.connect();
-db = client.db("tulipchat");
-console.log("MongoDB connected");
-}catch(e){
-console.log("MongoDB error:",e);
-}
-}
-
-startDB();
-
-if(!fs.existsSync("uploads")){
-fs.mkdirSync("uploads");
-}
-
-app.use(express.static("public"));
-app.use("/uploads",express.static("uploads"));
-
-const storage = multer.diskStorage({
-destination:(req,file,cb)=>{
-cb(null,"uploads/");
-},
-filename:(req,file,cb)=>{
-cb(null,Date.now()+path.extname(file.originalname));
-}
-});
-
-const upload = multer({storage});
-
-app.post("/upload",upload.single("file"),(req,res)=>{
-res.json({url:"/uploads/"+req.file.filename});
-});
-
-app.get("/messages",async(req,res)=>{
-if(!db){
-return res.json([]);
-}
-const msgs = await db.collection("messages").find().toArray();
-res.json(msgs);
-});
-
-io.on("connection",(socket)=>{
-
-socket.on("join",(name)=>{
-users[socket.id]=name;
-io.emit("users",Object.values(users));
-});
-
-socket.on("message",async(data)=>{
-if(db){
-await db.collection("messages").insertOne(data);
-}
-io.emit("message",data);
-});
-
-socket.on("image",async(data)=>{
-if(db){
-await db.collection("messages").insertOne(data);
-}
-io.emit("image",data);
-});
-
-socket.on("disconnect",()=>{
-delete users[socket.id];
-io.emit("users",Object.values(users));
-});
-
-});
-
-server.listen(PORT,()=>{
-console.log("Server running on",PORT);
+server.listen(PORT, () => {
+  console.log("Server running on port " + PORT);
 });
