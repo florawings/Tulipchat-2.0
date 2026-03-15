@@ -1,6 +1,6 @@
 const express = require("express")
 const http = require("http")
-const {Server} = require("socket.io")
+const { Server } = require("socket.io")
 const multer = require("multer")
 const path = require("path")
 
@@ -10,7 +10,7 @@ const io = new Server(server)
 
 app.use(express.static("public"))
 
-/* upload */
+/* file upload */
 
 const storage = multer.diskStorage({
 destination:"public/uploads",
@@ -25,67 +25,48 @@ app.post("/upload",upload.single("file"),(req,res)=>{
 res.json({url:"/uploads/"+req.file.filename})
 })
 
-/* memory */
-
 let users = {}
-let privateRoomUsers = ["owner"]
 
 io.on("connection",(socket)=>{
 
-socket.on("join",(data)=>{
+socket.on("join",(username)=>{
 
-socket.username = data.username
-socket.room = data.room
-
-if(data.room==="private" && !privateRoomUsers.includes(data.username)){
-socket.emit("system","Private room access denied")
-return
-}
-
-socket.join(data.room)
-
-users[socket.id] = data.username
-
-io.to(data.room).emit("system",data.username+" joined the room")
+users[socket.id]=username
 
 io.emit("online",Object.values(users))
+
+io.emit("system",username+" joined the room")
 
 })
 
 socket.on("chat message",(data)=>{
-io.to(data.room).emit("chat message",data)
+
+io.emit("chat message",data)
+
 })
 
-/* DM */
+socket.on("typing",(name)=>{
 
-socket.on("dm",(data)=>{
-
-for(let id in users){
-
-if(users[id]===data.to){
-
-io.to(id).emit("dm",data)
-
-}
-
-}
+socket.broadcast.emit("typing",name+" is typing...")
 
 })
 
 socket.on("disconnect",()=>{
 
-if(users[socket.id]){
-io.emit("system",users[socket.id]+" left")
-}
+let name=users[socket.id]
 
 delete users[socket.id]
 
 io.emit("online",Object.values(users))
+
+if(name){
+io.emit("system",name+" left the room")
+}
 
 })
 
 })
 
 server.listen(3000,()=>{
-console.log("Tulip Chat running")
+console.log("Tulip Chat running on 3000")
 })
