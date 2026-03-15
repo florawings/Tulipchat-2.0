@@ -1,9 +1,132 @@
-<!DOCTYPE html><html>
-<head><title>Tulip Chat</title><meta name="viewport" content="width=device-width, initial-scale=1"><script>
+<!DOCTYPE html>
+<html>
+<head>
 
-window.location.href="login.html"
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tulip Chat Login</title>
 
-</script></head><body>Redirecting to login...
+<style>
+
+body{
+margin:0;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+font-family:Arial;
+background:linear-gradient(135deg,#ff4d7d,#ff9ab3);
+}
+
+/* LOGIN CARD */
+
+.card{
+background:white;
+padding:30px;
+width:320px;
+border-radius:15px;
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
+text-align:center;
+}
+
+h2{
+margin-bottom:20px;
+color:#ff3f6c;
+}
+
+/* INPUT */
+
+input{
+width:100%;
+padding:12px;
+margin:8px 0;
+border-radius:8px;
+border:1px solid #ddd;
+font-size:14px;
+}
+
+/* BUTTON */
+
+button{
+width:100%;
+padding:12px;
+margin-top:10px;
+background:#ff3f6c;
+color:white;
+border:none;
+border-radius:10px;
+font-size:16px;
+cursor:pointer;
+}
+
+button:hover{
+background:#ff1f57;
+}
+
+/* REGISTER */
+
+.register{
+margin-top:12px;
+font-size:14px;
+}
+
+.register a{
+color:#ff3f6c;
+text-decoration:none;
+font-weight:bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>🌷 Tulip Chat</h2>
+
+<input id="name" placeholder="Username">
+
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
+<div class="register">
+Don't have account? <a href="register.html">Register</a>
+</div>
+
+</div>
+
+<script>
+
+async function login(){
+
+let username=document.getElementById("name").value
+let password=document.getElementById("password").value
+
+let res=await fetch("/login",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({username,password})
+})
+
+let data=await res.json()
+
+if(data.error){
+alert(data.error)
+return
+}
+
+localStorage.username=data.username
+localStorage.role=data.role
+
+location.href="chat.html"
+
+}
+
+</script>
 
 </body>
 </html>
