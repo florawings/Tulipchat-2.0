@@ -1,5 +1,13 @@
-<!DOCTYPE html><html>
-<head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>Tulip Chat</title><style>
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+<title>Tulip Chat</title>
+
+<style>
 
 html,body{
 margin:0;
@@ -10,7 +18,7 @@ background:#f5e3ea;
 display:flex;
 }
 
-/* sidebar */
+/* SIDEBAR */
 
 #sidebar{
 width:220px;
@@ -28,8 +36,9 @@ margin-bottom:20px;
 
 .user{
 padding:6px;
-cursor:pointer;
 }
+
+/* CHAT AREA */
 
 #chatArea{
 flex:1;
@@ -41,6 +50,7 @@ flex-direction:column;
 background:#ff3d6e;
 color:white;
 padding:12px;
+font-size:18px;
 }
 
 #chatBox{
@@ -65,6 +75,8 @@ max-width:200px;
 border-radius:10px;
 }
 
+/* INPUT */
+
 #inputArea{
 display:flex;
 padding:10px;
@@ -86,17 +98,50 @@ padding:10px 14px;
 border-radius:10px;
 }
 
-</style></head><body><div id="sidebar"><div id="logo">🌷 Tulip Chat</div><div id="online">0 users online</div>
-<div id="users"></div></div><div id="chatArea"><div id="header">Tulip Chat</div><div id="chatBox"></div><div id="inputArea"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
+</style>
 
-<input type="file" id="file" hidden><button onclick="pick()">📷</button>
+</head>
 
-</div></div><script src="/socket.io/socket.io.js"></script><script>
+<body>
 
-const socket=io()
+<div id="sidebar">
 
-let name=localStorage.getItem("username")
-let gender=localStorage.getItem("gender")
+<div id="logo">🌷 Tulip Chat</div>
+
+<div id="online">0 users online</div>
+
+<div id="users"></div>
+
+</div>
+
+<div id="chatArea">
+
+<div id="header">Tulip Chat</div>
+
+<div id="chatBox"></div>
+
+<div id="inputArea">
+
+<input id="text" placeholder="Type message">
+
+<button onclick="send()">Send</button>
+
+<input type="file" id="file" hidden>
+
+<button onclick="pick()">📷</button>
+
+</div>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+
+const socket = io()
+
+let name = localStorage.getItem("username")
+let gender = localStorage.getItem("gender")
 
 if(!name){
 location.href="login.html"
@@ -105,16 +150,14 @@ location.href="login.html"
 socket.emit("join",{name,gender})
 
 function avatar(g){
-
 return g==="female" ? "👩" : "👨"
-
 }
 
-/* send */
+/* SEND MESSAGE */
 
 function send(){
 
-let msg=text.value
+let msg = text.value
 
 socket.emit("message",{user:name,gender,msg})
 
@@ -122,70 +165,88 @@ text.value=""
 
 }
 
-/* receive */
+/* RECEIVE MESSAGE */
 
 socket.on("message",(d)=>{
 
-let div=document.createElement("div")
+let div = document.createElement("div")
+
 div.className="msg"
 
-let icon=avatar(d.gender)
+let icon = avatar(d.gender)
 
 if(d.msg && d.msg.startsWith("/uploads")){
 
-div.innerHTML=icon+" "+d.user+"<br><img src='"+d.msg+"'>"
+div.innerHTML = icon+" "+d.user+"<br><img src='"+d.msg+"'>"
 
 }else{
 
-div.innerText=icon+" "+d.user+": "+d.msg
+div.innerText = icon+" "+d.user+": "+d.msg
 
 }
 
 chatBox.appendChild(div)
 
-chatBox.scrollTop=chatBox.scrollHeight
+chatBox.scrollTop = chatBox.scrollHeight
 
 })
 
-/* online */
+/* CLEAR CHAT */
+
+socket.on("clearChat",()=>{
+
+chatBox.innerHTML=""
+
+})
+
+/* ONLINE USERS */
 
 socket.on("online",(list)=>{
 
 users.innerHTML=""
 
-let c=0
+let count=0
 
 for(let id in list){
 
-c++
+count++
 
 let u=document.createElement("div")
+
 u.className="user"
-u.innerText=avatar(list[id].gender)+" "+list[id].name
+
+u.innerText = avatar(list[id].gender)+" "+list[id].name
 
 users.appendChild(u)
 
 }
 
-online.innerText=c+" users online"
+online.innerText = count+" users online"
 
 })
 
-/* upload */
+/* FILE PICK */
 
 function pick(){
+
 file.click()
+
 }
 
-file.onchange=()=>{
+/* FILE UPLOAD */
 
-let f=file.files[0]
+file.onchange = ()=>{
 
-let fd=new FormData()
+let f = file.files[0]
+
+let fd = new FormData()
+
 fd.append("file",f)
 
 fetch("/upload",{method:"POST",body:fd})
+
 .then(r=>r.json())
+
 .then(d=>{
 
 socket.emit("message",{user:name,gender,msg:d.url})
@@ -194,5 +255,7 @@ socket.emit("message",{user:name,gender,msg:d.url})
 
 }
 
-</script></body>
+</script>
+
+</body>
 </html>
