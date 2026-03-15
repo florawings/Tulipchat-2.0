@@ -1,92 +1,88 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
+const express = require("express")
+const http = require("http")
+const { Server } = require("socket.io")
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: "*" }
-});
+const app = express()
+const server = http.createServer(app)
 
-app.use(express.static("public"));
+const io = new Server(server,{
+cors:{origin:"*"}
+})
 
-/* USERS STORE */
-let users = {};
+app.use(express.static("public"))
 
-/* SOCKET CONNECTION */
-io.on("connection", (socket) => {
+let users = {}
 
-  console.log("Connected:", socket.id);
+io.on("connection",(socket)=>{
 
-  /* USER JOIN */
-  socket.on("join", (username) => {
+console.log("Connected:",socket.id)
 
-    users[socket.id] = username;
+/* JOIN */
 
-    console.log(username, "joined");
+socket.on("join",(username)=>{
 
-    /* SEND UPDATED USER LIST */
-    io.emit("users", Object.values(users));
+users[socket.id] = username
 
-    /* SYSTEM MESSAGE */
-    io.emit("chat message", {
-      type: "system",
-      text: username + " joined chat"
-    });
+io.emit("users",Object.values(users))
 
-  });
+io.emit("chat message",{
+type:"system",
+text:username+" joined chat"
+})
 
-  /* PUBLIC MESSAGE */
-  socket.on("chat message", (data) => {
+})
 
-    console.log("Message:", data);
+/* MESSAGE */
 
-    /* SEND TO ALL USERS */
-    io.emit("chat message", data);
+socket.on("chat message",(data)=>{
 
-  });
+io.emit("chat message",data)
 
-  /* PRIVATE MESSAGE */
-  socket.on("dm", (data) => {
+})
 
-    let targetSocket = Object.keys(users).find(
-      id => users[id] === data.to
-    );
+/* DM */
 
-    if (targetSocket) {
-      io.to(targetSocket).emit("dm", data);
-    }
+socket.on("dm",(data)=>{
 
-    /* ALSO SHOW TO SENDER */
-    socket.emit("dm", data);
+let target = Object.keys(users).find(
+id => users[id]===data.to
+)
 
-  });
+if(target){
 
-  /* USER DISCONNECT */
-  socket.on("disconnect", () => {
+io.to(target).emit("dm",data)
 
-    let username = users[socket.id];
+}
 
-    delete users[socket.id];
+socket.emit("dm",data)
 
-    io.emit("users", Object.values(users));
+})
 
-    if (username) {
-      io.emit("chat message", {
-        type: "system",
-        text: username + " left chat"
-      });
-    }
+/* DISCONNECT */
 
-    console.log("Disconnected:", socket.id);
+socket.on("disconnect",()=>{
 
-  });
+let username = users[socket.id]
 
-});
+delete users[socket.id]
 
-/* SERVER START */
-const PORT = process.env.PORT || 3000;
+io.emit("users",Object.values(users))
 
-server.listen(PORT, () => {
-  console.log("Server running on port", PORT);
-});
+if(username){
+
+io.emit("chat message",{
+type:"system",
+text:username+" left chat"
+})
+
+}
+
+})
+
+})
+
+const PORT = process.env.PORT || 3000
+
+server.listen(PORT,()=>{
+console.log("Server running",PORT)
+})
