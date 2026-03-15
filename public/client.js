@@ -1,7 +1,7 @@
-// public/client.js
-
+// connect socket
 const socket = io();
 
+// username
 let username = localStorage.getItem("username");
 
 if (!username) {
@@ -9,44 +9,72 @@ if (!username) {
   localStorage.setItem("username", username);
 }
 
+// join chat
 socket.emit("join", username);
 
+// elements
 const messageBox = document.getElementById("messages");
 const input = document.getElementById("messageInput");
 const onlineBox = document.getElementById("onlineUsers");
 
+// add message to chat
 function addMessage(data) {
 
   const div = document.createElement("div");
+  div.className = "message";
 
+  // system message
   if (data.type === "system") {
+
     div.innerHTML = "<i>" + data.text + "</i>";
-  } else if (data.type === "image") {
+
+  }
+
+  // image or GIF
+  else if (data.type === "image") {
+
     div.innerHTML =
-      "<b>" + data.user + ":</b><br><img src='" + data.text + "' style='max-width:200px'>";
-  } else {
-    div.innerHTML = "<b>" + data.user + ":</b> " + data.text;
+      "<b>" + data.user + ":</b><br><img src='" +
+      data.text +
+      "' class='chatImage'>";
+
+  }
+
+  // normal text
+  else {
+
+    div.innerHTML =
+      "<b>" + data.user + ":</b> " + data.text;
+
   }
 
   messageBox.appendChild(div);
 
   messageBox.scrollTop = messageBox.scrollHeight;
+
 }
 
+// receive old messages
 socket.on("oldMessages", (msgs) => {
 
   messageBox.innerHTML = "";
 
-  msgs.forEach(m => addMessage(m));
+  msgs.forEach(m => {
+
+    addMessage(m);
+
+  });
 
 });
 
+// receive new message
 socket.on("message", (data) => {
 
   addMessage(data);
 
 });
 
+// send message
 function sendMessage() {
 
   const text = input.value.trim();
@@ -54,15 +82,29 @@ function sendMessage() {
   if (!text) return;
 
   socket.emit("message", {
+
     user: username,
     text: text,
     type: "text"
+
   });
 
   input.value = "";
 
 }
 
+// enter key send
+input.addEventListener("keypress", function(e){
+
+  if(e.key === "Enter"){
+
+    sendMessage();
+
+  }
+
+});
+
+// online users
 socket.on("onlineUsers", (users) => {
 
   onlineBox.innerHTML = "";
@@ -81,20 +123,24 @@ socket.on("onlineUsers", (users) => {
 
 });
 
-function openDM(user) {
+// open DM
+function openDM(user){
 
-  const msg = prompt("Send DM to " + user);
+  const msg = prompt("Send message to " + user);
 
-  if (!msg) return;
+  if(!msg) return;
 
   socket.emit("dm", {
+
     from: username,
     to: user,
     text: msg
+
   });
 
 }
 
+// receive DM
 socket.on("dm", (data) => {
 
   alert("DM from " + data.user + ": " + data.text);
