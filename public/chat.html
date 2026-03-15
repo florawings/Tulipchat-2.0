@@ -11,9 +11,8 @@ background:linear-gradient(135deg,#ffd6e7,#ffe9f3,#f5e6ff);
 
 #sidebar{
 width:220px;
-background:rgba(255,255,255,0.6);
+background:rgba(255,255,255,0.7);
 padding:15px;
-backdrop-filter:blur(10px);
 }
 
 #chatArea{
@@ -62,6 +61,12 @@ border:none;
 background:#ff4d8d;
 color:white;
 border-radius:8px;
+cursor:pointer;
+}
+
+#userList li{
+cursor:pointer;
+margin-bottom:5px;
 }
 
 </style></head><body><div id="sidebar"><h3>🌷 Tulip Chat</h3><button onclick="logout()">Logout</button>
@@ -75,9 +80,7 @@ const socket=io()
 let username=localStorage.getItem("username")
 
 if(!username){
-
 location="/"
-
 }
 
 socket.emit("join",username)
@@ -92,6 +95,9 @@ div.innerHTML=text
 
 document.getElementById("messages").appendChild(div)
 
+document.getElementById("messages").scrollTop=
+document.getElementById("messages").scrollHeight
+
 }
 
 function sendMsg(){
@@ -105,15 +111,25 @@ user:username,
 msg:input.value
 })
 
-addMessage("<b>You:</b> "+input.value,"me")
-
 input.value=""
 
 }
 
 socket.on("chat message",(data)=>{
 
-addMessage("<b>"+data.user+":</b> "+data.msg)
+let type=""
+
+if(data.user===username){
+type="me"
+}
+
+addMessage("<b>"+data.user+":</b> "+data.msg,type)
+
+})
+
+socket.on("private message",(data)=>{
+
+addMessage("<b>DM "+data.from+":</b> "+data.msg)
 
 })
 
@@ -132,11 +148,27 @@ let li=document.createElement("li")
 
 li.innerText=u
 
+li.onclick=()=>sendDM(u)
+
 ul.appendChild(li)
 
 })
 
 })
+
+function sendDM(user){
+
+let msg=prompt("Send message to "+user)
+
+if(!msg) return
+
+socket.emit("private message",{
+from:username,
+to:user,
+msg:msg
+})
+
+}
 
 function logout(){
 
