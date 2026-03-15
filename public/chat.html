@@ -2,106 +2,11 @@
 <html>
 <head>
 
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>Tulip Chat</title>
 
-<style>
-
-body{
-margin:0;
-font-family:Arial;
-height:100vh;
-display:flex;
-background:#f1f1f1;
-}
-
-#sidebar{
-width:220px;
-background:#1e1e2f;
-color:white;
-}
-
-#sidebar h2{
-padding:15px;
-border-bottom:1px solid #333;
-}
-
-.user{
-padding:12px;
-border-bottom:1px solid #333;
-cursor:pointer;
-}
-
-#main{
-flex:1;
-display:flex;
-flex-direction:column;
-}
-
-#header{
-background:#ff2d6f;
-color:white;
-padding:14px;
-display:flex;
-justify-content:space-between;
-}
-
-#messages{
-flex:1;
-overflow:auto;
-padding:15px;
-}
-
-.message{
-background:white;
-padding:10px;
-border-radius:8px;
-margin-bottom:10px;
-max-width:70%;
-}
-
-.my{
-background:#c9ffd4;
-margin-left:auto;
-}
-
-#sendBar{
-display:flex;
-gap:6px;
-padding:10px;
-background:white;
-border-top:1px solid #ddd;
-}
-
-#messageInput{
-flex:1;
-padding:10px;
-border:1px solid #ccc;
-border-radius:6px;
-}
-
-button{
-background:#ff2d6f;
-border:none;
-color:white;
-padding:10px 14px;
-border-radius:6px;
-}
-
-img{
-max-width:200px;
-border-radius:6px;
-margin-top:5px;
-}
-
-.progress{
-font-size:12px;
-color:#ff2d6f;
-}
-
-</style>
+<link rel="stylesheet" href="style.css">
 
 </head>
 
@@ -119,249 +24,43 @@ color:#ff2d6f;
 
 <div id="header">
 
-<div>🌷 Tulip Chat</div>
-
-<button onclick="logout()">Logout</button>
+🌷 Tulip Chat
 
 </div>
 
 <div id="messages"></div>
 
+<div id="typing"></div>
+
 <div id="sendBar">
 
-<input id="messageInput" placeholder="message">
+<input id="msgInput" placeholder="message">
 
-<button onclick="sendMessage()">Send</button>
+<button onclick="sendMsg()">Send</button>
 
 <input type="file" id="imageUpload" hidden accept="image/*">
-
 <button onclick="openImage()">📷</button>
 
 <input type="file" id="gifUpload" hidden accept="image/gif">
+<button onclick="openGif()">GIF</button>
 
-<button onclick="openGIF()">GIF</button>
+<button onclick="toggleEmoji()">😊</button>
 
 </div>
+
+</div>
+
+<div id="emojiPanel">
+
+<span onclick="addEmoji('😀')">😀</span>
+<span onclick="addEmoji('😂')">😂</span>
+<span onclick="addEmoji('❤️')">❤️</span>
+<span onclick="addEmoji('🔥')">🔥</span>
 
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
-
-<script>
-
-const socket = io()
-
-let username = localStorage.getItem("username")
-
-if(!username){
-
-username = prompt("Enter name")
-
-localStorage.setItem("username",username)
-
-}
-
-socket.emit("join",username)
-
-const messages = document.getElementById("messages")
-const usersDiv = document.getElementById("users")
-const input = document.getElementById("messageInput")
-
-/* ADD MESSAGE */
-
-function addMessage(data){
-
-let div=document.createElement("div")
-
-if(data.type==="system"){
-
-div.innerText=data.text
-
-div.style.textAlign="center"
-
-}
-
-else{
-
-div.className="message"
-
-if(data.user===username) div.classList.add("my")
-
-if(data.type==="image"){
-
-div.innerHTML="<b>"+data.user+"</b><br><img src='"+data.text+"'>"
-
-}
-
-else{
-
-div.innerHTML="<b>"+data.user+"</b>: "+data.text
-
-}
-
-}
-
-messages.appendChild(div)
-
-messages.scrollTop=messages.scrollHeight
-
-}
-
-/* RECEIVE */
-
-socket.on("chat message",(data)=>{
-
-addMessage(data)
-
-})
-
-/* SEND */
-
-function sendMessage(){
-
-let text=input.value.trim()
-
-if(!text) return
-
-socket.emit("chat message",{
-
-user:username,
-
-text:text,
-
-type:"text"
-
-})
-
-input.value=""
-
-}
-
-/* ENTER */
-
-input.addEventListener("keypress",(e)=>{
-
-if(e.key==="Enter") sendMessage()
-
-})
-
-/* IMAGE */
-
-function openImage(){
-
-document.getElementById("imageUpload").click()
-
-}
-
-document.getElementById("imageUpload").addEventListener("change",function(){
-
-const file=this.files[0]
-
-const reader=new FileReader()
-
-reader.onload=function(){
-
-socket.emit("chat message",{
-
-user:username,
-
-text:reader.result,
-
-type:"image"
-
-})
-
-}
-
-reader.readAsDataURL(file)
-
-})
-
-/* GIF + PROGRESS */
-
-function openGIF(){
-
-document.getElementById("gifUpload").click()
-
-}
-
-document.getElementById("gifUpload").addEventListener("change",function(){
-
-const file=this.files[0]
-
-const reader=new FileReader()
-
-let progress=document.createElement("div")
-
-progress.className="progress"
-
-progress.innerText="Uploading 0%"
-
-messages.appendChild(progress)
-
-reader.onprogress=function(e){
-
-if(e.lengthComputable){
-
-let percent=Math.floor((e.loaded/e.total)*100)
-
-progress.innerText="Uploading "+percent+"%"
-
-}
-
-}
-
-reader.onload=function(){
-
-progress.remove()
-
-socket.emit("chat message",{
-
-user:username,
-
-text:reader.result,
-
-type:"image"
-
-})
-
-}
-
-reader.readAsDataURL(file)
-
-})
-
-/* ONLINE USERS */
-
-socket.on("users",(list)=>{
-
-usersDiv.innerHTML=""
-
-list.forEach(u=>{
-
-let div=document.createElement("div")
-
-div.className="user"
-
-div.innerText=u
-
-usersDiv.appendChild(div)
-
-})
-
-})
-
-/* LOGOUT */
-
-function logout(){
-
-localStorage.removeItem("username")
-
-location.href="login.html"
-
-}
-
-</script>
+<script src="client.js"></script>
 
 </body>
 </html>
