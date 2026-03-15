@@ -1,62 +1,81 @@
-const express=require("express")
-const app=express()
-const http=require("http").createServer(app)
-const io=require("socket.io")(http)
+const express = require("express")
+const http = require("http")
+const {Server} = require("socket.io")
+const multer = require("multer")
+const path = require("path")
 
-const multer=require("multer")
+const app = express()
+const server = http.createServer(app)
+const io = new Server(server)
 
 app.use(express.static("public"))
+app.use("/uploads",express.static("public/uploads"))
 
-const storage=multer.diskStorage({
-destination:(req,file,cb)=>{cb(null,"public/uploads")},
-filename:(req,file,cb)=>{cb(null,Date.now()+"-"+file.originalname)}
+/* FILE STORAGE */
+
+const storage = multer.diskStorage({
+
+destination:function(req,file,cb){
+cb(null,"public/uploads")
+},
+
+filename:function(req,file,cb){
+cb(null,Date.now()+"_"+file.originalname)
+}
+
 })
 
-const upload=multer({storage})
+const upload = multer({storage})
+
+/* UPLOAD API */
 
 app.post("/upload",upload.single("file"),(req,res)=>{
-res.json({url:"/uploads/"+req.file.filename})
+
+res.json({
+url:"/uploads/"+req.file.filename
 })
 
-let users={}
-let messages=[]
+})
+
+/* SOCKET */
+
+let users = []
 
 io.on("connection",(socket)=>{
 
 socket.on("join",(data)=>{
 
-users[socket.id]={name:data.name,gender:data.gender}
+socket.username = data.username
+socket.gender = data.gender
 
-io.emit("online",users)
+users.push({
+id:socket.id,
+username:data.username,
+gender:data.gender
+})
 
-messages.forEach(m=>socket.emit("message",m))
+io.emit("onlineUsers",users)
 
 })
 
-socket.on("message",(m)=>{
+/* MESSAGE */
 
-if(m.msg && m.msg.trim().toLowerCase()==="/clear"){
-messages=[]
-io.emit("clearChat")
-return
-}
+socket.on("message",(data)=>{
 
-messages.push(m)
-
-if(messages.length>300){messages.shift()}
-
-io.emit("message",m)
+io.emit("message",data)
 
 })
 
 socket.on("disconnect",()=>{
 
-delete users[socket.id]
+users = users.filter(u=>u.id!==socket.id)
 
-io.emit("online",users)
-
-})
+io.emit("onlineUsers",users)
 
 })
 
-http.listen(3000)
+})
+
+server.listen(3000,()=>{
+console.log("Server running")
+})
