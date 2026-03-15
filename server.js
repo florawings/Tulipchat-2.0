@@ -13,28 +13,28 @@ const PORT = process.env.PORT || 3000
 
 /* uploads folder */
 
-if(!fs.existsSync("uploads")){
+if (!fs.existsSync("uploads")) {
 fs.mkdirSync("uploads")
 }
 
 app.use(express.static("public"))
 app.use("/uploads", express.static("uploads"))
 
-/* file upload */
+/* upload storage */
 
 const storage = multer.diskStorage({
-
-destination:function(req,file,cb){
+destination: (req,file,cb)=>{
 cb(null,"uploads/")
 },
 
-filename:function(req,file,cb){
+filename:(req,file,cb)=>{
 cb(null,Date.now()+path.extname(file.originalname))
 }
-
 })
 
 const upload = multer({storage})
+
+/* upload api */
 
 app.post("/upload",upload.single("file"),(req,res)=>{
 
@@ -48,11 +48,11 @@ url:"/uploads/"+req.file.filename
 
 io.on("connection",(socket)=>{
 
+console.log("user connected")
+
 socket.on("join",(data)=>{
 
-const joinMsg = data.name + " joined the chat"
-
-io.emit("system",joinMsg)
+io.emit("system",data.name+" joined the chat")
 
 })
 
@@ -71,7 +71,5 @@ io.emit("image",data)
 })
 
 server.listen(PORT,()=>{
-
-console.log("Server running "+PORT)
-
+console.log("server running "+PORT)
 })
