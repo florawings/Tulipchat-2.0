@@ -5,80 +5,68 @@ const io = require("socket.io")(http)
 
 app.use(express.static("public"))
 
-let users = {}
-let messages = []
+let users = {}   // username -> socket id
+let userRoom = {} // socket -> room
 
 io.on("connection",(socket)=>{
 
 socket.on("join",(data)=>{
 
-socket.join(data.room)
+users[data.username] = socket.id
+userRoom[socket.id] = data.room
 
-users[socket.id] = {
-name:data.username,
-room:data.room
-}
+socket.join(data.room)
 
 io.to(data.room).emit("system",data.username+" joined "+data.room)
 
-updateUsers(data.room)
+updateOnline()
 
 })
 
 socket.on("message",(data)=>{
 
-data.time = Date.now()
-
-messages.push(data)
-
 io.to(data.room).emit("message",data)
+
+})
+
+/* DM MESSAGE */
+
+socket.on("dm",(data)=>{
+
+let target = users[data.to]
+
+if(target){
+
+io.to(target).emit("dm",data)
+
+}
 
 })
 
 socket.on("disconnect",()=>{
 
-let user = users[socket.id]
+for(let u in users){
 
-if(user){
+if(users[u] === socket.id){
 
-io.to(user.room).emit("system",user.name+" left")
-
-delete users[socket.id]
-
-updateUsers(user.room)
+delete users[u]
 
 }
+
+}
+
+delete userRoom[socket.id]
+
+updateOnline()
 
 })
 
 })
 
-function updateUsers(room){
+function updateOnline(){
 
-let list = []
-
-for(let id in users){
-
-if(users[id].room==room){
-
-list.push(users[id].name)
+io.emit("online",Object.keys(users))
 
 }
-
-}
-
-io.to(room).emit("online",list)
-
-}
-
-/* auto delete 30 min messages */
-
-setInterval(()=>{
-
-let now = Date.now()
-
-messages = messages.filter(m => now-m.time < 1800000)
-
-},60000)
 
 http.listen(3000)
