@@ -1,34 +1,38 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Tulip Chat</title>
 
 <style>
 
 body{
-font-family:Arial;
 margin:0;
+font-family:Arial;
 background:#eee;
 }
 
 header{
 background:#ff2d7a;
 color:white;
-padding:10px;
+padding:12px;
 display:flex;
 justify-content:space-between;
 }
 
 #chat{
-height:70vh;
+height:68vh;
 overflow:auto;
 padding:10px;
 }
 
 .msg{
 background:white;
-margin:6px;
 padding:10px;
+margin:6px;
 border-radius:6px;
 }
 
@@ -40,32 +44,76 @@ right:0;
 display:flex;
 }
 
-input{
+.bottom input{
 flex:1;
-padding:10px;
+padding:12px;
 border:none;
 }
 
 button{
-padding:10px;
+border:none;
+padding:12px;
 background:#ff2d7a;
 color:white;
-border:none;
 }
 
-#usersWindow{
-position:fixed;
-right:10px;
-top:60px;
-background:white;
+.chat-img{
+max-width:150px;
 border-radius:6px;
-padding:10px;
+cursor:pointer;
+}
+
+/* online user popup */
+
+#usersPopup{
+
 display:none;
+
+position:fixed;
+
+top:70px;
+
+right:10px;
+
+background:white;
+
+border-radius:8px;
+
+box-shadow:0 0 10px rgba(0,0,0,0.3);
+
+padding:10px;
+
+width:180px;
+
 }
 
 .user{
-padding:5px;
+
+padding:6px;
+
+border-bottom:1px solid #eee;
+
 cursor:pointer;
+
+}
+
+/* fullscreen viewer */
+
+#viewer{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.9);
+justify-content:center;
+align-items:center;
+}
+
+#viewer img{
+max-width:95%;
+max-height:95%;
 }
 
 </style>
@@ -76,7 +124,7 @@ cursor:pointer;
 
 <header>
 
-🌷 Tulip Chat
+<span>🌷 Tulip Chat</span>
 
 <div>
 
@@ -88,20 +136,24 @@ cursor:pointer;
 
 </header>
 
-<div id="chat"></div>
+<div id="usersPopup"></div>
 
-<div id="usersWindow"></div>
+<div id="chat"></div>
 
 <div class="bottom">
 
-<input id="msg">
+<input id="msg" placeholder="message">
 
 <button onclick="send()">Send</button>
 
-<input type="file" id="file" hidden>
+<input type="file" id="fileInput" hidden accept="image/*">
 
-<button onclick="file.click()">📷</button>
+<button onclick="fileInput.click()">📷</button>
 
+</div>
+
+<div id="viewer">
+<img id="viewerImg">
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -110,25 +162,26 @@ cursor:pointer;
 
 const socket = io()
 
-let name = localStorage.getItem("tulip_name")
+const chat=document.getElementById("chat")
+const msg=document.getElementById("msg")
+
+let name=localStorage.getItem("tulip_user")
 
 if(!name){
 
-name = prompt("name")
+name=prompt("Enter name")
 
-localStorage.setItem("tulip_name",name)
+localStorage.setItem("tulip_user",name)
 
 }
 
 socket.emit("join",name)
 
-const chat = document.getElementById("chat")
-
 /* load old chat */
 
 fetch("/messages")
 
-.then(res=>res.json())
+.then(r=>r.json())
 
 .then(data=>{
 
@@ -136,23 +189,43 @@ data.forEach(addMsg)
 
 })
 
+/* send text */
+
 function send(){
 
-const text = msg.value
+if(!msg.value) return
 
-socket.emit("message",{name,text})
+socket.emit("message",{
+
+name:name,
+
+text:msg.value
+
+})
 
 msg.value=""
 
 }
 
-socket.on("message",addMsg)
+/* receive text */
 
-socket.on("image",addMsg)
+socket.on("message",(data)=>{
+
+addMsg(data)
+
+})
+
+/* receive image */
+
+socket.on("image",(data)=>{
+
+addMsg(data)
+
+})
 
 function addMsg(data){
 
-let div = document.createElement("div")
+let div=document.createElement("div")
 
 div.className="msg"
 
@@ -164,7 +237,9 @@ div.innerText=data.name+": "+data.text
 
 if(data.url){
 
-div.innerHTML=data.name+"<br><img src='"+data.url+"' width='150'>"
+div.innerHTML=data.name+
+
+"<br><img class='chat-img' src='"+data.url+"' onclick=\"openViewer('"+data.url+"')\">"
 
 }
 
@@ -182,19 +257,25 @@ let html=""
 
 list.forEach(u=>{
 
+if(u!==name){
+
 html+=`<div class="user" onclick="openDM('${u}')">${u}</div>`
+
+}
 
 })
 
-usersWindow.innerHTML=html
+document.getElementById("usersPopup").innerHTML=html
 
 })
 
 function toggleUsers(){
 
-usersWindow.style.display=
+let box=document.getElementById("usersPopup")
 
-usersWindow.style.display=="block"?"none":"block"
+box.style.display=
+
+box.style.display==="block"?"none":"block"
 
 }
 
@@ -202,25 +283,51 @@ usersWindow.style.display=="block"?"none":"block"
 
 function openDM(user){
 
-window.open("/dm.html?user="+user,"dm")
+window.open("/dm.html?user="+user,"dm","width=400,height=600")
 
 }
 
-file.onchange=()=>{
+/* image upload */
 
-let fd=new FormData()
+fileInput.onchange=function(){
 
-fd.append("file",file.files[0])
+let file=fileInput.files[0]
 
-fetch("/upload",{method:"POST",body:fd})
+let formData=new FormData()
+
+formData.append("file",file)
+
+fetch("/upload",{method:"POST",body:formData})
 
 .then(r=>r.json())
 
-.then(d=>{
+.then(data=>{
 
-socket.emit("image",{name,url:d.url})
+socket.emit("image",{
+
+name:name,
+
+url:data.url
 
 })
+
+})
+
+}
+
+/* fullscreen image */
+
+function openViewer(src){
+
+document.getElementById("viewer").style.display="flex"
+
+document.getElementById("viewerImg").src=src
+
+}
+
+document.getElementById("viewer").onclick=function(){
+
+this.style.display="none"
 
 }
 
@@ -228,7 +335,7 @@ socket.emit("image",{name,url:d.url})
 
 function logout(){
 
-localStorage.clear()
+localStorage.removeItem("tulip_user")
 
 location.reload()
 
@@ -237,4 +344,5 @@ location.reload()
 </script>
 
 </body>
+
 </html>
