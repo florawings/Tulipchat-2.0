@@ -8,99 +8,165 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// MongoDB connection
-const MONGO_URI = "mongodb+srv://epfportal_db_user:wAaE19Wqq3XFMbJH@cluster0.mrighsb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+// =============================
+// MongoDB Connection
+// =============================
+
+const MONGO_URI =
+"mongodb+srv://epfportal_db_user:wAaE19Wqq3XFMbJH@cluster0.mrighsb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(MONGO_URI)
-.then(() => console.log("MongoDB connected"))
-.catch(err => console.log(err));
+.then(() => {
+    console.log("MongoDB connected");
+})
+.catch(err => {
+    console.log("MongoDB error:", err);
+});
 
+// =============================
 // Message Schema
+// =============================
+
 const messageSchema = new mongoose.Schema({
-  username: String,
-  message: String,
-  image: String,
-  type: String,
-  to: String,
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+    username: String,
+    message: String,
+    image: String,
+    type: String,   // public / dm
+    to: String,
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 });
 
 const Message = mongoose.model("Message", messageSchema);
 
-// serve frontend
+// =============================
+// Serve Frontend
+// =============================
+
 app.use(express.static(path.join(__dirname, "public")));
+
+// =============================
+// Online Users
+// =============================
 
 let onlineUsers = {};
 
-// socket connection
+
+// =============================
+// Socket.IO Logic
+// =============================
+
 io.on("connection", (socket) => {
 
-  socket.on("join", async (username) => {
+    console.log("User connected:", socket.id);
 
-    socket.username = username;
-    onlineUsers[socket.id] = username;
+    // =============================
+    // User Join
+    // =============================
 
-    io.emit("onlineUsers", Object.values(onlineUsers));
+    socket.on("join", async (username) => {
 
-    const messages = await Message.find().sort({ createdAt: 1 }).limit(100);
-    socket.emit("chatHistory", messages);
+        socket.username = username;
+        onlineUsers[socket.id] = username;
 
-    io.emit("message", {
-      username: "System",
-      message: username + " joined the chat"
+        console.log(username + " joined");
+
+        // online users list send
+        io.emit("onlineUsers", Object.values(onlineUsers));
+
+        // chat history load
+        const messages = await Message.find().sort({ createdAt: 1 }).limit(200);
+
+        socket.emit("chatHistory", messages);
+
+        // join message
+        io.emit("message", {
+            username: "System",
+            message: username + " joined the chat",
+            type: "system"
+        });
+
     });
 
-  });
 
-  socket.on("sendMessage", async (data) => {
+    // =============================
+    // Send Message
+    // =============================
 
-    const msg = new Message({
-      username: data.username,
-      message: data.message,
-      image: data.image || "",
-      type: data.type || "public",
-      to: data.to || ""
-    });
+    socket.on("sendMessage", async (data) => {
 
-    await msg.save();
+        const msg = new Message({
+            username: data.username,
+            message: data.message || "",
+            image: data.image || "",
+            type: data.type || "public",
+            to: data.to || ""
+        });
 
-    if (data.type === "dm") {
+        await msg.save();
 
-      for (let id in onlineUsers) {
-        if (onlineUsers[id] === data.to || onlineUsers[id] === data.username) {
-          io.to(id).emit("message", msg);
+        // DM logic
+        if (data.type === "dm") {
+
+            for (let id in onlineUsers) {
+
+                if (
+                    onlineUsers[id] === data.to ||
+                    onlineUsers[id] === data.username
+                ) {
+                    io.to(id).emit("message", msg);
+                }
+
+            }
+
         }
-      }
+        else {
 
-    } else {
-      io.emit("message", msg);
-    }
+            // public message
+            io.emit("message", msg);
 
-  });
+        }
 
-  socket.on("disconnect", () => {
+    });
 
-    const username = onlineUsers[socket.id];
-    delete onlineUsers[socket.id];
 
-    io.emit("onlineUsers", Object.values(onlineUsers));
+    // =============================
+    // User Disconnect
+    // =============================
 
-    if (username) {
-      io.emit("message", {
-        username: "System",
-        message: username + " left the chat"
-      });
-    }
+    socket.on("disconnect", () => {
 
-  });
+        const username = onlineUsers[socket.id];
+
+        delete onlineUsers[socket.id];
+
+        io.emit("onlineUsers", Object.values(onlineUsers));
+
+        if (username) {
+
+            io.emit("message", {
+                username: "System",
+                message: username + " left the chat",
+                type: "system"
+            });
+
+        }
+
+        console.log("User disconnected");
+
+    });
 
 });
+
+
+// =============================
+// Start Server
+// =============================
 
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
+    console.log("Server running on port " + PORT);
 });
