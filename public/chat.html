@@ -12,7 +12,31 @@
 body{
 margin:0;
 font-family:Arial;
-background:#eee;
+display:flex;
+height:100vh;
+}
+
+/* left users */
+
+#users{
+width:120px;
+background:#f2f2f2;
+overflow:auto;
+border-right:1px solid #ddd;
+}
+
+.user{
+padding:10px;
+cursor:pointer;
+border-bottom:1px solid #ddd;
+}
+
+/* chat */
+
+#main{
+flex:1;
+display:flex;
+flex-direction:column;
 }
 
 header{
@@ -24,96 +48,39 @@ justify-content:space-between;
 }
 
 #chat{
-height:68vh;
+flex:1;
 overflow:auto;
 padding:10px;
+background:#eee;
 }
 
 .msg{
 background:white;
-padding:10px;
+padding:8px;
 margin:6px;
 border-radius:6px;
 }
 
 .bottom{
-position:fixed;
-bottom:0;
-left:0;
-right:0;
 display:flex;
 }
 
 .bottom input{
 flex:1;
-padding:12px;
+padding:10px;
 border:none;
 }
 
 button{
 border:none;
-padding:12px;
+padding:10px;
 background:#ff2d7a;
 color:white;
 }
 
 .chat-img{
-max-width:150px;
+max-width:140px;
 border-radius:6px;
-cursor:pointer;
-}
-
-/* online user popup */
-
-#usersPopup{
-
-display:none;
-
-position:fixed;
-
-top:70px;
-
-right:10px;
-
-background:white;
-
-border-radius:8px;
-
-box-shadow:0 0 10px rgba(0,0,0,0.3);
-
-padding:10px;
-
-width:180px;
-
-}
-
-.user{
-
-padding:6px;
-
-border-bottom:1px solid #eee;
-
-cursor:pointer;
-
-}
-
-/* fullscreen viewer */
-
-#viewer{
-display:none;
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.9);
-justify-content:center;
-align-items:center;
-}
-
-#viewer img{
-max-width:95%;
-max-height:95%;
 }
 
 </style>
@@ -122,21 +89,17 @@ max-height:95%;
 
 <body>
 
+<div id="users"></div>
+
+<div id="main">
+
 <header>
 
-<span>🌷 Tulip Chat</span>
-
-<div>
-
-<button onclick="toggleUsers()">Online</button>
+🌷 Tulip Chat
 
 <button onclick="logout()">Logout</button>
 
-</div>
-
 </header>
-
-<div id="usersPopup"></div>
 
 <div id="chat"></div>
 
@@ -146,14 +109,12 @@ max-height:95%;
 
 <button onclick="send()">Send</button>
 
-<input type="file" id="fileInput" hidden accept="image/*">
+<input type="file" id="file" hidden>
 
-<button onclick="fileInput.click()">📷</button>
+<button onclick="file.click()">📷</button>
 
 </div>
 
-<div id="viewer">
-<img id="viewerImg">
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -162,20 +123,19 @@ max-height:95%;
 
 const socket = io()
 
-const chat=document.getElementById("chat")
-const msg=document.getElementById("msg")
-
-let name=localStorage.getItem("tulip_user")
+let name = localStorage.getItem("tulip_user")
 
 if(!name){
 
-name=prompt("Enter name")
+name = prompt("Enter name")
 
 localStorage.setItem("tulip_user",name)
 
 }
 
 socket.emit("join",name)
+
+const chat=document.getElementById("chat")
 
 /* load old chat */
 
@@ -189,39 +149,19 @@ data.forEach(addMsg)
 
 })
 
-/* send text */
-
 function send(){
 
-if(!msg.value) return
+const text=msg.value
 
-socket.emit("message",{
-
-name:name,
-
-text:msg.value
-
-})
+socket.emit("message",{name,text})
 
 msg.value=""
 
 }
 
-/* receive text */
+socket.on("message",addMsg)
 
-socket.on("message",(data)=>{
-
-addMsg(data)
-
-})
-
-/* receive image */
-
-socket.on("image",(data)=>{
-
-addMsg(data)
-
-})
+socket.on("image",addMsg)
 
 function addMsg(data){
 
@@ -237,9 +177,7 @@ div.innerText=data.name+": "+data.text
 
 if(data.url){
 
-div.innerHTML=data.name+
-
-"<br><img class='chat-img' src='"+data.url+"' onclick=\"openViewer('"+data.url+"')\">"
+div.innerHTML=data.name+"<br><img src='"+data.url+"' class='chat-img'>"
 
 }
 
@@ -249,7 +187,7 @@ chat.scrollTop=chat.scrollHeight
 
 }
 
-/* users */
+/* online users */
 
 socket.on("users",(list)=>{
 
@@ -265,19 +203,9 @@ html+=`<div class="user" onclick="openDM('${u}')">${u}</div>`
 
 })
 
-document.getElementById("usersPopup").innerHTML=html
+users.innerHTML=html
 
 })
-
-function toggleUsers(){
-
-let box=document.getElementById("usersPopup")
-
-box.style.display=
-
-box.style.display==="block"?"none":"block"
-
-}
 
 /* DM */
 
@@ -287,47 +215,23 @@ window.open("/dm.html?user="+user,"dm","width=400,height=600")
 
 }
 
-/* image upload */
+/* image */
 
-fileInput.onchange=function(){
+file.onchange=()=>{
 
-let file=fileInput.files[0]
+let fd=new FormData()
 
-let formData=new FormData()
+fd.append("file",file.files[0])
 
-formData.append("file",file)
-
-fetch("/upload",{method:"POST",body:formData})
+fetch("/upload",{method:"POST",body:fd})
 
 .then(r=>r.json())
 
-.then(data=>{
+.then(d=>{
 
-socket.emit("image",{
-
-name:name,
-
-url:data.url
+socket.emit("image",{name,url:d.url})
 
 })
-
-})
-
-}
-
-/* fullscreen image */
-
-function openViewer(src){
-
-document.getElementById("viewer").style.display="flex"
-
-document.getElementById("viewerImg").src=src
-
-}
-
-document.getElementById("viewer").onclick=function(){
-
-this.style.display="none"
 
 }
 
