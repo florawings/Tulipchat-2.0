@@ -1,61 +1,99 @@
-const express = require("express")
-const http = require("http")
-const { Server } = require("socket.io")
-const app = express()
-const server = http.createServer(app)
-const io = new Server(server)
+const express=require("express")
+const http=require("http")
+const {Server}=require("socket.io")
+const bcrypt=require("bcryptjs")
+const multer=require("multer")
 
-app.use(express.static("public"))
+const User=require("./models/User")
+
+const app=express()
+const server=http.createServer(app)
+const io=new Server(server)
+
 app.use(express.json())
+app.use(express.static("public"))
 
-/* OWNER CONFIG */
+const OWNER="Lord_lucifer"
+const OWNER_PASS="766521"
+const SUPER_ADMIN="Garima"
 
-const OWNER_NAME = "Lord_lucifer"
-const OWNER_PASSWORD = "766521"
+let onlineUsers=[]
+let banned=[]
+let muted=[]
 
-const SUPER_ADMIN = "Garima"
+/* FILE UPLOAD */
 
-let onlineUsers = []
+const storage=multer.diskStorage({
+destination:"public/uploads",
+filename:(req,file,cb)=>{
+cb(null,Date.now()+"-"+file.originalname)
+}
+})
 
-/* LOGIN API */
+const upload=multer({storage})
 
-app.post("/login",(req,res)=>{
+app.post("/upload",upload.single("file"),(req,res)=>{
+res.json({url:"/uploads/"+req.file.filename})
+})
 
-const {username,password,age,gender} = req.body
+/* REGISTER */
 
-let role = "user"
+app.post("/register",async(req,res)=>{
 
-/* OWNER CHECK */
+const {username,age,gender,email,password}=req.body
 
-if(username === OWNER_NAME){
+const exist=await User.findOne({username})
 
-if(password === OWNER_PASSWORD){
-
-role = "owner"
-
-}else{
-
-return res.json({error:"Wrong owner password"})
-
+if(exist){
+return res.json({error:"username exists"})
 }
 
+const hash=await bcrypt.hash(password,10)
+
+await User.create({
+username,
+age,
+gender,
+email,
+password:hash
+})
+
+res.json({msg:"registered"})
+})
+
+/* LOGIN */
+
+app.post("/login",async(req,res)=>{
+
+const {username,password}=req.body
+
+let role="user"
+
+if(username===OWNER && password===OWNER_PASS){
+role="owner"
 }
 
-/* SUPER ADMIN */
+if(username===SUPER_ADMIN){
+role="superadmin"
+}
 
-if(username === SUPER_ADMIN){
+const user=await User.findOne({username})
 
-role = "superadmin"
+if(!user && role!=="owner" && role!=="superadmin"){
+return res.json({error:"user not found"})
+}
 
+if(user){
+const ok=await bcrypt.compare(password,user.password)
+if(!ok){
+return res.json({error:"wrong password"})
+}
 }
 
 res.json({
-
 username,
 role,
-age,
-gender
-
+gender:user?.gender
 })
 
 })
@@ -66,57 +104,50 @@ io.on("connection",(socket)=>{
 
 socket.on("join",(data)=>{
 
-socket.username = data.username
-socket.role = data.role
-socket.gender = data.gender
+socket.username=data.username
+socket.role=data.role
 
 onlineUsers.push({
-
 id:socket.id,
 username:data.username,
-role:data.role,
-gender:data.gender
-
-})
-
-/* JOIN MESSAGE */
-
-io.emit("message",{
-system:true,
-text:data.username+" joined the chat"
+role:data.role
 })
 
 io.emit("users",onlineUsers)
 
-})
-
-/* MESSAGE */
-
-socket.on("chat",(msg)=>{
-
-io.emit("message",{
-username:socket.username,
-role:socket.role,
-text:msg
+io.emit("msg",{
+system:true,
+text:data.username+" joined chat"
 })
 
 })
 
-/* CLEAR COMMAND */
+socket.on("msg",(m)=>{
 
-socket.on("chat",(msg)=>{
+if(muted.includes(socket.username)) return
 
-if(msg === "/clear" && socket.role === "owner"){
-
+if(m==="/clear" && socket.role==="owner"){
 io.emit("clear")
-
+return
 }
 
+io.emit("msg",{
+username:socket.username,
+role:socket.role,
+text:m
+})
+
+})
+
+socket.on("ban",(u)=>{
+if(socket.role==="owner"){
+banned.push(u)
+}
 })
 
 socket.on("disconnect",()=>{
 
-onlineUsers = onlineUsers.filter(u=>u.id !== socket.id)
+onlineUsers=onlineUsers.filter(u=>u.id!==socket.id)
 
 io.emit("users",onlineUsers)
 
@@ -124,8 +155,4 @@ io.emit("users",onlineUsers)
 
 })
 
-server.listen(3000,()=>{
-
-console.log("TulipChat running")
-
-})
+server.listen(3000)
