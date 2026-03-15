@@ -1,110 +1,92 @@
-if(!localStorage.getItem("username")){
-location.href="/login.html"
-}
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat</title><style>
+<!DOCTYPE html><html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat</title><style>
 
 body{
 margin:0;
 font-family:system-ui;
-background:#121212;
+background:#0f0f0f;
 color:white;
-height:100vh;
 display:flex;
+height:100vh;
 overflow:hidden;
 }
 
 /* SIDEBAR */
 
 #sidebar{
-width:240px;
+width:220px;
 background:#181818;
-padding:15px;
-display:flex;
-flex-direction:column;
-border-right:1px solid #333;
-}
-
-#logo{
-font-size:20px;
-font-weight:bold;
-color:#b983ff;
-margin-bottom:15px;
-}
-
-.room{
 padding:10px;
-margin-bottom:8px;
-background:#222;
-border-radius:8px;
-cursor:pointer;
+position:absolute;
+left:-220px;
+top:0;
+height:100%;
+transition:0.3s;
 }
 
-.room:hover{
-background:#333;
-}
-
-#users{
-flex:1;
-overflow:auto;
-margin-top:10px;
+#sidebar.open{
+left:0;
 }
 
 .user{
-padding:6px;
+padding:8px;
 border-bottom:1px solid #333;
 cursor:pointer;
 }
 
 .user:hover{
-background:#2c2c2c;
+background:#333;
 }
 
-/* CHAT AREA */
+/* TOPBAR */
+
+#topbar{
+background:#1a1a1a;
+padding:10px;
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+#menu{
+font-size:20px;
+cursor:pointer;
+}
+
+/* CHAT */
 
 #chat{
 flex:1;
 display:flex;
 flex-direction:column;
-height:100vh;
-}
-
-#topbar{
-background:#181818;
-padding:10px;
-border-bottom:1px solid #333;
-}
-
-#roomName{
-color:#b983ff;
-font-weight:bold;
-}
-
-#typing{
-font-size:12px;
-color:#999;
-padding-left:10px;
 }
 
 #messages{
 flex:1;
 overflow:auto;
-padding:15px;
+padding:10px;
 display:flex;
 flex-direction:column;
 gap:8px;
 }
 
+/* BUBBLES */
+
 .msg{
-background:#232323;
 padding:10px;
 border-radius:10px;
 max-width:70%;
 }
 
-.msg img{
-max-width:220px;
-border-radius:8px;
-margin-top:5px;
+.me{
+background:#b983ff;
+align-self:flex-end;
+}
+
+.other{
+background:#2a2a2a;
+align-self:flex-start;
 }
 
 /* INPUT */
@@ -112,8 +94,7 @@ margin-top:5px;
 #input{
 display:flex;
 padding:10px;
-background:#181818;
-border-top:1px solid #333;
+background:#1a1a1a;
 }
 
 #text{
@@ -121,220 +102,29 @@ flex:1;
 padding:10px;
 border:none;
 border-radius:20px;
-outline:none;
 background:#2b2b2b;
 color:white;
 }
 
 button{
 margin-left:6px;
+padding:10px;
 border:none;
-padding:10px 14px;
+border-radius:6px;
 background:#b983ff;
 color:white;
-border-radius:8px;
-cursor:pointer;
 }
 
-button:hover{
-background:#a36dff;
-}
-
-#progress{
-font-size:12px;
-margin-left:10px;
-color:#b983ff;
-}
-
-</style></head><body><div id="sidebar"><div id="logo">Tulip Chat</div><div class="room" onclick="joinRoom('normal')">
-Normal Room
-</div><div class="room" onclick="adultRoom()">
-Adult Room
-</div><h4>Online Users</h4><div id="users"></div></div><div id="chat"><div id="topbar">
-<span id="roomName">Normal Room</span>
-</div><div id="typing"></div><div id="messages"></div><div id="input"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
-
-<input type="file" id="file" accept="image/*"><span id="progress"></span>
-
-</div></div><script src="/socket.io/socket.io.js"></script><script>
-
-const socket = io()
-
-let username = localStorage.getItem("username")
-
-if(!username){
-
-username = prompt("Enter your name")
-
-localStorage.setItem("username",username)
-
-}
-
-let room="normal"
-
-socket.emit("join",{user:username,room})
-
-/* ROOM JOIN */
-
-function joinRoom(r){
-
-room=r
-
-document.getElementById("roomName").innerText=r+" room"
-
-socket.emit("join",{user:username,room})
-
-}
-
-/* ADULT WARNING */
-
-function adultRoom(){
-
-let ok=confirm("18+ room. Continue?")
-
-if(ok){
-joinRoom("adult")
-}
-
-}
-
-/* SEND MESSAGE */
-
-function send(){
-
-let text=document.getElementById("text").value
-
-if(!text) return
-
-socket.emit("message",{
-user:username,
-msg:text,
-room
-})
-
-document.getElementById("text").value=""
-
-}
-
-/* RECEIVE MESSAGE */
-
-socket.on("message",(data)=>{
-
-let box=document.createElement("div")
-
-box.className="msg"
-
-box.innerHTML="<b>"+data.user+"</b><br>"+data.msg
-
-document.getElementById("messages").appendChild(box)
-
-document.getElementById("messages").scrollTop=
-document.getElementById("messages").scrollHeight
-
-})
-
-/* ONLINE USERS */
-
-socket.on("onlineUsers",(list)=>{
-
-let box=document.getElementById("users")
-
-box.innerHTML=""
-
-for(let id in list){
-
-let u=document.createElement("div")
-
-u.className="user"
-
-u.innerText=list[id]
-
-u.onclick=()=>{
-
-let msg=prompt("Send DM to "+list[id])
-
-if(msg){
-
-socket.emit("dm",{
-to:id,
-from:username,
-msg
-})
-
-}
-
-}
-
-box.appendChild(u)
-
-}
-
-})
-
-/* DM RECEIVE */
-
-socket.on("dm",(data)=>{
-
-alert("DM from "+data.from+": "+data.msg)
-
-})
-
-/* TYPING */
-
-document.getElementById("text").addEventListener("input",()=>{
-
-socket.emit("typing",{user:username,room})
-
-})
-
-socket.on("typing",(user)=>{
-
-document.getElementById("typing").innerText=user+" typing..."
-
-setTimeout(()=>{
-document.getElementById("typing").innerText=""
-},2000)
-
-})
-
-/* IMAGE / GIF UPLOAD */
-
-document.getElementById("file").onchange=function(){
-
-let file=this.files[0]
-
-let form=new FormData()
-
-form.append("file",file)
-
-let xhr=new XMLHttpRequest()
-
-xhr.open("POST","/upload")
-
-xhr.upload.onprogress=(e)=>{
-
-let percent=Math.round((e.loaded/e.total)*100)
-
-document.getElementById("progress").innerText=percent+"%"
-
-}
-
-xhr.onload=()=>{
-
-let res=JSON.parse(xhr.responseText)
-
-socket.emit("message",{
-user:username,
-msg:'<img src="'+res.url+'">',
-room
-})
-
-document.getElementById("progress").innerText=""
-
-}
-
-xhr.send(form)
-
-}
-
-</script></body></html>
+</style></head><body><div id="sidebar">
+<h3>Online Users</h3>
+<div id="users"></div>
+</div><div id="chat"><div id="topbar">
+<span id="menu">☰</span>
+<span id="title">Public Chat</span>
+</div><div id="messages"></div><div id="input">
+<input id="text" placeholder="Type message">
+<button onclick="send()">Send</button>
+<input type="file" id="file" accept="image/*">
+<span id="progress"></span>
+</div></div><script src="/socket.io/socket.io.js"></script><script src="client.js"></script></body>
+</html>
