@@ -7,11 +7,11 @@ type:String,
 unique:true
 },
 
-email:String,
-
-password:String,
+age:Number,
 
 gender:String,
+
+email:String,
 
 role:{
 type:String,
@@ -21,13 +21,7 @@ default:"user"
 status:{
 type:String,
 default:"active"
-},
-
-blocked:[
-{
-type:String
 }
-]
 
 })
 
