@@ -8,7 +8,7 @@ const io = new Server(server)
 
 app.use(express.static("public"))
 
-/* USERS STORE */
+/* USERS */
 
 let users = {}
 
@@ -16,15 +16,17 @@ let users = {}
 
 io.on("connection",(socket)=>{
 
-console.log("connected:",socket.id)
+console.log("user connected:",socket.id)
 
-/* JOIN */
+/* USER JOIN */
 
 socket.on("join",(username)=>{
 
 users[socket.id] = username
 
-/* SEND ONLINE USERS */
+console.log(username,"joined")
+
+/* UPDATE ONLINE USERS */
 
 io.emit("users",Object.values(users))
 
@@ -41,23 +43,21 @@ text: username + " joined chat"
 
 socket.on("chat message",(data)=>{
 
-/* BROADCAST TO EVERYONE */
-
 io.emit("chat message",data)
 
 })
 
-/* PRIVATE DM */
+/* PRIVATE MESSAGE */
 
 socket.on("dm",(data)=>{
 
-let targetId = Object.keys(users).find(
+let targetSocket = Object.keys(users).find(
 id => users[id] === data.to
 )
 
-if(targetId){
+if(targetSocket){
 
-io.to(targetId).emit("dm",data)
+io.to(targetSocket).emit("dm",data)
 
 }
 
@@ -91,5 +91,5 @@ text: username + " left chat"
 })
 
 server.listen(3000,()=>{
-console.log("server running")
+console.log("Server running on port 3000")
 })
