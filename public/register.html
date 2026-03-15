@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Register</title>
@@ -22,40 +21,33 @@
 
 <input id="email" placeholder="Email">
 
+<input id="password" type="password" placeholder="Password">
+
 <button onclick="register()">Register</button>
 
 <script>
 
 async function register(){
 
-let name=document.getElementById("name").value
-let age=document.getElementById("age").value
-let gender=document.getElementById("gender").value
-let email=document.getElementById("email").value
-
-if(!name || !age || !gender || !email){
-
-alert("Fill all fields")
-return
-
-}
+let name=name.value
+let age=age.value
+let gender=gender.value
+let email=email.value
+let password=password.value
 
 let res = await fetch("/register",{
 
 method:"POST",
 
-headers:{
-
-"Content-Type":"application/json"
-
-},
+headers:{"Content-Type":"application/json"},
 
 body:JSON.stringify({
 
 username:name,
-age:age,
-gender:gender,
-email:email
+age,
+gender,
+email,
+password
 
 })
 
