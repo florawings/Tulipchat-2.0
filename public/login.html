@@ -1,47 +1,46 @@
-<!DOCTYPE html><html>
-<head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tulip Chat Login</title>
-<style>
-body{
-margin:0;font-family:Arial;background:#f5e3ea;
-display:flex;justify-content:center;align-items:center;height:100vh;
-}
-#box{
-background:white;padding:30px;border-radius:12px;width:300px;
-box-shadow:0 0 10px rgba(0,0,0,.2);
-}
-h2{color:#ff3d6e;text-align:center;margin:0 0 10px}
-input,select{
-width:100%;padding:10px;margin-top:10px;border-radius:8px;border:1px solid #ccc;
-}
-button{
-width:100%;padding:10px;margin-top:15px;background:#ff3d6e;color:white;border:none;border-radius:8px;
-}
-</style>
-</head>
-<body>
-<div id="box">
-<h2>Tulip Chat</h2>
-<input id="name" placeholder="Enter name">
-<input id="age" type="number" placeholder="Age">
-<select id="gender">
-<option value="male">Male</option>
-<option value="female">Female</option>
-</select>
-<button onclick="go()">Enter Chat</button>
-</div>
+<form id="login">
+
+<input name="username">
+
+<input name="password">
+
+<button>Login</button>
+
+</form>
+
 <script>
-function go(){
-const name=document.getElementById("name").value.trim()
-const age=document.getElementById("age").value
-const gender=document.getElementById("gender").value
-if(!name){ alert("Enter name"); return }
-localStorage.setItem("username",name)
-localStorage.setItem("age",age||"")
-localStorage.setItem("gender",gender)
+
+login.onsubmit = async e=>{
+
+e.preventDefault()
+
+let data = new FormData(login)
+
+let res = await fetch("/login",{
+
+method:"POST",
+body:data
+
+})
+
+let r = await res.json()
+
+if(r.username){
+
+localStorage.setItem("username",r.username)
+localStorage.setItem("gender",r.gender)
+localStorage.setItem("role",r.role)
+
 location.href="chat.html"
+
 }
+
+else{
+
+alert(r.msg)
+
+}
+
+}
+
 </script>
-</body>
-</html>
