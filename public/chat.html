@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Tulip Chat</title>
 
 <style>
+
 body{
 margin:0;
 font-family:Arial;
@@ -61,27 +65,35 @@ img{
 max-width:220px;
 border-radius:6px;
 }
+
 </style>
+
 </head>
 
 <body>
 
 <header>
+
 <span>🌷 Tulip Chat</span>
+
 <button onclick="logout()">Logout</button>
+
 </header>
 
 <div id="chat"></div>
 
 <div class="bottom">
+
 <input id="msg" placeholder="message">
+
 <button onclick="send()">Send</button>
 
-<input type="file" id="imageInput" accept="image/*" hidden>
+<input type="file" id="imageInput" hidden accept="image/*">
 <button onclick="openGallery()">📷</button>
 
-<input type="file" id="gifInput" accept="image/gif" hidden>
+<input type="file" id="gifInput" hidden accept="image/gif">
 <button onclick="openGif()">GIF</button>
+
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -89,21 +101,26 @@ border-radius:6px;
 <script>
 
 const socket = io()
+
 const chat = document.getElementById("chat")
+
 const msg = document.getElementById("msg")
 
 let name = localStorage.getItem("name")
 
 if(!name){
+
 name = prompt("Enter name")
+
 localStorage.setItem("name",name)
+
 }
 
 socket.emit("join",{name})
 
-let uploadMsg = null
+let uploadMsg=null
 
-/* ---------- send message ---------- */
+/* send text */
 
 function send(){
 
@@ -115,98 +132,119 @@ msg.value=""
 
 }
 
-/* ---------- receive history ---------- */
+/* history */
 
 socket.on("history",(data)=>{
+
+chat.innerHTML=""
 
 data.forEach(m=>{
 
 if(m.system){
+
 addMsg(m.text,true)
+
 }
 
 else if(m.text){
+
 addMsg(m.name+": "+m.text)
+
 }
 
 else if(m.image){
+
 addImage(m.name,m.image)
+
 }
 
 })
 
 })
 
-/* ---------- receive message ---------- */
+/* live events */
 
 socket.on("message",(data)=>{
+
 addMsg(data.name+": "+data.text)
+
 })
 
 socket.on("system",(text)=>{
+
 addMsg(text,true)
+
 })
 
 socket.on("image",(data)=>{
+
 addImage(data.name,data.url)
+
 })
 
-/* ---------- open gallery ---------- */
+/* open gallery */
 
 function openGallery(){
+
 document.getElementById("imageInput").click()
+
 }
 
 function openGif(){
+
 document.getElementById("gifInput").click()
+
 }
 
 imageInput.onchange=function(){
+
 uploadFile(this.files[0],"Image")
+
 }
 
 gifInput.onchange=function(){
+
 uploadFile(this.files[0],"GIF")
+
 }
 
-/* ---------- upload file ---------- */
+/* upload */
 
 function uploadFile(file,type){
 
-let formData = new FormData()
+let formData=new FormData()
+
 formData.append("file",file)
 
-let xhr = new XMLHttpRequest()
+let xhr=new XMLHttpRequest()
 
 xhr.open("POST","/upload",true)
 
-xhr.upload.onprogress = function(e){
+xhr.upload.onprogress=function(e){
 
-let percent = Math.round((e.loaded/e.total)*100)
+let percent=Math.round((e.loaded/e.total)*100)
 
 if(!uploadMsg){
 
-uploadMsg = document.createElement("div")
+uploadMsg=document.createElement("div")
+
 uploadMsg.className="msg system"
+
 chat.appendChild(uploadMsg)
 
 }
 
 uploadMsg.innerText="Uploading "+type+" "+percent+"%"
-chat.scrollTop = chat.scrollHeight
 
 }
 
-xhr.onload = function(){
+xhr.onload=function(){
 
-const data = JSON.parse(xhr.responseText)
+let data=JSON.parse(xhr.responseText)
 
-if(uploadMsg){
 uploadMsg.remove()
-uploadMsg=null
-}
 
-/* send image event */
+uploadMsg=null
 
 socket.emit("image",{
 name:name,
@@ -219,14 +257,17 @@ xhr.send(formData)
 
 }
 
-/* ---------- logout ---------- */
+/* logout */
 
 function logout(){
+
 localStorage.clear()
+
 location.reload()
+
 }
 
-/* ---------- ui functions ---------- */
+/* ui */
 
 function addMsg(text,system){
 
@@ -261,4 +302,5 @@ chat.scrollTop=chat.scrollHeight
 </script>
 
 </body>
+
 </html>
