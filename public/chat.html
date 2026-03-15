@@ -1,29 +1,28 @@
 <!DOCTYPE html><html>
 <head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tulip Chat</title><style>
 
-*{box-sizing:border-box;}
+*{
+box-sizing:border-box;
+}
 
 body{
 margin:0;
 font-family:Arial;
-height:100vh;
-display:flex;
 background:#0f0f0f;
 color:white;
+display:flex;
+height:100vh;
 overflow:hidden;
 }
 
-/* sidebar */
+/* SIDEBAR */
 
 #sidebar{
-width:230px;
+width:240px;
 background:black;
 padding:15px;
-transition:0.3s;
-}
-
-#sidebar.hide{
-margin-left:-230px;
+display:flex;
+flex-direction:column;
 }
 
 #sidebar h2{
@@ -33,9 +32,9 @@ margin-top:0;
 
 .room{
 padding:10px;
-margin-bottom:8px;
 background:#111;
 border-radius:6px;
+margin-bottom:8px;
 cursor:pointer;
 }
 
@@ -43,66 +42,68 @@ cursor:pointer;
 background:#222;
 }
 
-/* top bar */
+/* ONLINE USERS */
 
-#topbar{
-height:45px;
-background:#111;
-display:flex;
-align-items:center;
-padding:0 10px;
+#online{
+flex:1;
+overflow:auto;
+margin-top:10px;
 }
 
-#menu{
-font-size:22px;
+.user{
+padding:6px;
+border-bottom:1px solid #333;
 cursor:pointer;
-margin-right:10px;
 }
 
-/* chat */
+/* CHAT AREA */
 
 #chat{
 flex:1;
 display:flex;
 flex-direction:column;
-background:url("https://images.unsplash.com/photo-1518199266791-5375a83190b7") center/cover;
+background:url("https://images.unsplash.com/photo-1518199266791-5375a83190b7") center/cover no-repeat;
 }
 
-/* messages */
+/* TOP BAR */
+
+#topbar{
+height:50px;
+background:#111;
+display:flex;
+align-items:center;
+padding:0 15px;
+}
+
+#roomName{
+font-weight:bold;
+}
+
+/* MESSAGES */
 
 #messages{
 flex:1;
 overflow-y:auto;
-padding:15px;
+padding:20px;
 }
 
 .msg{
 background:rgba(0,0,0,0.6);
 padding:10px;
-border-radius:10px;
-margin-bottom:10px;
+border-radius:12px;
+margin-bottom:12px;
 max-width:70%;
 }
 
-.msg img{
-max-width:200px;
-border-radius:10px;
-}
+/* IMAGE */
 
-.msg video{
+.msg img{
 max-width:220px;
 border-radius:10px;
+margin-top:5px;
 }
 
-/* typing */
-
-#typing{
-font-size:12px;
-color:#ccc;
-padding-left:15px;
-}
-
-/* input bar */
+/* INPUT BAR */
 
 #inputBar{
 display:flex;
@@ -120,7 +121,7 @@ outline:none;
 
 button{
 margin-left:6px;
-padding:10px;
+padding:10px 14px;
 border:none;
 border-radius:8px;
 background:#ff4da6;
@@ -128,7 +129,31 @@ color:white;
 cursor:pointer;
 }
 
-/* dm */
+button:hover{
+background:#ff2e8c;
+}
+
+#progress{
+margin-left:10px;
+font-size:12px;
+color:#ccc;
+}
+
+/* EMOJI BAR */
+
+#emojiBar{
+padding:6px;
+background:#111;
+text-align:center;
+}
+
+#emojiBar span{
+font-size:20px;
+margin:4px;
+cursor:pointer;
+}
+
+/* DM POPUP */
 
 #dmBox{
 position:fixed;
@@ -144,6 +169,7 @@ flex-direction:column;
 #dmHeader{
 background:#ff4da6;
 padding:10px;
+border-radius:10px 10px 0 0;
 }
 
 #dmMessages{
@@ -164,69 +190,27 @@ border:none;
 border-radius:10px;
 }
 
-/* emoji */
+</style></head><body><div id="sidebar"><h2>Tulip Chat</h2><div class="room" onclick="joinRoom('normal')">Normal Room</div><div class="room" onclick="joinRoom('adult')">🔞 Adult Room</div><h3>Online Users</h3><div id="online"></div></div><div id="chat"><div id="topbar"><span id="roomName">Normal Room</span>
 
-#emojiBox{
-position:absolute;
-bottom:60px;
-background:#222;
-padding:10px;
-border-radius:10px;
-display:none;
-}
+</div><div id="messages"></div><div id="emojiBar"><span onclick="emoji('😀')">😀</span>
+<span onclick="emoji('😂')">😂</span>
+<span onclick="emoji('❤️')">❤️</span>
+<span onclick="emoji('🔥')">🔥</span>
+<span onclick="emoji('😍')">😍</span>
 
-#emojiBox span{
-font-size:20px;
-cursor:pointer;
-margin:3px;
-}
-
-</style></head><body><div id="sidebar"><h2>Tulip Chat</h2><div class="room" onclick="joinRoom('normal')">Normal Room</div><div class="room" onclick="joinRoom('adult')">Adult Room</div><h3>Online Users</h3><div id="online"></div></div><div id="chat"><div id="topbar"><span id="menu" onclick="toggleMenu()">☰</span>
-
-<span id="roomName">Normal Room</span>
-
-</div><div id="messages"></div><div id="typing"></div><div id="inputBar"><input id="text" placeholder="Type message"><button onclick="sendMsg()">Send</button>
-
-<button onclick="toggleEmoji()">😊</button>
-
-<button onclick="sendGif()">GIF</button>
+</div><div id="inputBar"><input id="text" placeholder="Type message"><button onclick="sendMsg()">Send</button>
 
 <input type="file" id="file"><span id="progress"></span>
 
-</div></div><div id="emojiBox"><span onclick="emoji('😀')">😀</span>
-<span onclick="emoji('❤️')">❤️</span>
-<span onclick="emoji('🔥')">🔥</span>
-<span onclick="emoji('😂')">😂</span>
-<span onclick="emoji('😍')">😍</span>
-
-</div><div id="dmBox"><div id="dmHeader">DM</div><div id="dmMessages"></div><div id="dmInput"><input id="dmText"><button onclick="sendDM()">Send</button>
+</div></div><div id="dmBox"><div id="dmHeader">Private Chat</div><div id="dmMessages"></div><div id="dmInput"><input id="dmText"><button onclick="sendDM()">Send</button>
 
 </div></div><script src="/socket.io/socket.io.js"></script><script src="client.js"></script><script>
 
-function toggleMenu(){
-document.getElementById("sidebar").classList.toggle("hide")
-}
-
-function toggleEmoji(){
-let box=document.getElementById("emojiBox")
-box.style.display=box.style.display==="block"?"none":"block"
-}
-
 function emoji(e){
-document.getElementById("text").value+=e
-}
 
-function sendGif(){
-
-let url=prompt("Paste GIF link")
-
-socket.emit("message",{
-room:room,
-user:username,
-msg:"<img src='"+url+"'>"
-})
+document.getElementById("text").value += e
 
 }
 
 </script></body>
-  </html>
+</html>
