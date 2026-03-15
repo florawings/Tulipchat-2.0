@@ -1,103 +1,60 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html>
 <head>
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Tulip Chat</title>
-
-<style>
+<title>Tulip Chat Login</title><style>
 
 body{
-font-family:Arial;
-background:#f5f5f5;
-text-align:center;
-margin-top:80px;
+margin:0;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+font-family:sans-serif;
+background:linear-gradient(135deg,#ffd6e7,#ffe9f3,#f5e6ff);
 }
 
-.box{
+#box{
 background:white;
-padding:25px;
-width:90%;
-max-width:350px;
-margin:auto;
-border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,0.1);
+padding:40px;
+border-radius:15px;
+box-shadow:0 10px 30px rgba(0,0,0,0.1);
+text-align:center;
 }
 
-input,select{
-width:100%;
+input{
 padding:10px;
-margin:8px 0;
-border-radius:6px;
+width:200px;
+border-radius:10px;
 border:1px solid #ccc;
 }
 
 button{
-width:100%;
-padding:12px;
-background:#ff2d7a;
-color:white;
+margin-top:15px;
+padding:10px 20px;
 border:none;
-border-radius:6px;
-font-size:16px;
+background:#ff4d8d;
+color:white;
+border-radius:10px;
+cursor:pointer;
 }
 
-</style>
+</style></head><body><div id="box"><h2>🌷 Tulip Chat</h2><input id="name" placeholder="Enter username"><br><button onclick="login()">Enter Chat</button>
 
-</head>
+</div><script>
 
-<body>
+function login(){
 
-<div class="box">
+let name=document.getElementById("name").value.trim()
 
-<h2>🌷 Tulip Chat</h2>
-
-<input id="name" placeholder="Username">
-
-<select id="gender">
-<option value="">Gender</option>
-<option>Male</option>
-<option>Female</option>
-</select>
-
-<input type="date" id="dob">
-
-<button onclick="enter()">Enter Chat</button>
-
-</div>
-
-<script>
-
-function enter(){
-
-let name=document.getElementById("name").value
-let gender=document.getElementById("gender").value
-let dob=document.getElementById("dob").value
-
-if(!name || !gender || !dob){
-alert("Fill all fields")
+if(name===""){
+alert("Enter username")
 return
 }
 
-let birth=new Date(dob)
-let today=new Date()
-
-let age=today.getFullYear()-birth.getFullYear()
-
-if(age<18){
-alert("18+ only allowed")
-return
-}
-
-localStorage.setItem("name",name)
-localStorage.setItem("gender",gender)
+localStorage.setItem("username",name)
 
 window.location="chat.html"
 
 }
 
-</script>
-
-</body>
+</script></body>
 </html>
