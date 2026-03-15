@@ -1,5 +1,5 @@
 <!DOCTYPE html><html>
-<head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat</title><style>
+<head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tulip Chat</title><style>
 
 body{
 margin:0;
@@ -30,7 +30,27 @@ color:white;
 font-size:18px;
 }
 
-/* CHAT AREA */
+/* USERS PANEL */
+
+#usersPanel{
+position:fixed;
+left:-230px;
+top:50px;
+width:220px;
+height:100%;
+background:white;
+padding:10px;
+transition:0.3s;
+overflow:auto;
+box-shadow:0 0 10px rgba(0,0,0,0.2);
+z-index:1000;
+}
+
+#usersPanel.open{
+left:0;
+}
+
+/* CHAT */
 
 #chat{
 flex:1;
@@ -66,7 +86,6 @@ display:flex;
 align-items:center;
 padding:6px;
 gap:6px;
-flex-shrink:0;
 }
 
 #text{
@@ -84,21 +103,32 @@ padding:8px 12px;
 border-radius:8px;
 }
 
+#progress{
+font-size:12px;
+color:#333;
+}
+
 </style></head><body><div id="header"><button onclick="toggleMenu()">☰</button>
 
-<div>Tulip Chat</div><div>
-<button onclick="location.reload()">🔄</button>
-<button onclick="openInbox()">📥</button>
-</div></div><div id="chat"></div><div id="input"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
+<div>Tulip Chat</div><div><button onclick="location.reload()">🔄</button>
+
+<button onclick="alert('DM inbox coming')">📥</button>
+
+</div></div><div id="usersPanel"><h3>Online Users</h3><div id="onlineList"></div></div><div id="chat"></div><div id="input"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
 
 <input type="file" id="file" hidden accept="image/*,.gif"><button onclick="upload()">GIF</button>
+
+<span id="progress"></span>
 
 </div><script src="/socket.io/socket.io.js"></script><script>
 
 const socket = io()
 
-let username = localStorage.getItem("username") || "User"
-let gender = localStorage.getItem("gender") || "male"
+let username = localStorage.getItem("username") || prompt("Enter name")
+let gender = localStorage.getItem("gender") || prompt("male / female")
+
+localStorage.setItem("username",username)
+localStorage.setItem("gender",gender)
 
 socket.emit("join",{username,gender})
 
@@ -114,7 +144,7 @@ let msg=text.value.trim()
 
 if(!msg) return
 
-socket.emit("chat",{username,gender,msg})
+socket.emit("message",{username,gender,msg})
 
 text.value=""
 
@@ -122,7 +152,7 @@ text.value=""
 
 /* RECEIVE MESSAGE */
 
-socket.on("chat",(d)=>{
+socket.on("message",(d)=>{
 
 let div=document.createElement("div")
 div.className="msg"
@@ -145,7 +175,33 @@ chat.scrollTop=chat.scrollHeight
 
 })
 
-/* GIF / IMAGE UPLOAD */
+/* ONLINE USERS */
+
+socket.on("onlineUsers",(users)=>{
+
+onlineList.innerHTML=""
+
+users.forEach(u=>{
+
+let div=document.createElement("div")
+
+div.innerText=(u.gender==="female"?"👩":"👨")+" "+u.username
+
+onlineList.appendChild(div)
+
+})
+
+})
+
+/* MENU TOGGLE */
+
+function toggleMenu(){
+
+usersPanel.classList.toggle("open")
+
+}
+
+/* FILE UPLOAD */
 
 function upload(){
 file.click()
@@ -158,29 +214,38 @@ let f=file.files[0]
 let fd=new FormData()
 fd.append("file",f)
 
-fetch("/upload",{
-method:"POST",
-body:fd
-})
-.then(r=>r.json())
-.then(d=>{
+let xhr = new XMLHttpRequest()
 
-socket.emit("chat",{
+xhr.open("POST","/upload")
+
+xhr.upload.onprogress = function(e){
+
+if(e.lengthComputable){
+
+let percent = Math.round((e.loaded/e.total)*100)
+
+progress.innerText = percent + "%"
+
+}
+
+}
+
+xhr.onload = function(){
+
+let res = JSON.parse(xhr.responseText)
+
+socket.emit("message",{
 username,
 gender,
-msg:d.url
+msg:res.url
 })
 
-})
+progress.innerText=""
 
 }
 
-function toggleMenu(){
-alert("online users panel coming")
-}
+xhr.send(fd)
 
-function openInbox(){
-alert("DM inbox coming")
 }
 
 </script></body>
