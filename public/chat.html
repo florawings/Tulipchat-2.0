@@ -17,115 +17,107 @@ font-family:Arial;
 }
 
 body{
+
 height:100vh;
 display:flex;
 flex-direction:column;
-background:#f6dbe0;
-overflow:hidden;
+background:#ffd6df;
+
 }
 
 /* HEADER */
 
 #header{
+
 height:50px;
 background:#ff2f6e;
 color:white;
 display:flex;
 align-items:center;
 justify-content:space-between;
-padding:0 10px;
-font-size:18px;
+padding:10px;
+
 }
 
 /* MAIN */
 
 #main{
+
 flex:1;
 display:flex;
+
 }
 
 /* CHAT */
 
 #chatSection{
+
 width:70%;
 display:flex;
 flex-direction:column;
-border-right:1px solid #ccc;
+
 }
 
 #chat{
+
 flex:1;
-overflow-y:auto;
+overflow:auto;
 padding:10px;
-display:flex;
-flex-direction:column;
-gap:8px;
+
 }
 
 /* MESSAGE */
 
 .msg{
+
 background:#ff2f6e;
 color:white;
-padding:10px;
-border-radius:12px;
-max-width:75%;
-font-size:14px;
+padding:8px;
+margin-bottom:8px;
+border-radius:10px;
+max-width:80%;
+
 }
 
-/* INPUT */
+/* INPUT BAR */
 
 #inputBar{
-height:60px;
+
 display:flex;
 gap:6px;
-padding:6px;
+padding:8px;
 background:white;
-border-top:1px solid #ccc;
+
 }
 
 #text{
+
 flex:1;
 padding:8px;
-border-radius:20px;
-border:1px solid #ccc;
+
 }
 
 /* USERS */
 
 #usersSection{
+
 width:30%;
 background:white;
-display:flex;
-flex-direction:column;
-}
+border-left:1px solid #ccc;
 
-#usersHeader{
-padding:10px;
-background:#eee;
-font-weight:bold;
 }
 
 #onlineList{
-flex:1;
-overflow:auto;
+
+padding:10px;
+
 }
 
-.userItem{
-padding:8px;
+.user{
+
+padding:6px;
 border-bottom:1px solid #eee;
-display:flex;
-justify-content:space-between;
-align-items:center;
-font-size:14px;
-}
 
-/* ADMIN BUTTON */
-
-.adminBtn{
-margin-left:4px;
-font-size:11px;
-padding:2px 4px;
 }
 
 </style>
@@ -141,8 +133,6 @@ padding:2px 4px;
 <div>
 
 <button onclick="clearChat()">🧹</button>
-
-<button onclick="location.reload()">🔄</button>
 
 </div>
 
@@ -170,7 +160,7 @@ padding:2px 4px;
 
 <div id="usersSection">
 
-<div id="usersHeader">Online Users</div>
+<h3 style="padding:10px">Online</h3>
 
 <div id="onlineList"></div>
 
@@ -185,10 +175,8 @@ padding:2px 4px;
 const socket = io()
 
 let username = localStorage.getItem("username")
-let gender = localStorage.getItem("gender")
 let role = localStorage.getItem("role")
-
-let blockedUsers = []
+let gender = localStorage.getItem("gender")
 
 if(!username){
 
@@ -213,122 +201,46 @@ return "👤"
 socket.emit("join",{
 
 username,
-gender,
-role
+role,
+gender
 
 })
 
-/* SEND MESSAGE */
+/* SEND */
 
 function send(){
 
-let msg = text.value.trim()
+let msg = document.getElementById("text").value
 
 if(!msg) return
 
 socket.emit("message",{
 
 username,
-gender,
 role,
 msg
 
 })
 
-text.value=""
+document.getElementById("text").value=""
 
 }
 
-/* RECEIVE MESSAGE */
+/* RECEIVE */
 
-socket.on("message",(d)=>{
-
-if(blockedUsers.includes(d.username)) return
+socket.on("message",(data)=>{
 
 let div=document.createElement("div")
 
 div.className="msg"
 
-div.innerText = badge(d.role)+" "+d.username+": "+d.msg
+div.innerText= badge(data.role)+" "+data.username+" : "+data.msg
 
 chat.appendChild(div)
 
-chat.scrollTop = chat.scrollHeight
+chat.scrollTop=chat.scrollHeight
 
 })
-
-/* CLEAR COMMAND */
-
-function clearChat(){
-
-socket.emit("message",{
-
-username,
-gender,
-role,
-msg:"/clear"
-
-})
-
-}
-
-socket.on("clearChat",()=>{
-
-chat.innerHTML=""
-
-})
-
-/* BLOCK USER */
-
-function blockUser(user){
-
-blockedUsers.push(user)
-
-socket.emit("blockUser",{
-
-blocker:username,
-target:user
-
-})
-
-alert(user+" blocked")
-
-}
-
-/* ADMIN ACTIONS */
-
-function banUser(user){
-
-socket.emit("banUser",{
-
-target:user,
-role:role
-
-})
-
-}
-
-function muteUser(user){
-
-socket.emit("muteUser",{
-
-target:user,
-role:role
-
-})
-
-}
-
-function kickUser(user){
-
-socket.emit("kickUser",{
-
-target:user,
-role:role
-
-})
-
-}
 
 /* ONLINE USERS */
 
@@ -340,69 +252,33 @@ users.forEach(u=>{
 
 let div=document.createElement("div")
 
-div.className="userItem"
+div.className="user"
 
-let left = document.createElement("span")
-
-left.innerText = badge(u.role)+" "+u.username
-
-div.appendChild(left)
-
-let controls = document.createElement("span")
-
-/* BLOCK */
-
-let block=document.createElement("button")
-
-block.innerText="🚫"
-
-block.className="adminBtn"
-
-block.onclick=()=>blockUser(u.username)
-
-controls.appendChild(block)
-
-/* OWNER / ADMIN OPTIONS */
-
-if(role==="owner" || role==="superadmin"){
-
-let ban=document.createElement("button")
-
-ban.innerText="Ban"
-
-ban.className="adminBtn"
-
-ban.onclick=()=>banUser(u.username)
-
-controls.appendChild(ban)
-
-let mute=document.createElement("button")
-
-mute.innerText="Mute"
-
-mute.className="adminBtn"
-
-mute.onclick=()=>muteUser(u.username)
-
-controls.appendChild(mute)
-
-let kick=document.createElement("button")
-
-kick.innerText="Kick"
-
-kick.className="adminBtn"
-
-kick.onclick=()=>kickUser(u.username)
-
-controls.appendChild(kick)
-
-}
-
-div.appendChild(controls)
+div.innerText= badge(u.role)+" "+u.username
 
 onlineList.appendChild(div)
 
 })
+
+})
+
+/* CLEAR */
+
+function clearChat(){
+
+socket.emit("message",{
+
+username,
+role,
+msg:"/clear"
+
+})
+
+}
+
+socket.on("clearChat",()=>{
+
+chat.innerHTML=""
 
 })
 
