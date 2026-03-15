@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Login</title>
@@ -12,13 +11,7 @@
 
 <input id="name" placeholder="Name">
 
-<input id="age" placeholder="Age">
-
-<select id="gender">
-<option value="">Gender</option>
-<option>Male</option>
-<option>Female</option>
-</select>
+<input id="password" type="password" placeholder="Password">
 
 <button onclick="login()">Login</button>
 
@@ -28,22 +21,38 @@
 
 <script>
 
-function login(){
+async function login(){
 
-let name=document.getElementById("name").value
-let age=document.getElementById("age").value
-let gender=document.getElementById("gender").value
+let username=document.getElementById("name").value
+let password=document.getElementById("password").value
 
-if(!name || !age || !gender){
+let res = await fetch("/login",{
 
-alert("Fill all fields")
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({
+
+username,
+password
+
+})
+
+})
+
+let data = await res.json()
+
+if(data.msg!=="login success"){
+
+alert(data.msg)
 return
 
 }
 
-localStorage.setItem("username",name)
-localStorage.setItem("age",age)
-localStorage.setItem("gender",gender)
+localStorage.setItem("username",data.username)
+localStorage.setItem("role",data.role)
+localStorage.setItem("gender",data.gender)
 
 location.href="/chat.html"
 
