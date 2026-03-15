@@ -3,82 +3,27 @@ const app = express()
 const http = require("http").createServer(app)
 const io = require("socket.io")(http)
 
+const multer = require("multer")
+
 app.use(express.static("public"))
-app.use(express.json())
+
+/* FILE UPLOAD */
+
+const storage = multer.diskStorage({
+destination: (req,file,cb)=>{
+cb(null,"public/uploads")
+},
+filename: (req,file,cb)=>{
+cb(null,Date.now()+"-"+file.originalname)
+}
+})
+
+const upload = multer({storage})
+
+app.post("/upload",upload.single("file"),(req,res)=>{
+res.json({url:"/uploads/"+req.file.filename})
+})
+
+/* USERS + CHAT HISTORY */
 
 let users = {}
-let messages = []   // chat history
-
-io.on("connection",(socket)=>{
-
-// JOIN CHAT
-socket.on("join",(data)=>{
-
-users[socket.id] = data.name
-
-// send old messages
-socket.emit("history",messages)
-
-// broadcast join message
-let joinMsg = {
-user:"System",
-msg:data.name + " joined the chat"
-}
-
-messages.push(joinMsg)
-
-io.emit("message",joinMsg)
-
-io.emit("online",users)
-
-})
-
-// PUBLIC MESSAGE
-socket.on("message",(data)=>{
-
-messages.push(data)
-
-if(messages.length>100){
-messages.shift()
-}
-
-io.emit("message",data)
-
-})
-
-// DM
-socket.on("dm",(data)=>{
-
-io.to(data.to).emit("dm",data)
-
-})
-
-// DISCONNECT
-socket.on("disconnect",()=>{
-
-let name = users[socket.id]
-
-delete users[socket.id]
-
-io.emit("online",users)
-
-if(name){
-
-let leaveMsg={
-user:"System",
-msg:name + " left the chat"
-}
-
-messages.push(leaveMsg)
-
-io.emit("message",leaveMsg)
-
-}
-
-})
-
-})
-
-http.listen(3000,()=>{
-console.log("Server running")
-})
