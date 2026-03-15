@@ -1,7 +1,6 @@
 const express=require("express")
 const http=require("http")
 const {Server}=require("socket.io")
-const path=require("path")
 
 const app=express()
 const server=http.createServer(app)
@@ -9,7 +8,7 @@ const io=new Server(server)
 
 app.use(express.static("public"))
 
-let users=[]
+let onlineUsers={}
 
 io.on("connection",(socket)=>{
 
@@ -18,10 +17,9 @@ console.log("user connected")
 socket.on("join",(username)=>{
 
 socket.username=username
+onlineUsers[username]=socket.id
 
-users.push(username)
-
-io.emit("user list",users)
+io.emit("user list",Object.keys(onlineUsers))
 
 })
 
@@ -31,15 +29,26 @@ io.emit("chat message",data)
 
 })
 
-socket.on("disconnect",()=>{
+socket.on("private message",(data)=>{
 
-if(socket.username){
+let target=onlineUsers[data.to]
 
-users=users.filter(u=>u!==socket.username)
+if(target){
 
-io.emit("user list",users)
+io.to(target).emit("private message",{
+from:data.from,
+msg:data.msg
+})
 
 }
+
+})
+
+socket.on("disconnect",()=>{
+
+delete onlineUsers[socket.username]
+
+io.emit("user list",Object.keys(onlineUsers))
 
 })
 
