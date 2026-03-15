@@ -1,26 +1,24 @@
 const express = require("express")
 const http = require("http")
 const { Server } = require("socket.io")
-const path = require("path")
 
 const app = express()
 const server = http.createServer(app)
 const io = new Server(server)
 
 app.use(express.static("public"))
-app.use('/uploads', express.static('uploads'))
 
 let users = {}
+let blocked = {}
 
 io.on("connection",(socket)=>{
-
-console.log("connected",socket.id)
 
 socket.on("join",(username)=>{
 
 users[socket.id] = username
 
 io.emit("users",Object.values(users))
+io.emit("onlineCount",Object.keys(users).length)
 
 io.emit("chat message",{
 type:"system",
@@ -43,8 +41,22 @@ if(target){
 io.to(target).emit("dm",data)
 }
 
-socket.emit("dm",data)
+})
 
+socket.on("friend request",(data)=>{
+
+let target = Object.keys(users).find(
+id => users[id] === data.to
+)
+
+if(target){
+io.to(target).emit("friend request",data)
+}
+
+})
+
+socket.on("send gift",(data)=>{
+io.emit("gift",data)
 })
 
 socket.on("disconnect",()=>{
@@ -54,6 +66,7 @@ let username = users[socket.id]
 delete users[socket.id]
 
 io.emit("users",Object.values(users))
+io.emit("onlineCount",Object.keys(users).length)
 
 if(username){
 io.emit("chat message",{
@@ -66,6 +79,4 @@ text: username + " left chat"
 
 })
 
-server.listen(process.env.PORT || 3000,()=>{
-console.log("server running")
-})
+server.listen(process.env.PORT || 3000)
