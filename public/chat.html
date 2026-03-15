@@ -1,123 +1,121 @@
 <!DOCTYPE html><html>
-<head><meta name="viewport" content="width=device-width, initial-scale=1">
+<head><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tulip Chat</title><style>
 
 body{
 margin:0;
-font-family:system-ui;
-background:#140014;
-color:white;
+font-family:Arial;
+background:#f5e3ea;
+display:flex;
 height:100vh;
-display:flex;
-flex-direction:column;
-overflow:hidden;
-}
-
-/* TOPBAR */
-
-#topbar{
-height:55px;
-background:linear-gradient(90deg,#ff4da6,#c44dff);
-display:flex;
-align-items:center;
-padding:0 12px;
-font-weight:bold;
-}
-
-#menu{
-font-size:22px;
-margin-right:10px;
-cursor:pointer;
 }
 
 /* SIDEBAR */
 
 #sidebar{
-position:fixed;
-top:0;
-left:-260px;
 width:260px;
-height:100%;
-background:#1a001a;
-padding:15px;
-transition:0.3s;
-overflow:auto;
-z-index:10;
+background:white;
+border-right:1px solid #ddd;
+padding:20px;
 }
 
-#sidebar.open{
-left:0;
+#logo{
+font-size:20px;
+font-weight:bold;
+color:#ff3d6e;
+margin-bottom:20px;
+}
+
+#logout{
+background:#ff3d6e;
+color:white;
+border:none;
+padding:8px 14px;
+border-radius:8px;
+cursor:pointer;
+margin-bottom:20px;
 }
 
 .user{
-background:#2c002c;
-padding:10px;
-border-radius:8px;
-margin-bottom:6px;
+margin-top:10px;
+padding:6px;
 cursor:pointer;
 }
 
-.user:hover{
-background:#500050;
-}
+/* CHAT AREA */
 
-/* CHAT */
-
-#messages{
+#chatArea{
 flex:1;
-overflow:auto;
-padding:10px;
 display:flex;
 flex-direction:column;
-gap:8px;
+align-items:center;
 }
 
-/* BUBBLES */
+/* HEADER */
+
+#header{
+width:100%;
+background:#ff3d6e;
+color:white;
+padding:12px;
+font-weight:bold;
+}
+
+/* CHAT BOX */
+
+#chatBox{
+background:#f7dce5;
+width:80%;
+max-width:600px;
+height:70vh;
+margin-top:20px;
+border-radius:14px;
+padding:20px;
+overflow:auto;
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+/* MESSAGE */
 
 .msg{
-padding:10px 14px;
-border-radius:16px;
+background:#ff3d6e;
+color:white;
+padding:10px 16px;
+border-radius:20px;
+width:fit-content;
 max-width:70%;
-word-wrap:break-word;
 }
 
-.me{
-background:linear-gradient(90deg,#ff4da6,#c44dff);
-align-self:flex-end;
-}
+/* INPUT AREA */
 
-.other{
-background:#333;
-align-self:flex-start;
-}
-
-/* INPUT BAR */
-
-#inputbar{
-height:60px;
-background:#1a001a;
+#inputArea{
 display:flex;
-align-items:center;
-padding:0 8px;
+width:80%;
+max-width:600px;
+margin-top:10px;
 gap:6px;
 }
 
 #text{
 flex:1;
 padding:10px;
-border:none;
 border-radius:20px;
-background:#2c002c;
-color:white;
+border:1px solid #ccc;
 }
 
 button{
-padding:10px 14px;
-border:none;
-border-radius:20px;
-background:linear-gradient(90deg,#ff4da6,#c44dff);
+background:#ff3d6e;
 color:white;
+border:none;
+padding:10px 14px;
+border-radius:10px;
 cursor:pointer;
+}
+
+#camera{
+font-size:18px;
 }
 
 #progress{
@@ -132,15 +130,15 @@ top:0;
 left:0;
 width:100%;
 height:100%;
-background:#0a000a;
+background:#f5e3ea;
 display:none;
 flex-direction:column;
-z-index:20;
 }
 
-#dmTop{
-background:#ff4da6;
-padding:10px;
+#dmHeader{
+background:#ff3d6e;
+color:white;
+padding:12px;
 display:flex;
 justify-content:space-between;
 }
@@ -148,28 +146,27 @@ justify-content:space-between;
 #dmMessages{
 flex:1;
 overflow:auto;
-padding:10px;
-display:flex;
-flex-direction:column;
-gap:8px;
+padding:20px;
 }
 
 #dmInput{
-height:60px;
 display:flex;
 padding:10px;
 gap:6px;
-background:#1a001a;
 }
 
-</style></head><body><div id="topbar">
-<span id="menu">☰</span>
-Tulip Chat
-</div><div id="sidebar"><h3>Online Users</h3><div id="users"></div></div><div id="messages"></div><div id="inputbar"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
+</style></head><body><div id="sidebar"><div id="logo">🌷 Tulip Chat</div><button id="logout">Logout</button>
 
-<input type="file" id="file"><span id="progress"></span>
+<div id="online">0 users online</div><div id="users"></div></div><div id="chatArea"><div id="header">Tulip Chat</div><div id="chatBox"></div><div id="inputArea"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
 
-</div><!-- DM --><div id="dmWindow"><div id="dmTop"><span id="dmUser"></span>
+<button onclick="sendGif()">GIF</button>
+
+<label id="camera">
+📷
+<input type="file" id="file" hidden>
+</label><span id="progress"></span>
+
+</div></div><!-- DM WINDOW --><div id="dmWindow"><div id="dmHeader"><span id="dmUser"></span>
 
 <button onclick="closeDM()">Back</button>
 
@@ -180,33 +177,16 @@ Tulip Chat
 const socket=io()
 
 let username=localStorage.getItem("username")
-let gender=localStorage.getItem("gender")
-let age=localStorage.getItem("age")
 
 if(!username){
 
-username=prompt("Enter name")
-age=prompt("Enter age")
-gender=prompt("Gender (Male/Female)")
+username=prompt("Enter your name")
 
 localStorage.setItem("username",username)
-localStorage.setItem("age",age)
-localStorage.setItem("gender",gender)
 
 }
 
-socket.emit("join",{name:username,gender})
-
-/* SIDEBAR */
-
-const menu=document.getElementById("menu")
-const sidebar=document.getElementById("sidebar")
-
-menu.onclick=()=>{
-
-sidebar.classList.toggle("open")
-
-}
+socket.emit("join",{name:username})
 
 /* PUBLIC MESSAGE */
 
@@ -228,13 +208,13 @@ socket.on("message",(data)=>{
 
 let div=document.createElement("div")
 
-div.className="msg "+(data.user===username?"me":"other")
+div.className="msg"
 
 div.innerText=data.user+": "+data.msg
 
-document.getElementById("messages").appendChild(div)
+document.getElementById("chatBox").appendChild(div)
 
-document.getElementById("messages").scrollTop=999999
+document.getElementById("chatBox").scrollTop=999999
 
 })
 
@@ -246,19 +226,25 @@ let box=document.getElementById("users")
 
 box.innerHTML=""
 
+let count=0
+
 for(let id in list){
+
+count++
 
 let u=document.createElement("div")
 
 u.className="user"
 
-u.innerText=list[id].name+" ("+list[id].gender+")"
+u.innerText=list[id]
 
-u.onclick=()=>openDM(id,list[id].name)
+u.onclick=()=>openDM(id,list[id])
 
 box.appendChild(u)
 
 }
+
+document.getElementById("online").innerText=count+" users online"
 
 })
 
@@ -288,8 +274,6 @@ function sendDM(){
 
 let text=document.getElementById("dmText").value
 
-if(!text)return
-
 socket.emit("dm",{to:currentDM,user:username,msg:text})
 
 document.getElementById("dmText").value=""
@@ -300,13 +284,27 @@ socket.on("dm",(data)=>{
 
 let div=document.createElement("div")
 
-div.className="msg "+(data.user===username?"me":"other")
+div.className="msg"
 
 div.innerText=data.user+": "+data.msg
 
 document.getElementById("dmMessages").appendChild(div)
 
 })
+
+/* GIF */
+
+function sendGif(){
+
+let url=prompt("Paste GIF link")
+
+if(url){
+
+socket.emit("message",{user:username,msg:url})
+
+}
+
+}
 
 /* FILE UPLOAD */
 
@@ -335,6 +333,8 @@ xhr.onload=()=>{
 let res=JSON.parse(xhr.response)
 
 socket.emit("message",{user:username,msg:res.url})
+
+document.getElementById("progress").innerText=""
 
 }
 
