@@ -1,28 +1,27 @@
 <!DOCTYPE html><html>
-<head>
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat</title><style>
+<head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat</title><style>
 
 body{
 margin:0;
 font-family:system-ui;
-background:#0f0f0f;
+background:#120014;
 color:white;
-display:flex;
 height:100vh;
 overflow:hidden;
 }
 
-/* SIDEBAR */
+/* sidebar */
 
 #sidebar{
-width:220px;
-background:#181818;
-padding:10px;
-position:absolute;
-left:-220px;
+position:fixed;
+left:-260px;
 top:0;
+width:260px;
 height:100%;
+background:linear-gradient(180deg,#220022,#3d003d);
+padding:15px;
 transition:0.3s;
+z-index:10;
 }
 
 #sidebar.open{
@@ -30,40 +29,32 @@ left:0;
 }
 
 .user{
-padding:8px;
-border-bottom:1px solid #333;
+padding:10px;
+margin-bottom:6px;
+border-radius:10px;
+background:#3a003f;
 cursor:pointer;
 }
 
-.user:hover{
-background:#333;
-}
+/* top */
 
-/* TOPBAR */
-
-#topbar{
-background:#1a1a1a;
-padding:10px;
+#top{
+background:linear-gradient(90deg,#ff4da6,#c44dff);
+padding:12px;
 display:flex;
 align-items:center;
 gap:10px;
 }
 
 #menu{
-font-size:20px;
+font-size:22px;
 cursor:pointer;
 }
 
-/* CHAT */
-
-#chat{
-flex:1;
-display:flex;
-flex-direction:column;
-}
+/* messages */
 
 #messages{
-flex:1;
+height:calc(100vh - 120px);
 overflow:auto;
 padding:10px;
 display:flex;
@@ -71,30 +62,32 @@ flex-direction:column;
 gap:8px;
 }
 
-/* BUBBLES */
-
 .msg{
-padding:10px;
-border-radius:10px;
+padding:10px 15px;
+border-radius:18px;
 max-width:70%;
 }
 
 .me{
-background:#b983ff;
+background:linear-gradient(90deg,#ff4da6,#c44dff);
 align-self:flex-end;
 }
 
 .other{
-background:#2a2a2a;
+background:#2c2c2c;
 align-self:flex-start;
 }
 
-/* INPUT */
+/* input */
 
 #input{
+position:fixed;
+bottom:0;
+width:100%;
+background:#1b001b;
 display:flex;
 padding:10px;
-background:#1a1a1a;
+gap:6px;
 }
 
 #text{
@@ -102,29 +95,114 @@ flex:1;
 padding:10px;
 border:none;
 border-radius:20px;
-background:#2b2b2b;
+background:#2c002c;
 color:white;
 }
 
 button{
-margin-left:6px;
-padding:10px;
+padding:10px 16px;
 border:none;
-border-radius:6px;
-background:#b983ff;
+border-radius:20px;
+background:linear-gradient(90deg,#ff4da6,#c44dff);
 color:white;
 }
 
 </style></head><body><div id="sidebar">
 <h3>Online Users</h3>
 <div id="users"></div>
-</div><div id="chat"><div id="topbar">
+</div><div id="top">
 <span id="menu">☰</span>
-<span id="title">Public Chat</span>
+Tulip Chat
 </div><div id="messages"></div><div id="input">
 <input id="text" placeholder="Type message">
 <button onclick="send()">Send</button>
-<input type="file" id="file" accept="image/*">
-<span id="progress"></span>
-</div></div><script src="/socket.io/socket.io.js"></script><script src="client.js"></script></body>
+</div><script src="/socket.io/socket.io.js"></script><script>
+
+const socket=io()
+
+let username=localStorage.getItem("username")
+
+if(!username){
+
+ username=prompt("Enter your name")
+ localStorage.setItem("username",username)
+
+}
+
+socket.emit("join",{name:username})
+
+/* sidebar toggle */
+
+const menu=document.getElementById("menu")
+const sidebar=document.getElementById("sidebar")
+
+menu.onclick=()=>{
+ sidebar.classList.toggle("open")
+}
+
+/* send message */
+
+function send(){
+
+ let text=document.getElementById("text").value
+ if(!text)return
+
+ socket.emit("message",{user:username,msg:text})
+
+ document.getElementById("text").value=""
+
+}
+
+/* receive */
+
+socket.on("message",(data)=>{
+
+ let div=document.createElement("div")
+
+ div.className="msg "+(data.user===username?"me":"other")
+
+ div.innerText=data.user+": "+data.msg
+
+ document.getElementById("messages").appendChild(div)
+
+})
+
+/* online users */
+
+socket.on("online",(list)=>{
+
+ let box=document.getElementById("users")
+ box.innerHTML=""
+
+ for(let id in list){
+
+  let u=document.createElement("div")
+
+  u.className="user"
+
+  u.innerText=list[id]
+
+  u.onclick=()=>{
+
+   let text=prompt("DM message")
+
+   socket.emit("dm",{to:id,msg:text,user:username})
+
+  }
+
+  box.appendChild(u)
+
+ }
+
+})
+
+/* receive dm */
+
+socket.on("dm",(data)=>{
+
+ alert("DM from "+data.user+": "+data.msg)
+
+})
+
+</script></body>
 </html>
