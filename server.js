@@ -1,29 +1,63 @@
-const express = require("express")
-const app = express()
-const http = require("http").createServer(app)
-const io = require("socket.io")(http)
-
-const multer = require("multer")
-
-app.use(express.static("public"))
-
-/* FILE UPLOAD */
-
-const storage = multer.diskStorage({
-destination: (req,file,cb)=>{
-cb(null,"public/uploads")
-},
-filename: (req,file,cb)=>{
-cb(null,Date.now()+"-"+file.originalname)
-}
-})
-
-const upload = multer({storage})
-
-app.post("/upload",upload.single("file"),(req,res)=>{
-res.json({url:"/uploads/"+req.file.filename})
-})
-
-/* USERS + CHAT HISTORY */
-
 let users = {}
+let messages = []
+let dms = {}
+
+io.on("connection",(socket)=>{
+
+socket.on("join",(data)=>{
+
+users[socket.id] = {
+name:data.name,
+gender:data.gender
+}
+
+io.emit("online",users)
+
+messages.forEach(m=>{
+socket.emit("message",m)
+})
+
+})
+
+/* PUBLIC MESSAGE */
+
+socket.on("message",(m)=>{
+
+if(m.msg==="/clear"){
+
+messages=[]
+
+io.emit("clearChat")
+
+return
+
+}
+
+messages.push(m)
+
+if(messages.length>300){
+messages.shift()
+}
+
+io.emit("message",m)
+
+})
+
+/* DM */
+
+socket.on("dm",(data)=>{
+
+let target=data.to
+let msg=data.msg
+
+if(!dms[target]){
+dms[target]=[]
+}
+
+dms[target].push(data)
+
+io.to(target).emit("dm",data)
+
+})
+
+})
