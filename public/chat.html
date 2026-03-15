@@ -1,5 +1,6 @@
 <!DOCTYPE html><html>
-<head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tulip Chat</title><style>
+<head><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tulip Chat</title><style>
 
 *{
 margin:0;
@@ -25,11 +26,11 @@ color:white;
 display:flex;
 align-items:center;
 justify-content:space-between;
-padding:0 15px;
+padding:0 12px;
 font-size:18px;
 }
 
-/* MAIN LAYOUT */
+/* MAIN */
 
 #main{
 flex:1;
@@ -59,17 +60,16 @@ gap:8px;
 .msg{
 background:#ff3d6e;
 color:white;
-padding:10px 14px;
-border-radius:18px;
-max-width:75%;
+padding:10px;
+border-radius:14px;
+max-width:80%;
 font-size:14px;
-word-wrap:break-word;
 }
 
 .msg img{
-max-width:200px;
-border-radius:10px;
+max-width:220px;
 margin-top:6px;
+border-radius:10px;
 }
 
 /* INPUT BAR */
@@ -126,29 +126,34 @@ border-bottom:1px solid #eee;
 font-size:14px;
 }
 
-/* UPLOAD PROGRESS */
+/* PROGRESS */
 
 #progress{
 font-size:12px;
 color:#444;
 }
 
+.badge{
+margin-right:5px;
+}
+
 </style></head><body><div id="header"><div>🌷 Tulip Chat</div><div><button onclick="clearChat()">🧹</button>
 
 <button onclick="location.reload()">🔄</button>
 
-</div></div><div id="main"><!-- CHAT --><div id="chatSection"><div id="chat"></div><div id="inputBar"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
+</div></div><div id="main"><div id="chatSection"><div id="chat"></div><div id="inputBar"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
 
-<input type="file" id="file" hidden accept="image/*,.gif"><button onclick="upload()">GIF</button>
+<input type="file" id="file" hidden accept="image/*,.gif"><button onclick="upload()">GIF / Pic</button>
 
 <span id="progress"></span>
 
-</div></div><!-- USERS --><div id="usersSection"><div id="usersHeader">Active Members</div><div id="onlineList"></div></div></div><script src="/socket.io/socket.io.js"></script><script>
+</div></div><div id="usersSection"><div id="usersHeader">Online Users</div><div id="onlineList"></div></div></div><script src="/socket.io/socket.io.js"></script><script>
 
 const socket = io()
 
 let username = localStorage.getItem("username")
 let gender = localStorage.getItem("gender")
+let role = localStorage.getItem("role")
 
 if(!username){
 
@@ -156,17 +161,29 @@ location.href="/login.html"
 
 }
 
-/* JOIN */
+/* BADGE */
 
-socket.emit("join",{username,gender})
+function badge(r){
 
-function avatar(g){
+if(r==="owner") return "👑"
 
-return g==="female"?"👩":"👨"
+if(r==="superadmin") return "⭐"
+
+return "👤"
 
 }
 
-/* SEND MESSAGE */
+/* JOIN */
+
+socket.emit("join",{
+
+username,
+gender,
+role
+
+})
+
+/* SEND */
 
 function send(){
 
@@ -178,6 +195,7 @@ socket.emit("message",{
 
 username,
 gender,
+role,
 msg
 
 })
@@ -186,7 +204,7 @@ text.value=""
 
 }
 
-/* RECEIVE MESSAGE */
+/* RECEIVE */
 
 socket.on("message",(d)=>{
 
@@ -194,15 +212,15 @@ let div = document.createElement("div")
 
 div.className="msg"
 
-let icon = avatar(d.gender)
+let b = badge(d.role)
 
 if(d.msg.includes("/uploads")){
 
-div.innerHTML = icon+" "+d.username+"<br><img src='"+d.msg+"'>"
+div.innerHTML = "<span class='badge'>"+b+"</span>"+d.username+"<br><img src='"+d.msg+"'>"
 
 }else{
 
-div.innerText = icon+" "+d.username+": "+d.msg
+div.innerText = b+" "+d.username+": "+d.msg
 
 }
 
@@ -212,7 +230,7 @@ chat.scrollTop = chat.scrollHeight
 
 })
 
-/* CLEAR CHAT */
+/* CLEAR */
 
 function clearChat(){
 
@@ -220,6 +238,7 @@ socket.emit("message",{
 
 username,
 gender,
+role,
 msg:"/clear"
 
 })
@@ -244,7 +263,7 @@ let div=document.createElement("div")
 
 div.className="userItem"
 
-div.innerText=(u.gender==="female"?"👩":"👨")+" "+u.username
+div.innerText = badge(u.role)+" "+u.username
 
 onlineList.appendChild(div)
 
@@ -252,7 +271,7 @@ onlineList.appendChild(div)
 
 })
 
-/* FILE UPLOAD */
+/* UPLOAD */
 
 function upload(){
 
@@ -288,6 +307,7 @@ socket.emit("message",{
 
 username,
 gender,
+role,
 msg:res.url
 
 })
