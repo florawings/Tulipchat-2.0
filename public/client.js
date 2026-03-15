@@ -10,6 +10,7 @@ location.href="/login.html"
 }
 
 let room="normal"
+let currentDM=null
 
 /* JOIN ROOM */
 
@@ -19,11 +20,37 @@ socket.emit("join",{user:username,room,gender})
 
 function joinRoom(r){
 
+currentDM=null
+
 room=r
 
 document.getElementById("roomName").innerText=r+" room"
 
+document.getElementById("messages").innerHTML=""
+
 socket.emit("join",{user:username,room,gender})
+
+}
+
+/* DM STORAGE */
+
+function saveDM(room,msg){
+
+let key="dm_"+room
+
+let arr=JSON.parse(localStorage.getItem(key) || "[]")
+
+arr.push(msg)
+
+localStorage.setItem(key,JSON.stringify(arr))
+
+}
+
+function loadDM(room){
+
+let key="dm_"+room
+
+return JSON.parse(localStorage.getItem(key) || "[]")
 
 }
 
@@ -35,17 +62,29 @@ let text=document.getElementById("text").value
 
 if(!text) return
 
+if(currentDM){
+
+socket.emit("dmMessage",{
+room:currentDM,
+user:username,
+msg:text
+})
+
+}else{
+
 socket.emit("message",{
 user:username,
 msg:text,
 room
 })
 
+}
+
 document.getElementById("text").value=""
 
 }
 
-/* RECEIVE MESSAGE */
+/* RECEIVE PUBLIC MESSAGE */
 
 socket.on("message",(data)=>{
 
@@ -62,7 +101,7 @@ document.getElementById("messages").scrollHeight
 
 })
 
-/* ONLINE USERS LIST */
+/* ONLINE USERS */
 
 socket.on("onlineUsers",(list)=>{
 
@@ -82,17 +121,10 @@ u.innerText=user.name+" ("+user.gender+")"
 
 u.onclick=()=>{
 
-let msg=prompt("Send DM to "+user.name)
-
-if(msg){
-
-socket.emit("dm",{
+socket.emit("startDM",{
 to:id,
-from:username,
-msg
+from:username
 })
-
-}
 
 }
 
@@ -102,11 +134,52 @@ box.appendChild(u)
 
 })
 
+/* OPEN DM */
+
+socket.on("openDM",(data)=>{
+
+currentDM=data.room
+
+document.getElementById("roomName").innerText="DM with "+data.from
+
+document.getElementById("messages").innerHTML=""
+
+/* LOAD OLD CHAT */
+
+let history=loadDM(currentDM)
+
+history.forEach(m=>{
+
+let div=document.createElement("div")
+
+div.className="msg"
+
+div.innerHTML="<b>"+m.user+"</b><br>"+m.msg
+
+document.getElementById("messages").appendChild(div)
+
+})
+
+})
+
 /* RECEIVE DM */
 
-socket.on("dm",(data)=>{
+socket.on("dmMessage",(data)=>{
 
-alert("DM from "+data.from+": "+data.msg)
+let div=document.createElement("div")
+
+div.className="msg"
+
+div.innerHTML="<b>"+data.user+"</b><br>"+data.msg
+
+document.getElementById("messages").appendChild(div)
+
+/* SAVE HISTORY */
+
+saveDM(data.room,data)
+
+document.getElementById("messages").scrollTop=
+document.getElementById("messages").scrollHeight
 
 })
 
@@ -154,11 +227,25 @@ xhr.onload=()=>{
 
 let res=JSON.parse(xhr.responseText)
 
+let msg='<img src="'+res.url+'">'
+
+if(currentDM){
+
+socket.emit("dmMessage",{
+room:currentDM,
+user:username,
+msg:msg
+})
+
+}else{
+
 socket.emit("message",{
 user:username,
-msg:'<img src="'+res.url+'">',
+msg:msg,
 room
 })
+
+}
 
 document.getElementById("progress").innerText=""
 
@@ -166,4 +253,4 @@ document.getElementById("progress").innerText=""
 
 xhr.send(form)
 
-}
+  }
