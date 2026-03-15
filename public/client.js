@@ -1,76 +1,147 @@
-const socket = io();
+const socket = io()
 
-let username = localStorage.getItem("username");
+let username = localStorage.getItem("username")
 
 if(!username){
-username = prompt("Enter name");
-localStorage.setItem("username",username);
-}
 
-socket.emit("join",username);
+username = prompt("Enter name")
 
-const box = document.getElementById("messages");
-const input = document.getElementById("messageInput");
-
-function addMessage(m){
-
-let div=document.createElement("div");
-
-if(m.type==="system"){
-div.innerHTML="<i>"+m.text+"</i>";
-}
-
-else if(m.type==="image"){
-div.innerHTML="<b>"+m.user+":</b><br><img src='"+m.text+"' width='200'>";
-}
-
-else{
-div.innerHTML="<b>"+m.user+":</b> "+m.text;
-}
-
-box.appendChild(div);
-box.scrollTop=box.scrollHeight;
+localStorage.setItem("username",username)
 
 }
 
-socket.on("oldMessages",(msgs)=>{
-msgs.forEach(addMessage);
-});
+socket.emit("join",username)
 
-socket.on("message",(m)=>{
-addMessage(m);
-});
+const messages = document.getElementById("messages")
+const usersDiv = document.getElementById("users")
 
-function sendMessage(){
+function addMessage(data){
 
-let text=input.value;
+let div = document.createElement("div")
 
-if(!text) return;
+if(data.type==="system"){
 
-socket.emit("message",{
+div.className="system"
+div.innerText=data.text
+
+}else{
+
+div.className="message"
+
+if(data.user===username) div.classList.add("my")
+
+if(data.type==="image"){
+
+div.innerHTML="<b>"+data.user+"</b><br><img src='"+data.text+"'>"
+
+}else{
+
+div.innerHTML="<b>"+data.user+"</b>: "+data.text
+
+}
+
+}
+
+messages.appendChild(div)
+messages.scrollTop=messages.scrollHeight
+
+}
+
+socket.on("chat message",(data)=>{
+
+addMessage(data)
+
+})
+
+function sendMsg(){
+
+let input=document.getElementById("msgInput")
+
+socket.emit("chat message",{
 user:username,
-text:text,
+text:input.value,
 type:"text"
-});
+})
 
-input.value="";
+input.value=""
+
 }
 
-function sendGIF(){
+socket.on("users",(list)=>{
 
-let url=prompt("Paste GIF link");
+usersDiv.innerHTML=""
 
-if(!url) return;
+list.forEach(u=>{
 
-socket.emit("message",{
+let div=document.createElement("div")
+
+div.className="user"
+div.innerText=u
+
+usersDiv.appendChild(div)
+
+})
+
+})
+
+function openImage(){
+document.getElementById("imageUpload").click()
+}
+
+document.getElementById("imageUpload").addEventListener("change",function(){
+
+const file=this.files[0]
+
+const reader=new FileReader()
+
+reader.onload=function(){
+
+socket.emit("chat message",{
 user:username,
-text:url,
+text:reader.result,
 type:"image"
-});
+})
 
 }
 
-function logout(){
-localStorage.removeItem("username");
-location.href="login.html";
+reader.readAsDataURL(file)
+
+})
+
+function openGif(){
+document.getElementById("gifUpload").click()
+}
+
+document.getElementById("gifUpload").addEventListener("change",function(){
+
+const file=this.files[0]
+
+const reader=new FileReader()
+
+reader.onload=function(){
+
+socket.emit("chat message",{
+user:username,
+text:reader.result,
+type:"image"
+})
+
+}
+
+reader.readAsDataURL(file)
+
+})
+
+function toggleEmoji(){
+
+let panel=document.getElementById("emojiPanel")
+
+panel.style.display = panel.style.display==="block"?"none":"block"
+
+}
+
+function addEmoji(e){
+
+document.getElementById("msgInput").value+=e
+
 }
