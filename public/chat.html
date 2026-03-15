@@ -1,5 +1,6 @@
 <!DOCTYPE html><html>
-<head><meta name="viewport" content="width=device-width,initial-scale=1">
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tulip Chat</title><style>
 
 body{
@@ -20,7 +21,7 @@ padding:20px;
 }
 
 #logo{
-font-size:20px;
+font-size:22px;
 font-weight:bold;
 color:#ff3d6e;
 margin-bottom:20px;
@@ -38,8 +39,13 @@ margin-bottom:20px;
 
 .user{
 margin-top:10px;
-padding:6px;
+padding:8px;
 cursor:pointer;
+border-radius:6px;
+}
+
+.user:hover{
+background:#ffe4ec;
 }
 
 /* CHAT AREA */
@@ -57,7 +63,7 @@ align-items:center;
 width:100%;
 background:#ff3d6e;
 color:white;
-padding:12px;
+padding:14px;
 font-weight:bold;
 }
 
@@ -66,7 +72,7 @@ font-weight:bold;
 #chatBox{
 background:#f7dce5;
 width:80%;
-max-width:600px;
+max-width:650px;
 height:70vh;
 margin-top:20px;
 border-radius:14px;
@@ -86,14 +92,20 @@ padding:10px 16px;
 border-radius:20px;
 width:fit-content;
 max-width:70%;
+word-wrap:break-word;
 }
 
-/* INPUT AREA */
+.msg img{
+max-width:220px;
+border-radius:10px;
+}
+
+/* INPUT */
 
 #inputArea{
 display:flex;
 width:80%;
-max-width:600px;
+max-width:650px;
 margin-top:10px;
 gap:6px;
 }
@@ -114,15 +126,11 @@ border-radius:10px;
 cursor:pointer;
 }
 
-#camera{
-font-size:18px;
-}
-
 #progress{
 font-size:12px;
 }
 
-/* DM WINDOW */
+/* DM */
 
 #dmWindow{
 position:fixed;
@@ -138,7 +146,7 @@ flex-direction:column;
 #dmHeader{
 background:#ff3d6e;
 color:white;
-padding:12px;
+padding:14px;
 display:flex;
 justify-content:space-between;
 }
@@ -147,6 +155,9 @@ justify-content:space-between;
 flex:1;
 overflow:auto;
 padding:20px;
+display:flex;
+flex-direction:column;
+gap:10px;
 }
 
 #dmInput{
@@ -159,12 +170,11 @@ gap:6px;
 
 <div id="online">0 users online</div><div id="users"></div></div><div id="chatArea"><div id="header">Tulip Chat</div><div id="chatBox"></div><div id="inputArea"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
 
-<button onclick="sendGif()">GIF</button>
+<button onclick="openGif()">GIF</button>
 
-<label id="camera">
-📷
-<input type="file" id="file" hidden>
-</label><span id="progress"></span>
+<input type="file" id="gifFile" accept="image/gif" hidden><input type="file" id="file" hidden><button onclick="openCamera()">📷</button>
+
+<span id="progress"></span>
 
 </div></div><!-- DM WINDOW --><div id="dmWindow"><div id="dmHeader"><span id="dmUser"></span>
 
@@ -179,21 +189,17 @@ const socket=io()
 let username=localStorage.getItem("username")
 
 if(!username){
-
 username=prompt("Enter your name")
-
 localStorage.setItem("username",username)
-
 }
 
 socket.emit("join",{name:username})
 
-/* PUBLIC MESSAGE */
+/* SEND MESSAGE */
 
 function send(){
 
 let text=document.getElementById("text").value
-
 if(!text)return
 
 socket.emit("message",{user:username,msg:text})
@@ -202,19 +208,39 @@ document.getElementById("text").value=""
 
 }
 
-/* RECEIVE */
+/* RECEIVE MESSAGE */
 
 socket.on("message",(data)=>{
 
 let div=document.createElement("div")
-
 div.className="msg"
 
+if(data.msg.match(/\.(jpg|png|gif|jpeg)$/)){
+div.innerHTML=data.user+":<br><img src='"+data.msg+"'>"
+}else{
 div.innerText=data.user+": "+data.msg
+}
 
-document.getElementById("chatBox").appendChild(div)
+chatBox.appendChild(div)
+chatBox.scrollTop=999999
 
-document.getElementById("chatBox").scrollTop=999999
+})
+
+/* CHAT HISTORY */
+
+socket.on("history",(data)=>{
+
+data.forEach(m=>{
+
+let div=document.createElement("div")
+div.className="msg"
+div.innerText=m.user+": "+m.msg
+
+chatBox.appendChild(div)
+
+})
+
+chatBox.scrollTop=999999
 
 })
 
@@ -223,7 +249,6 @@ document.getElementById("chatBox").scrollTop=999999
 socket.on("online",(list)=>{
 
 let box=document.getElementById("users")
-
 box.innerHTML=""
 
 let count=0
@@ -233,9 +258,7 @@ for(let id in list){
 count++
 
 let u=document.createElement("div")
-
 u.className="user"
-
 u.innerText=list[id]
 
 u.onclick=()=>openDM(id,list[id])
@@ -256,75 +279,64 @@ function openDM(id,name){
 
 currentDM=id
 
-document.getElementById("dmWindow").style.display="flex"
-
-document.getElementById("dmUser").innerText=name
-
-document.getElementById("dmMessages").innerHTML=""
+dmWindow.style.display="flex"
+dmUser.innerText=name
+dmMessages.innerHTML=""
 
 }
 
 function closeDM(){
 
-document.getElementById("dmWindow").style.display="none"
+dmWindow.style.display="none"
 
 }
 
 function sendDM(){
 
-let text=document.getElementById("dmText").value
+let text=dmText.value
 
 socket.emit("dm",{to:currentDM,user:username,msg:text})
 
-document.getElementById("dmText").value=""
+dmText.value=""
 
 }
 
 socket.on("dm",(data)=>{
 
 let div=document.createElement("div")
-
 div.className="msg"
-
 div.innerText=data.user+": "+data.msg
 
-document.getElementById("dmMessages").appendChild(div)
+dmMessages.appendChild(div)
 
 })
 
+/* CAMERA */
+
+function openCamera(){
+file.click()
+}
+
 /* GIF */
 
-function sendGif(){
-
-let url=prompt("Paste GIF link")
-
-if(url){
-
-socket.emit("message",{user:username,msg:url})
-
+function openGif(){
+gifFile.click()
 }
 
-}
+/* UPLOAD */
 
-/* FILE UPLOAD */
-
-document.getElementById("file").onchange=function(){
-
-let file=this.files[0]
+function upload(file){
 
 let form=new FormData()
-
 form.append("file",file)
 
 let xhr=new XMLHttpRequest()
-
 xhr.open("POST","/upload")
 
 xhr.upload.onprogress=(e)=>{
 
 let percent=Math.round((e.loaded/e.total)*100)
-
-document.getElementById("progress").innerText=percent+"%"
+progress.innerText=percent+"%"
 
 }
 
@@ -334,12 +346,20 @@ let res=JSON.parse(xhr.response)
 
 socket.emit("message",{user:username,msg:res.url})
 
-document.getElementById("progress").innerText=""
+progress.innerText=""
 
 }
 
 xhr.send(form)
 
+}
+
+file.onchange=function(){
+upload(this.files[0])
+}
+
+gifFile.onchange=function(){
+upload(this.files[0])
 }
 
 </script></body>
