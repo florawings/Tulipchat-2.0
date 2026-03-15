@@ -1,68 +1,74 @@
-<!DOCTYPE html><html>
+<!DOCTYPE html>
+<html>
 <head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tulip Chat</title><style>
+<title>Tulip Chat</title>
 
-*{margin:0;padding:0;box-sizing:border-box;}
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial;}
 
 body{
 height:100vh;
 display:flex;
-flex-direction:column;
-font-family:Arial;
+background:#0f0f0f;
 color:white;
-
-background:
-linear-gradient(rgba(0,0,0,.65),rgba(0,0,0,.65)),
-url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee");
-
-background-size:cover;
+overflow:hidden;
 }
 
-/* header */
+/* LEFT SIDEBAR */
 
-#header{
-height:55px;
+#sidebar{
+width:220px;
+background:#111;
+padding:10px;
+overflow-y:auto;
+}
+
+#logo{
+font-size:20px;
+margin-bottom:15px;
+}
+
+.room{
+padding:10px;
+border-bottom:1px solid #222;
+cursor:pointer;
+}
+
+.room:hover{
+background:#1c1c1c;
+}
+
+/* CHAT AREA */
+
+#chatArea{
+flex:1;
+display:flex;
+flex-direction:column;
+background:
+linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.6)),
+url("https://images.unsplash.com/photo-1499382926300-90a93d8a1d6c");
+
+background-size:cover;
+background-position:center;
+}
+
+/* HEADER */
+
+#chatHeader{
+height:50px;
 background:#000;
 display:flex;
 align-items:center;
 padding:0 15px;
 }
 
-#menuBtn{
-font-size:22px;
-cursor:pointer;
-margin-right:10px;
-}
+#roomName{flex:1;font-weight:bold;}
 
-#title{flex:1}
+#onlineCount{font-size:13px;opacity:.8}
 
-#online{font-size:14px}
-
-/* sidebar */
-
-#sidebar{
-position:fixed;
-left:-220px;
-top:55px;
-bottom:0;
-width:220px;
-background:#111;
-transition:.3s;
-padding:10px;
-}
-
-#sidebar.show{
-left:0;
-}
-
-.menuItem{
-padding:12px;
-border-bottom:1px solid #333;
-cursor:pointer;
-}
-
-/* messages */
+/* MESSAGES */
 
 #messages{
 flex:1;
@@ -75,7 +81,7 @@ background:#1c1c1c;
 padding:10px;
 border-radius:10px;
 margin-bottom:10px;
-max-width:80%;
+max-width:70%;
 }
 
 .system{
@@ -83,12 +89,7 @@ opacity:.7;
 font-style:italic;
 }
 
-.media{
-max-width:220px;
-border-radius:10px;
-}
-
-/* input */
+/* INPUT BAR */
 
 #inputBar{
 display:flex;
@@ -102,63 +103,180 @@ flex:1;
 padding:10px;
 border-radius:20px;
 border:none;
+outline:none;
 }
 
 button{
-padding:10px;
+padding:10px 14px;
 border:none;
 background:#ff2e63;
 color:white;
 border-radius:8px;
+cursor:pointer;
 }
 
-#typing{
-font-size:12px;
-opacity:.7;
-padding-left:15px;
+/* ONLINE USERS */
+
+#users{
+width:200px;
+background:#151515;
+overflow-y:auto;
+padding:10px;
 }
 
-</style></head><body><div id="header"><div id="menuBtn" onclick="toggleMenu()">☰</div><div id="title">Tulip Chat</div><div id="online">Online: 0</div></div><div id="sidebar"><div class="menuItem">Adult room</div>
-<div class="menuItem">Normal room</div>
-<div class="menuItem">Private room</div></div><div id="messages"></div><div id="typing"></div><div id="inputBar"><input id="msgInput" placeholder="Type message"><button onclick="sendMsg()">Send</button>
+.user{
+padding:8px;
+border-bottom:1px solid #222;
+cursor:pointer;
+}
+
+/* DM WINDOW */
+
+.dm{
+position:fixed;
+bottom:0;
+right:20px;
+width:260px;
+background:#111;
+border:1px solid #333;
+display:none;
+}
+
+.dmHeader{
+background:#000;
+padding:8px;
+display:flex;
+justify-content:space-between;
+}
+
+.dmMessages{
+height:200px;
+overflow-y:auto;
+padding:10px;
+}
+
+.dmInput{
+display:flex;
+padding:8px;
+gap:4px;
+}
+
+.dmInput input{
+flex:1;
+padding:6px;
+}
+
+img,video{
+max-width:220px;
+border-radius:8px;
+margin-top:6px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- LEFT SIDEBAR -->
+
+<div id="sidebar">
+
+<div id="logo">🌷 Tulip Chat</div>
+
+<div class="room">Adult Room</div>
+<div class="room">Normal Room</div>
+<div class="room">Private Room</div>
+
+</div>
+
+<!-- CHAT AREA -->
+
+<div id="chatArea">
+
+<div id="chatHeader">
+
+<div id="roomName">Adult Room</div>
+
+<div id="onlineCount">2 online</div>
+
+</div>
+
+<div id="messages"></div>
+
+<div id="inputBar">
+
+<input id="msgInput" placeholder="Type message">
+
+<button onclick="sendMsg()">Send</button>
 
 <button onclick="emoji()">😀</button>
 
-<input type="file" id="fileInput" style="display:none"><button onclick="fileInput.click()">📷</button>
+<input type="file" id="file" hidden>
 
-</div><script src="/socket.io/socket.io.js"></script><script>
+<button onclick="file.click()">📷</button>
 
-const socket = io()
+</div>
 
-let username = localStorage.getItem("username")
+</div>
 
-if(!username){
+<!-- ONLINE USERS -->
 
- username = prompt("Enter username")
+<div id="users">
 
- localStorage.setItem("username",username)
+<h3>Online</h3>
+
+<div class="user" onclick="openDM('Garima')">Garima</div>
+<div class="user" onclick="openDM('Rahul')">Rahul</div>
+
+</div>
+
+<!-- DM WINDOW -->
+
+<div class="dm" id="dmBox">
+
+<div class="dmHeader">
+
+<span id="dmUser"></span>
+
+<button onclick="closeDM()">X</button>
+
+</div>
+
+<div class="dmMessages" id="dmMessages"></div>
+
+<div class="dmInput">
+
+<input id="dmInput">
+
+<button onclick="sendDM()">Send</button>
+
+</div>
+
+</div>
+
+<script>
+
+/* MAIN CHAT */
+
+function sendMsg(){
+
+let text=msgInput.value
+
+if(!text) return
+
+addMessage("You: "+text)
+
+msgInput.value=""
 
 }
 
-socket.emit("join",username)
-
-/* menu */
-
-function toggleMenu(){
-
- sidebar.classList.toggle("show")
-
-}
-
-/* messages */
-
-function addMsg(html,type){
+function addMessage(text){
 
 let div=document.createElement("div")
 
-div.className="message "+(type||"")
+div.className="message"
 
-div.innerHTML=html
+div.innerText=text
 
 messages.appendChild(div)
 
@@ -166,100 +284,74 @@ messages.scrollTop=messages.scrollHeight
 
 }
 
-function sendMsg(){
-
-let msg=msgInput.value
-
-if(!msg) return
-
-socket.emit("chat message",{user:username,msg:msg})
-
-msgInput.value=""
-
-}
-
-socket.on("chat message",(data)=>{
-
-addMsg("<b>"+data.user+"</b><br>"+data.msg)
-
-})
-
-socket.on("system",(msg)=>{
-
-addMsg(msg,"system")
-
-})
-
-socket.on("online",(list)=>{
-
-online.innerText="Online: "+list.length
-
-})
-
-/* typing */
-
-msgInput.addEventListener("input",()=>{
-
-socket.emit("typing",username)
-
-})
-
-socket.on("typing",(msg)=>{
-
-typing.innerText=msg
-
-setTimeout(()=>typing.innerText="",1000)
-
-})
-
-/* emoji */
-
 function emoji(){
 
 msgInput.value+="😊"
 
 }
 
-/* upload */
+/* IMAGE UPLOAD */
 
-fileInput.onchange=function(){
+file.onchange=function(){
 
-let file=this.files[0]
+let f=this.files[0]
 
-let form=new FormData()
+let url=URL.createObjectURL(f)
 
-form.append("file",file)
+let div=document.createElement("div")
 
-fetch("/upload",{method:"POST",body:form})
-.then(r=>r.json())
-.then(data=>{
+div.className="message"
 
-let url=data.url
-
-let ext=url.split('.').pop()
-
-let media=""
-
-if(ext==="mp4"){
-
-media=`<video class="media" controls autoplay loop src="${url}"></video>`
-
+if(f.type.includes("video")){
+div.innerHTML="<video src='"+url+"' controls autoplay loop></video>"
 }else{
+div.innerHTML="<img src='"+url+"'>"
+}
 
-media=`<img class="media" src="${url}">`
+messages.appendChild(div)
 
 }
 
-socket.emit("chat message",{
+/* DM */
 
-user:username,
-msg:media
+function openDM(name){
 
-})
+dmUser.innerText=name
 
-})
+dmBox.style.display="block"
 
 }
 
-</script></body>
+function closeDM(){
+
+dmBox.style.display="none"
+
+}
+
+function sendDM(){
+
+let text=dmInput.value
+
+let div=document.createElement("div")
+
+div.innerText="Me: "+text
+
+dmMessages.appendChild(div)
+
+dmInput.value=""
+
+}
+
+/* SYSTEM DEMO */
+
+setTimeout(()=>{
+let div=document.createElement("div")
+div.className="message system"
+div.innerText="Garima joined the room"
+messages.appendChild(div)
+},2000)
+
+</script>
+
+</body>
 </html>
