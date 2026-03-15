@@ -4,7 +4,6 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>Tulip Chat</title>
 
 <style>
@@ -114,7 +113,7 @@ localStorage.setItem("name",name)
 
 socket.emit("join",{name})
 
-let uploadMsg = null
+let uploadMsg=null
 
 function send(){
 
@@ -127,6 +126,36 @@ socket.emit("message",{name,text})
 msg.value=""
 
 }
+
+/* -------- HISTORY FROM MONGODB -------- */
+
+socket.on("history",(data)=>{
+
+data.forEach(m=>{
+
+if(m.system){
+
+addMsg(m.text,true)
+
+}
+
+else if(m.text){
+
+addMsg(m.name+": "+m.text)
+
+}
+
+else if(m.image){
+
+addImage(m.name,m.image)
+
+}
+
+})
+
+})
+
+/* -------- LIVE MESSAGE -------- */
 
 socket.on("message",(data)=>{
 
@@ -146,6 +175,8 @@ addImage(data.name,data.url)
 
 })
 
+/* -------- FILE UPLOAD -------- */
+
 function openGallery(){
 
 document.getElementById("imageInput").click()
@@ -158,13 +189,13 @@ document.getElementById("gifInput").click()
 
 }
 
-document.getElementById("imageInput").onchange=function(){
+imageInput.onchange=function(){
 
 uploadFile(this.files[0],"Image")
 
 }
 
-document.getElementById("gifInput").onchange=function(){
+gifInput.onchange=function(){
 
 uploadFile(this.files[0],"GIF")
 
@@ -172,11 +203,11 @@ uploadFile(this.files[0],"GIF")
 
 function uploadFile(file,type){
 
-let formData=new FormData()
+let formData = new FormData()
 
 formData.append("file",file)
 
-let xhr=new XMLHttpRequest()
+let xhr = new XMLHttpRequest()
 
 xhr.open("POST","/upload",true)
 
@@ -202,6 +233,8 @@ chat.scrollTop=chat.scrollHeight
 
 xhr.onload=function(){
 
+uploadMsg.remove()
+
 uploadMsg=null
 
 let data=JSON.parse(xhr.responseText)
@@ -214,6 +247,8 @@ xhr.send(formData)
 
 }
 
+/* -------- LOGOUT -------- */
+
 function logout(){
 
 localStorage.clear()
@@ -221,6 +256,8 @@ localStorage.clear()
 location.reload()
 
 }
+
+/* -------- UI RENDER -------- */
 
 function addMsg(text,system){
 
@@ -251,12 +288,6 @@ chat.appendChild(div)
 chat.scrollTop=chat.scrollHeight
 
 }
-
-setInterval(()=>{
-
-socket.emit("refresh")
-
-},10000)
 
 </script>
 
