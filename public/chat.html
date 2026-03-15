@@ -42,18 +42,13 @@ margin:6px;
 border-radius:8px;
 }
 
-.user{
-padding:8px;
-border-bottom:1px solid #eee;
-}
-
 </style>
 
 </head>
 
 <body>
 
-<h2>Tulip Chat</h2>
+<h2>🌷 Tulip Chat</h2>
 
 <div id="main">
 
@@ -64,8 +59,10 @@ border-bottom:1px solid #eee;
 </div>
 
 <input id="text">
-
 <button onclick="send()">Send</button>
+
+<input type="file" id="file">
+<button onclick="upload()">GIF/Image</button>
 
 <script src="/socket.io/socket.io.js"></script>
 
@@ -73,24 +70,9 @@ border-bottom:1px solid #eee;
 
 const socket = io()
 
-let username = prompt("Enter name")
-
-let role="user"
-
-if(username==="Lord_lucifer") role="owner"
-if(username==="Garima") role="superadmin"
+let username=prompt("Enter name")
 
 socket.emit("join",{username})
-
-function badge(r){
-
-if(r==="owner") return "👑"
-if(r==="superadmin") return "⭐"
-return "👤"
-
-}
-
-/* SEND */
 
 function send(){
 
@@ -107,31 +89,45 @@ text.value=""
 
 }
 
-/* RECEIVE */
-
 socket.on("message",(d)=>{
 
 let div=document.createElement("div")
 
 div.className="msg"
 
-div.innerText=badge(d.role)+" "+d.username+" : "+d.msg
+div.innerText=d.username+" : "+d.msg
 
 chat.appendChild(div)
 
 })
 
-/* SYSTEM */
+/* UPLOAD */
 
-socket.on("system",(msg)=>{
+async function upload(){
 
-let div=document.createElement("div")
+let file=document.getElementById("file").files[0]
 
-div.innerText="⚠ "+msg
+let fd=new FormData()
 
-chat.appendChild(div)
+fd.append("file",file)
+
+let res=await fetch("/upload",{
+
+method:"POST",
+body:fd
 
 })
+
+let data=await res.json()
+
+socket.emit("message",{
+
+username,
+msg:data.url
+
+})
+
+}
 
 /* ONLINE USERS */
 
@@ -143,15 +139,13 @@ users.forEach(u=>{
 
 let div=document.createElement("div")
 
-div.className="user"
-
 div.innerHTML=
 
-badge(u.role)+" "+u.username+
+u.username+
 
-` <button onclick="ban('${u.username}')">Ban</button>
-<button onclick="mute('${u.username}')">Mute</button>
-<button onclick="kick('${u.username}')">Kick</button>`
+` <button onclick="dm('${u.username}')">DM</button>
+<button onclick="friend('${u.username}')">Add</button>
+<button onclick="report('${u.username}')">Report</button>`
 
 users.appendChild(div)
 
@@ -159,21 +153,53 @@ users.appendChild(div)
 
 })
 
-function ban(user){
+/* DM */
 
-socket.emit("banUser",user)
+function dm(user){
+
+let msg=prompt("DM to "+user)
+
+socket.emit("dm",{
+
+from:username,
+to:user,
+msg
+
+})
 
 }
 
-function mute(user){
+socket.on("dm",(d)=>{
 
-socket.emit("muteUser",user)
+alert("DM from "+d.from+": "+d.msg)
+
+})
+
+/* FRIEND */
+
+function friend(user){
+
+socket.emit("friendRequest",{
+
+from:username,
+to:user
+
+})
 
 }
 
-function kick(user){
+/* REPORT */
 
-socket.emit("kickUser",user)
+function report(user){
+
+socket.emit("reportUser",{
+
+from:username,
+target:user
+
+})
+
+alert("Reported")
 
 }
 
