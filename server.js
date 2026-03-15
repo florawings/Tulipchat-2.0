@@ -1,89 +1,122 @@
-const express=require("express")
-const http=require("http")
-const {Server}=require("socket.io")
-const multer=require("multer")
-const sharp=require("sharp")
-const fs=require("fs")
+const express = require("express")
+const http = require("http")
+const {Server} = require("socket.io")
+const multer = require("multer")
+const path = require("path")
 
-const app=express()
-const server=http.createServer(app)
-const io=new Server(server)
+const app = express()
+const server = http.createServer(app)
+const io = new Server(server)
 
 app.use(express.static("public"))
-app.use("/uploads",express.static("uploads"))
 
-let onlineUsers={}
+/* upload */
 
-/* socket chat */
+const storage = multer.diskStorage({
+destination:"public/uploads",
+filename:(req,file,cb)=>{
+cb(null,Date.now()+path.extname(file.originalname))
+}
+})
+
+const upload = multer({storage})
+
+app.post("/upload",upload.single("file"),(req,res)=>{
+res.json({url:"/uploads/"+req.file.filename})
+})
+
+/* memory db */
+
+let users={}
+let friends={}
+let privateRoomUsers=["owner"]
 
 io.on("connection",(socket)=>{
 
-socket.on("join",(username)=>{
-socket.username=username
-onlineUsers[username]=socket.id
-io.emit("user list",Object.keys(onlineUsers))
+socket.on("join",(data)=>{
+
+socket.username=data.username
+socket.room=data.room
+
+if(data.room==="private" && !privateRoomUsers.includes(data.username)){
+socket.emit("denied","Private room access denied")
+return
+}
+
+socket.join(data.room)
+
+users[socket.id]=data.username
+
+io.to(data.room).emit("system",data.username+" joined room")
+
+io.emit("online",Object.values(users))
+
 })
 
 socket.on("chat message",(data)=>{
-io.emit("chat message",data)
+
+io.to(data.room).emit("chat message",data)
+
 })
 
-socket.on("private message",(data)=>{
+/* DM */
 
-let target=onlineUsers[data.to]
+socket.on("dm",(data)=>{
 
-if(target){
+for(let id in users){
 
-io.to(target).emit("private message",{
-from:data.from,
-to:data.to,
-msg:data.msg
-})
+if(users[id]===data.to){
+
+io.to(id).emit("dm",data)
 
 }
+
+}
+
+})
+
+/* friend request */
+
+socket.on("friend request",(data)=>{
+
+if(!friends[data.to]) friends[data.to]=[]
+
+friends[data.to].push(data.from)
+
+for(let id in users){
+
+if(users[id]===data.to){
+
+io.to(id).emit("friend request",data.from)
+
+}
+
+}
+
+})
+
+socket.on("typing",(user)=>{
+
+socket.broadcast.emit("typing",user)
 
 })
 
 socket.on("disconnect",()=>{
-delete onlineUsers[socket.username]
-io.emit("user list",Object.keys(onlineUsers))
-})
 
-})
-
-/* upload setup */
-
-const storage=multer.diskStorage({
-destination:function(req,file,cb){
-cb(null,"uploads")
-},
-filename:function(req,file,cb){
-cb(null,Date.now()+"-"+file.originalname)
+if(users[socket.id]){
+io.emit("system",users[socket.id]+" left")
 }
-})
 
-const upload=multer({storage})
+delete users[socket.id]
 
-/* upload route */
+io.emit("online",Object.values(users))
 
-app.post("/upload",upload.single("image"),async(req,res)=>{
-
-let inputPath=req.file.path
-let outputPath="uploads/compressed-"+req.file.filename
-
-await sharp(inputPath)
-.resize({width:900})
-.jpeg({quality:70})
-.toFile(outputPath)
-
-fs.unlinkSync(inputPath)
-
-res.json({
-url:"/"+outputPath
 })
 
 })
 
-server.listen(process.env.PORT||3000,()=>{
-console.log("Server running")
+server.listen(3000,()=>{
+
+console.log("Tulip Chat 5.0 running")
+
 })
