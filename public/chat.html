@@ -1,86 +1,108 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-
-<title>Tulip Chat</title>
-
-<style>
+<!DOCTYPE html><html>
+<head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>Tulip Chat</title><style>
 
 html,body{
 margin:0;
 height:100%;
-overflow:hidden;
 font-family:Arial;
 background:#f5e3ea;
+overflow:hidden;
+}
+
+/* HEADER */
+
+#header{
+height:50px;
+background:#ff3d6e;
+color:white;
 display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 10px;
+}
+
+#leftIcons{
+display:flex;
+gap:10px;
+align-items:center;
+}
+
+#rightIcons{
+display:flex;
+gap:12px;
+align-items:center;
+}
+
+.icon{
+font-size:20px;
+cursor:pointer;
 }
 
 /* SIDEBAR */
 
 #sidebar{
+position:fixed;
+top:50px;
+left:-230px;
 width:220px;
+height:100%;
 background:white;
-padding:20px;
+padding:15px;
+transition:.3s;
 border-right:1px solid #ddd;
 }
 
-#logo{
-font-size:22px;
-color:#ff3d6e;
-font-weight:bold;
-margin-bottom:20px;
+#sidebar.open{
+left:0;
 }
 
-.user{
-padding:6px;
+#logo{
+font-size:20px;
+color:#ff3d6e;
+font-weight:bold;
+margin-bottom:10px;
 }
 
 /* CHAT AREA */
 
 #chatArea{
-flex:1;
-display:flex;
-flex-direction:column;
-}
-
-#header{
-background:#ff3d6e;
-color:white;
-padding:12px;
-font-size:18px;
-}
-
-#chatBox{
-flex:1;
+position:absolute;
+top:50px;
+bottom:60px;
+left:0;
+right:0;
 overflow:auto;
-padding:20px;
-display:flex;
-flex-direction:column;
-gap:10px;
+padding:15px;
 }
 
 .msg{
 background:#ff3d6e;
 color:white;
-padding:10px 16px;
-border-radius:20px;
-max-width:70%;
+padding:10px 14px;
+border-radius:18px;
+max-width:75%;
+margin-bottom:8px;
 }
 
 .msg img{
-max-width:200px;
+max-width:220px;
 border-radius:10px;
 }
 
-/* INPUT */
+/* INPUT AREA */
 
 #inputArea{
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+height:60px;
+background:white;
 display:flex;
-padding:10px;
+align-items:center;
 gap:6px;
+padding:8px;
+border-top:1px solid #ddd;
 }
 
 #text{
@@ -92,56 +114,30 @@ border:1px solid #ccc;
 
 button{
 background:#ff3d6e;
-color:white;
 border:none;
+color:white;
 padding:10px 14px;
 border-radius:10px;
 }
 
-</style>
+</style></head><body><!-- HEADER --><div id="header"><div id="leftIcons"><span class="icon" onclick="toggleMenu()">☰</span>
 
-</head>
+<span class="icon" onclick="closePanels()">⬅</span>
 
-<body>
+</div><div>Tulip Chat</div><div id="rightIcons"><span class="icon">📥</span>
 
-<div id="sidebar">
+<span class="icon" onclick="refreshChat()">🔄</span>
 
-<div id="logo">🌷 Tulip Chat</div>
+</div></div><!-- SIDEBAR --><div id="sidebar"><div id="logo">🌷 Tulip Chat</div><div id="online">0 users online</div><div id="users"></div></div><!-- CHAT --><div id="chatArea"></div><!-- INPUT --><div id="inputArea"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
 
-<div id="online">0 users online</div>
+<input type="file" id="file" hidden><button onclick="pick()">📷</button>
 
-<div id="users"></div>
+</div><script src="/socket.io/socket.io.js"></script><script>
 
-</div>
+const socket=io()
 
-<div id="chatArea">
-
-<div id="header">Tulip Chat</div>
-
-<div id="chatBox"></div>
-
-<div id="inputArea">
-
-<input id="text" placeholder="Type message">
-
-<button onclick="send()">Send</button>
-
-<input type="file" id="file" hidden>
-
-<button onclick="pick()">📷</button>
-
-</div>
-
-</div>
-
-<script src="/socket.io/socket.io.js"></script>
-
-<script>
-
-const socket = io()
-
-let name = localStorage.getItem("username")
-let gender = localStorage.getItem("gender")
+let name=localStorage.getItem("username")
+let gender=localStorage.getItem("gender")
 
 if(!name){
 location.href="login.html"
@@ -150,14 +146,14 @@ location.href="login.html"
 socket.emit("join",{name,gender})
 
 function avatar(g){
-return g==="female" ? "👩" : "👨"
+return g==="female"?"👩":"👨"
 }
 
-/* SEND MESSAGE */
+/* MESSAGE SEND */
 
 function send(){
 
-let msg = text.value
+let msg=text.value
 
 socket.emit("message",{user:name,gender,msg})
 
@@ -165,37 +161,29 @@ text.value=""
 
 }
 
-/* RECEIVE MESSAGE */
+/* RECEIVE */
 
 socket.on("message",(d)=>{
 
-let div = document.createElement("div")
+let div=document.createElement("div")
 
 div.className="msg"
 
-let icon = avatar(d.gender)
+let icon=avatar(d.gender)
 
 if(d.msg && d.msg.startsWith("/uploads")){
 
-div.innerHTML = icon+" "+d.user+"<br><img src='"+d.msg+"'>"
+div.innerHTML=icon+" "+d.user+"<br><img src='"+d.msg+"'>"
 
 }else{
 
-div.innerText = icon+" "+d.user+": "+d.msg
+div.innerText=icon+" "+d.user+": "+d.msg
 
 }
 
-chatBox.appendChild(div)
+chatArea.appendChild(div)
 
-chatBox.scrollTop = chatBox.scrollHeight
-
-})
-
-/* CLEAR CHAT */
-
-socket.on("clearChat",()=>{
-
-chatBox.innerHTML=""
+chatArea.scrollTop=chatArea.scrollHeight
 
 })
 
@@ -213,40 +201,58 @@ count++
 
 let u=document.createElement("div")
 
-u.className="user"
-
-u.innerText = avatar(list[id].gender)+" "+list[id].name
+u.innerText=avatar(list[id].gender)+" "+list[id].name
 
 users.appendChild(u)
 
 }
 
-online.innerText = count+" users online"
+online.innerText=count+" users online"
 
 })
+
+/* MENU TOGGLE */
+
+function toggleMenu(){
+
+sidebar.classList.toggle("open")
+
+}
+
+/* BACK BUTTON */
+
+function closePanels(){
+
+sidebar.classList.remove("open")
+
+}
+
+/* REFRESH */
+
+function refreshChat(){
+
+location.reload()
+
+}
 
 /* FILE PICK */
 
 function pick(){
-
 file.click()
-
 }
 
-/* FILE UPLOAD */
+/* UPLOAD */
 
-file.onchange = ()=>{
+file.onchange=()=>{
 
-let f = file.files[0]
+let f=file.files[0]
 
-let fd = new FormData()
+let fd=new FormData()
 
 fd.append("file",f)
 
 fetch("/upload",{method:"POST",body:fd})
-
 .then(r=>r.json())
-
 .then(d=>{
 
 socket.emit("message",{user:name,gender,msg:d.url})
@@ -255,7 +261,5 @@ socket.emit("message",{user:name,gender,msg:d.url})
 
 }
 
-</script>
-
-</body>
+</script></body>
 </html>
