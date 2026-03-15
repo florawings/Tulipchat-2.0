@@ -1,48 +1,35 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tulip Chat</title>
 
 <style>
 
 body{
-margin:0;
 font-family:Arial;
+margin:0;
 background:#eee;
 }
 
 header{
 background:#ff2d7a;
 color:white;
-padding:12px;
+padding:10px;
 display:flex;
 justify-content:space-between;
 }
 
-#users{
-background:#fff;
-padding:8px;
-font-size:14px;
-}
-
 #chat{
-height:68vh;
+height:70vh;
 overflow:auto;
 padding:10px;
 }
 
 .msg{
 background:white;
-padding:10px;
 margin:6px;
+padding:10px;
 border-radius:6px;
-}
-
-.system{
-background:#ddd;
 }
 
 .bottom{
@@ -53,45 +40,32 @@ right:0;
 display:flex;
 }
 
-.bottom input{
+input{
 flex:1;
-padding:12px;
+padding:10px;
 border:none;
 }
 
 button{
-border:none;
-padding:12px;
+padding:10px;
 background:#ff2d7a;
 color:white;
+border:none;
 }
 
-/* thumbnail */
-
-.chat-img{
-max-width:150px;
-border-radius:6px;
-cursor:pointer;
-}
-
-/* fullscreen viewer */
-
-#viewer{
-display:none;
+#usersWindow{
 position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.9);
-justify-content:center;
-align-items:center;
-z-index:1000;
+right:10px;
+top:60px;
+background:white;
+border-radius:6px;
+padding:10px;
+display:none;
 }
 
-#viewer img{
-max-width:95%;
-max-height:95%;
+.user{
+padding:5px;
+cursor:pointer;
 }
 
 </style>
@@ -102,34 +76,32 @@ max-height:95%;
 
 <header>
 
-<span>🌷 Tulip Chat</span>
+🌷 Tulip Chat
+
+<div>
+
+<button onclick="toggleUsers()">Online</button>
 
 <button onclick="logout()">Logout</button>
 
-</header>
+</div>
 
-<div id="users">Online:</div>
+</header>
 
 <div id="chat"></div>
 
+<div id="usersWindow"></div>
+
 <div class="bottom">
 
-<input id="msg" placeholder="message">
+<input id="msg">
 
 <button onclick="send()">Send</button>
 
-<input type="file" id="imageInput" hidden accept="image/*">
-<button onclick="openGallery()">📷</button>
+<input type="file" id="file" hidden>
 
-<input type="file" id="gifInput" hidden accept="image/gif">
-<button onclick="openGif()">GIF</button>
+<button onclick="file.click()">📷</button>
 
-</div>
-
-<!-- fullscreen viewer -->
-
-<div id="viewer">
-<img id="viewerImg">
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -138,167 +110,121 @@ max-height:95%;
 
 const socket = io()
 
-const chat = document.getElementById("chat")
-const msg = document.getElementById("msg")
-
-let name = localStorage.getItem("name")
+let name = localStorage.getItem("tulip_name")
 
 if(!name){
 
-name = prompt("Enter name")
+name = prompt("name")
 
-localStorage.setItem("name",name)
+localStorage.setItem("tulip_name",name)
 
 }
 
-socket.emit("join",{name})
+socket.emit("join",name)
 
-/* send message */
+const chat = document.getElementById("chat")
+
+/* load old chat */
+
+fetch("/messages")
+
+.then(res=>res.json())
+
+.then(data=>{
+
+data.forEach(addMsg)
+
+})
 
 function send(){
 
-if(!msg.value) return
+const text = msg.value
 
-socket.emit("message",{
-name:name,
-text:msg.value
-})
+socket.emit("message",{name,text})
 
 msg.value=""
 
 }
 
-/* receive text */
+socket.on("message",addMsg)
 
-socket.on("message",(data)=>{
+socket.on("image",addMsg)
 
-addMsg(data.name+": "+data.text)
+function addMsg(data){
 
-})
+let div = document.createElement("div")
 
-/* system message */
+div.className="msg"
 
-socket.on("system",(text)=>{
+if(data.text){
 
-addMsg(text,true)
+div.innerText=data.name+": "+data.text
 
-})
+}
 
-/* online users */
+if(data.url){
+
+div.innerHTML=data.name+"<br><img src='"+data.url+"' width='150'>"
+
+}
+
+chat.appendChild(div)
+
+chat.scrollTop=chat.scrollHeight
+
+}
+
+/* users */
 
 socket.on("users",(list)=>{
 
-document.getElementById("users").innerText =
-"Online: "+list.join(", ")
+let html=""
+
+list.forEach(u=>{
+
+html+=`<div class="user" onclick="openDM('${u}')">${u}</div>`
 
 })
 
-/* receive image */
-
-socket.on("image",(data)=>{
-
-let div=document.createElement("div")
-
-div.className="msg"
-
-div.innerHTML=data.name+
-"<br><img class='chat-img' src='"+data.url+"' onclick=\"openViewer('"+data.url+"')\">"
-
-chat.appendChild(div)
-
-chat.scrollTop=chat.scrollHeight
+usersWindow.innerHTML=html
 
 })
 
-/* open gallery */
+function toggleUsers(){
 
-function openGallery(){
+usersWindow.style.display=
 
-document.getElementById("imageInput").click()
-
-}
-
-function openGif(){
-
-document.getElementById("gifInput").click()
+usersWindow.style.display=="block"?"none":"block"
 
 }
 
-imageInput.onchange=function(){
+/* DM */
 
-uploadFile(this.files[0])
+function openDM(user){
 
-}
-
-gifInput.onchange=function(){
-
-uploadFile(this.files[0])
+window.open("/dm.html?user="+user,"dm")
 
 }
 
-/* upload */
+file.onchange=()=>{
 
-function uploadFile(file){
+let fd=new FormData()
 
-let formData=new FormData()
+fd.append("file",file.files[0])
 
-formData.append("file",file)
+fetch("/upload",{method:"POST",body:fd})
 
-let xhr=new XMLHttpRequest()
+.then(r=>r.json())
 
-xhr.open("POST","/upload",true)
+.then(d=>{
 
-xhr.onload=function(){
+socket.emit("image",{name,url:d.url})
 
-let data=JSON.parse(xhr.responseText)
-
-socket.emit("image",{
-name:name,
-url:data.url
 })
 
 }
 
-xhr.send(formData)
-
-}
-
-/* add message */
-
-function addMsg(text,system){
-
-let div=document.createElement("div")
-
-div.className="msg"
-
-if(system) div.className+=" system"
-
-div.innerText=text
-
-chat.appendChild(div)
-
-chat.scrollTop=chat.scrollHeight
-
-}
-
-/* fullscreen viewer */
-
-function openViewer(src){
-
-let viewer=document.getElementById("viewer")
-let img=document.getElementById("viewerImg")
-
-img.src=src
-
-viewer.style.display="flex"
-
-}
-
-document.getElementById("viewer").onclick=function(){
-
-this.style.display="none"
-
-}
+/* logout */
 
 function logout(){
 
@@ -311,5 +237,4 @@ location.reload()
 </script>
 
 </body>
-
 </html>
