@@ -13,6 +13,8 @@ gender:String,
 
 email:String,
 
+password:String,
+
 role:{
 type:String,
 default:"user"
