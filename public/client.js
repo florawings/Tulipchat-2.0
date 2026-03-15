@@ -5,19 +5,23 @@ let username = localStorage.getItem("username")
 if(!username){
 
 username = prompt("Enter name")
-
 localStorage.setItem("username",username)
 
 }
 
+document.getElementById("username").innerText=username
+
 socket.emit("join",username)
 
 const messages = document.getElementById("messages")
-const usersDiv = document.getElementById("users")
+
+let blockedUsers=[]
 
 function addMessage(data){
 
-let div = document.createElement("div")
+if(blockedUsers.includes(data.user)) return
+
+let div=document.createElement("div")
 
 if(data.type==="system"){
 
@@ -30,15 +34,7 @@ div.className="message"
 
 if(data.user===username) div.classList.add("my")
 
-if(data.type==="image"){
-
-div.innerHTML="<b>"+data.user+"</b><br><img src='"+data.text+"'>"
-
-}else{
-
-div.innerHTML="<b>"+data.user+"</b>: "+data.text
-
-}
+div.innerText=data.user + ": " + data.text
 
 }
 
@@ -59,8 +55,7 @@ let input=document.getElementById("msgInput")
 
 socket.emit("chat message",{
 user:username,
-text:input.value,
-type:"text"
+text:input.value
 })
 
 input.value=""
@@ -68,6 +63,8 @@ input.value=""
 }
 
 socket.on("users",(list)=>{
+
+let usersDiv=document.getElementById("users")
 
 usersDiv.innerHTML=""
 
@@ -78,17 +75,55 @@ let div=document.createElement("div")
 div.className="user"
 div.innerText=u
 
+div.onclick=()=>openDM(u)
+
 usersDiv.appendChild(div)
 
 })
 
 })
 
-function openImage(){
-document.getElementById("imageUpload").click()
+socket.on("onlineCount",(count)=>{
+
+document.getElementById("onlineCount").innerText=
+count + " users online"
+
+})
+
+function sendGift(g){
+
+socket.emit("send gift",{
+user:username,
+gift:g
+})
+
 }
 
-document.getElementById("imageUpload").addEventListener("change",function(){
+socket.on("gift",(data)=>{
+
+let div=document.createElement("div")
+
+div.className="gift"
+
+div.innerText=data.user + " sent " + data.gift
+
+messages.appendChild(div)
+
+})
+
+socket.on("friend request",(data)=>{
+
+alert(data.from + " sent you a friend request")
+
+})
+
+function blockUser(user){
+
+blockedUsers.push(user)
+
+}
+
+document.getElementById("profileUpload").addEventListener("change",function(){
 
 const file=this.files[0]
 
@@ -96,52 +131,12 @@ const reader=new FileReader()
 
 reader.onload=function(){
 
-socket.emit("chat message",{
-user:username,
-text:reader.result,
-type:"image"
-})
+localStorage.setItem("profilePic",reader.result)
+
+document.getElementById("profileImg").src=reader.result
 
 }
 
 reader.readAsDataURL(file)
 
 })
-
-function openGif(){
-document.getElementById("gifUpload").click()
-}
-
-document.getElementById("gifUpload").addEventListener("change",function(){
-
-const file=this.files[0]
-
-const reader=new FileReader()
-
-reader.onload=function(){
-
-socket.emit("chat message",{
-user:username,
-text:reader.result,
-type:"image"
-})
-
-}
-
-reader.readAsDataURL(file)
-
-})
-
-function toggleEmoji(){
-
-let panel=document.getElementById("emojiPanel")
-
-panel.style.display = panel.style.display==="block"?"none":"block"
-
-}
-
-function addEmoji(e){
-
-document.getElementById("msgInput").value+=e
-
-}
