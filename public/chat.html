@@ -2,31 +2,58 @@
 
 body{
 margin:0;
-font-family:Arial;
-display:flex;
-height:100vh;
-background:#0f0f0f;
+font-family:system-ui;
+background:#121212;
 color:white;
+height:100vh;
+display:flex;
+overflow:hidden;
 }
 
 /* SIDEBAR */
 
 #sidebar{
-width:200px;
-background:black;
+width:240px;
+background:#181818;
 padding:15px;
+display:flex;
+flex-direction:column;
+border-right:1px solid #333;
+}
+
+#logo{
+font-size:20px;
+font-weight:bold;
+color:#b983ff;
+margin-bottom:15px;
 }
 
 .room{
 padding:10px;
-background:#111;
-border-radius:6px;
-margin-bottom:10px;
+margin-bottom:8px;
+background:#222;
+border-radius:8px;
 cursor:pointer;
 }
 
 .room:hover{
-background:#222;
+background:#333;
+}
+
+#users{
+flex:1;
+overflow:auto;
+margin-top:10px;
+}
+
+.user{
+padding:6px;
+border-bottom:1px solid #333;
+cursor:pointer;
+}
+
+.user:hover{
+background:#2c2c2c;
 }
 
 /* CHAT AREA */
@@ -35,31 +62,45 @@ background:#222;
 flex:1;
 display:flex;
 flex-direction:column;
-max-width:700px;
-margin:auto;
+height:100vh;
 }
 
 #topbar{
-background:#000;
-padding:12px;
+background:#181818;
+padding:10px;
+border-bottom:1px solid #333;
+}
+
+#roomName{
+color:#b983ff;
+font-weight:bold;
+}
+
+#typing{
+font-size:12px;
+color:#999;
+padding-left:10px;
 }
 
 #messages{
 flex:1;
 overflow:auto;
 padding:15px;
+display:flex;
+flex-direction:column;
+gap:8px;
 }
 
 .msg{
-background:#1f1f1f;
+background:#232323;
 padding:10px;
 border-radius:10px;
-margin-bottom:10px;
+max-width:70%;
 }
 
 .msg img{
 max-width:220px;
-border-radius:10px;
+border-radius:8px;
 margin-top:5px;
 }
 
@@ -68,39 +109,47 @@ margin-top:5px;
 #input{
 display:flex;
 padding:10px;
-background:black;
+background:#181818;
+border-top:1px solid #333;
 }
 
 #text{
 flex:1;
 padding:10px;
-border-radius:20px;
 border:none;
+border-radius:20px;
 outline:none;
+background:#2b2b2b;
+color:white;
 }
 
 button{
-margin-left:5px;
-padding:10px;
+margin-left:6px;
 border:none;
-background:#ff4da6;
+padding:10px 14px;
+background:#b983ff;
 color:white;
-border-radius:6px;
+border-radius:8px;
 cursor:pointer;
+}
+
+button:hover{
+background:#a36dff;
 }
 
 #progress{
 font-size:12px;
 margin-left:10px;
+color:#b983ff;
 }
 
-</style></head><body><div id="sidebar"><h3 style="color:#ff4da6">Tulip Chat</h3><div class="room" onclick="joinRoom('normal')">
+</style></head><body><div id="sidebar"><div id="logo">Tulip Chat</div><div class="room" onclick="joinRoom('normal')">
 Normal Room
 </div><div class="room" onclick="adultRoom()">
 Adult Room
-</div></div><div id="chat"><div id="topbar">
+</div><h4>Online Users</h4><div id="users"></div></div><div id="chat"><div id="topbar">
 <span id="roomName">Normal Room</span>
-</div><div id="messages"></div><div id="input"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
+</div><div id="typing"></div><div id="messages"></div><div id="input"><input id="text" placeholder="Type message"><button onclick="send()">Send</button>
 
 <input type="file" id="file" accept="image/*"><span id="progress"></span>
 
@@ -122,6 +171,8 @@ let room="normal"
 
 socket.emit("join",{user:username,room})
 
+/* ROOM JOIN */
+
 function joinRoom(r){
 
 room=r
@@ -132,9 +183,11 @@ socket.emit("join",{user:username,room})
 
 }
 
+/* ADULT WARNING */
+
 function adultRoom(){
 
-let ok=confirm("18+ only. Continue?")
+let ok=confirm("18+ room. Continue?")
 
 if(ok){
 joinRoom("adult")
@@ -142,7 +195,7 @@ joinRoom("adult")
 
 }
 
-/* SEND TEXT */
+/* SEND MESSAGE */
 
 function send(){
 
@@ -164,13 +217,80 @@ document.getElementById("text").value=""
 
 socket.on("message",(data)=>{
 
-let div=document.createElement("div")
+let box=document.createElement("div")
 
-div.className="msg"
+box.className="msg"
 
-div.innerHTML="<b>"+data.user+"</b>: "+data.msg
+box.innerHTML="<b>"+data.user+"</b><br>"+data.msg
 
-document.getElementById("messages").appendChild(div)
+document.getElementById("messages").appendChild(box)
+
+document.getElementById("messages").scrollTop=
+document.getElementById("messages").scrollHeight
+
+})
+
+/* ONLINE USERS */
+
+socket.on("onlineUsers",(list)=>{
+
+let box=document.getElementById("users")
+
+box.innerHTML=""
+
+for(let id in list){
+
+let u=document.createElement("div")
+
+u.className="user"
+
+u.innerText=list[id]
+
+u.onclick=()=>{
+
+let msg=prompt("Send DM to "+list[id])
+
+if(msg){
+
+socket.emit("dm",{
+to:id,
+from:username,
+msg
+})
+
+}
+
+}
+
+box.appendChild(u)
+
+}
+
+})
+
+/* DM RECEIVE */
+
+socket.on("dm",(data)=>{
+
+alert("DM from "+data.from+": "+data.msg)
+
+})
+
+/* TYPING */
+
+document.getElementById("text").addEventListener("input",()=>{
+
+socket.emit("typing",{user:username,room})
+
+})
+
+socket.on("typing",(user)=>{
+
+document.getElementById("typing").innerText=user+" typing..."
+
+setTimeout(()=>{
+document.getElementById("typing").innerText=""
+},2000)
 
 })
 
@@ -201,13 +321,9 @@ xhr.onload=()=>{
 let res=JSON.parse(xhr.responseText)
 
 socket.emit("message",{
-
 user:username,
-
 msg:'<img src="'+res.url+'">',
-
 room
-
 })
 
 document.getElementById("progress").innerText=""
