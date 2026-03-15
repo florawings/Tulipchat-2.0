@@ -1,56 +1,29 @@
 body{
 margin:0;
-font-family:Arial;
 height:100vh;
 display:flex;
-flex-direction:column;
+font-family:Arial;
+background:#0f0f0f;
 color:white;
-
-background:
-linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.6)),
-url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee");
-
-background-size:cover;
-}
-
-#header{
-height:55px;
-background:#000;
-display:flex;
-align-items:center;
-padding:0 15px;
-}
-
-#menuBtn{
-font-size:22px;
-cursor:pointer;
-margin-right:10px;
-}
-
-#online{
-margin-left:auto;
-font-size:14px;
+overflow:hidden;
 }
 
 #sidebar{
-position:fixed;
-left:-220px;
-top:55px;
-bottom:0;
-width:220px;
+width:200px;
 background:#111;
-transition:.3s;
 padding:10px;
 }
 
-#sidebar.show{
-left:0;
+.room{
+padding:10px;
+border-bottom:1px solid #222;
+cursor:pointer;
 }
 
-.menuItem{
-padding:12px;
-border-bottom:1px solid #333;
-cursor:pointer;
+#chat{
+flex:1;
+display:flex;
+flex-direction:column;
 }
 
 #messages{
@@ -59,12 +32,12 @@ overflow-y:auto;
 padding:15px;
 }
 
-.message{
+.msg{
 background:#1c1c1c;
 padding:10px;
 border-radius:10px;
 margin-bottom:10px;
-max-width:75%;
+max-width:70%;
 }
 
 .system{
@@ -72,19 +45,13 @@ opacity:.7;
 font-style:italic;
 }
 
-.media{
-max-width:220px;
-border-radius:10px;
-}
-
-#inputBar{
+#input{
 display:flex;
 padding:10px;
 background:#000;
-gap:6px;
 }
 
-#msgInput{
+#text{
 flex:1;
 padding:10px;
 border-radius:20px;
@@ -92,9 +59,10 @@ border:none;
 }
 
 button{
+margin-left:5px;
 padding:10px;
-border:none;
 background:#ff2e63;
+border:none;
 color:white;
 border-radius:8px;
 }
