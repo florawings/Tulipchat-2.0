@@ -1,28 +1,32 @@
 <!DOCTYPE html><html>
-<head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tulip Chat</title><style>
+<head><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tulip Chat</title><style>
 
 body{
 margin:0;
 font-family:system-ui;
-background:#120014;
+background:#140014;
 color:white;
 height:100vh;
+display:flex;
+flex-direction:column;
 overflow:hidden;
 }
 
-/* TOP BAR */
+/* TOPBAR */
 
 #topbar{
+height:55px;
 background:linear-gradient(90deg,#ff4da6,#c44dff);
-padding:12px;
 display:flex;
 align-items:center;
-gap:10px;
+padding:0 12px;
 font-weight:bold;
 }
 
 #menu{
 font-size:22px;
+margin-right:10px;
 cursor:pointer;
 }
 
@@ -30,14 +34,15 @@ cursor:pointer;
 
 #sidebar{
 position:fixed;
-left:-260px;
 top:0;
+left:-260px;
 width:260px;
 height:100%;
-background:#1b001b;
+background:#1a001a;
 padding:15px;
 transition:0.3s;
 overflow:auto;
+z-index:10;
 }
 
 #sidebar.open{
@@ -45,21 +50,21 @@ left:0;
 }
 
 .user{
+background:#2c002c;
 padding:10px;
 border-radius:8px;
 margin-bottom:6px;
-background:#300030;
 cursor:pointer;
 }
 
 .user:hover{
-background:#520052;
+background:#500050;
 }
 
-/* CHAT AREA */
+/* CHAT */
 
 #messages{
-height:calc(100vh - 120px);
+flex:1;
 overflow:auto;
 padding:10px;
 display:flex;
@@ -82,19 +87,18 @@ align-self:flex-end;
 }
 
 .other{
-background:#2c2c2c;
+background:#333;
 align-self:flex-start;
 }
 
-/* INPUT */
+/* INPUT BAR */
 
 #inputbar{
-position:fixed;
-bottom:0;
-width:100%;
+height:60px;
 background:#1a001a;
-padding:10px;
 display:flex;
+align-items:center;
+padding:0 8px;
 gap:6px;
 }
 
@@ -108,7 +112,7 @@ color:white;
 }
 
 button{
-padding:10px 16px;
+padding:10px 14px;
 border:none;
 border-radius:20px;
 background:linear-gradient(90deg,#ff4da6,#c44dff);
@@ -118,20 +122,20 @@ cursor:pointer;
 
 #progress{
 font-size:12px;
-padding-left:6px;
 }
 
-/* DM MODAL */
+/* DM WINDOW */
 
-#dmModal{
+#dmWindow{
 position:fixed;
 top:0;
 left:0;
 width:100%;
 height:100%;
-background:rgba(0,0,0,0.8);
+background:#0a000a;
 display:none;
 flex-direction:column;
+z-index:20;
 }
 
 #dmTop{
@@ -145,9 +149,13 @@ justify-content:space-between;
 flex:1;
 overflow:auto;
 padding:10px;
+display:flex;
+flex-direction:column;
+gap:8px;
 }
 
 #dmInput{
+height:60px;
 display:flex;
 padding:10px;
 gap:6px;
@@ -161,9 +169,9 @@ Tulip Chat
 
 <input type="file" id="file"><span id="progress"></span>
 
-</div><!-- DM WINDOW --><div id="dmModal"><div id="dmTop"><span id="dmUser"></span>
+</div><!-- DM --><div id="dmWindow"><div id="dmTop"><span id="dmUser"></span>
 
-<button onclick="closeDM()">X</button>
+<button onclick="closeDM()">Back</button>
 
 </div><div id="dmMessages"></div><div id="dmInput"><input id="dmText" placeholder="DM message"><button onclick="sendDM()">Send</button>
 
@@ -175,17 +183,15 @@ let username=localStorage.getItem("username")
 let gender=localStorage.getItem("gender")
 let age=localStorage.getItem("age")
 
-/* LOGIN */
-
 if(!username){
 
- username=prompt("Enter name")
- age=prompt("Enter age")
- gender=prompt("Gender (Male/Female)")
+username=prompt("Enter name")
+age=prompt("Enter age")
+gender=prompt("Gender (Male/Female)")
 
- localStorage.setItem("username",username)
- localStorage.setItem("age",age)
- localStorage.setItem("gender",gender)
+localStorage.setItem("username",username)
+localStorage.setItem("age",age)
+localStorage.setItem("gender",gender)
 
 }
 
@@ -197,33 +203,38 @@ const menu=document.getElementById("menu")
 const sidebar=document.getElementById("sidebar")
 
 menu.onclick=()=>{
- sidebar.classList.toggle("open")
+
+sidebar.classList.toggle("open")
+
 }
 
-/* SEND PUBLIC MESSAGE */
+/* PUBLIC MESSAGE */
 
 function send(){
 
- let text=document.getElementById("text").value
- if(!text)return
+let text=document.getElementById("text").value
 
- socket.emit("message",{user:username,msg:text})
+if(!text)return
 
- document.getElementById("text").value=""
+socket.emit("message",{user:username,msg:text})
+
+document.getElementById("text").value=""
 
 }
 
-/* RECEIVE MESSAGE */
+/* RECEIVE */
 
 socket.on("message",(data)=>{
 
- let div=document.createElement("div")
+let div=document.createElement("div")
 
- div.className="msg "+(data.user===username?"me":"other")
+div.className="msg "+(data.user===username?"me":"other")
 
- div.innerText=data.user+": "+data.msg
+div.innerText=data.user+": "+data.msg
 
- document.getElementById("messages").appendChild(div)
+document.getElementById("messages").appendChild(div)
+
+document.getElementById("messages").scrollTop=999999
 
 })
 
@@ -231,24 +242,23 @@ socket.on("message",(data)=>{
 
 socket.on("online",(list)=>{
 
- let box=document.getElementById("users")
- box.innerHTML=""
+let box=document.getElementById("users")
 
- for(let id in list){
+box.innerHTML=""
 
-  let u=document.createElement("div")
+for(let id in list){
 
-  u.className="user"
+let u=document.createElement("div")
 
-  u.innerText=list[id].name+" ("+list[id].gender+")"
+u.className="user"
 
-  u.onclick=()=>{
-   openDM(id,list[id].name)
-  }
+u.innerText=list[id].name+" ("+list[id].gender+")"
 
-  box.appendChild(u)
+u.onclick=()=>openDM(id,list[id].name)
 
- }
+box.appendChild(u)
+
+}
 
 })
 
@@ -258,77 +268,77 @@ let currentDM=null
 
 function openDM(id,name){
 
- currentDM=id
+currentDM=id
 
- document.getElementById("dmModal").style.display="flex"
+document.getElementById("dmWindow").style.display="flex"
 
- document.getElementById("dmUser").innerText=name
+document.getElementById("dmUser").innerText=name
 
- document.getElementById("dmMessages").innerHTML=""
+document.getElementById("dmMessages").innerHTML=""
 
 }
 
 function closeDM(){
 
- document.getElementById("dmModal").style.display="none"
+document.getElementById("dmWindow").style.display="none"
 
 }
 
 function sendDM(){
 
- let text=document.getElementById("dmText").value
+let text=document.getElementById("dmText").value
 
- socket.emit("dm",{to:currentDM,msg:text,user:username})
+if(!text)return
 
- document.getElementById("dmText").value=""
+socket.emit("dm",{to:currentDM,user:username,msg:text})
+
+document.getElementById("dmText").value=""
 
 }
 
-/* RECEIVE DM */
-
 socket.on("dm",(data)=>{
 
- let div=document.createElement("div")
+let div=document.createElement("div")
 
- div.className="msg "+(data.user===username?"me":"other")
+div.className="msg "+(data.user===username?"me":"other")
 
- div.innerText=data.user+": "+data.msg
+div.innerText=data.user+": "+data.msg
 
- document.getElementById("dmMessages").appendChild(div)
+document.getElementById("dmMessages").appendChild(div)
 
 })
 
 /* FILE UPLOAD */
 
-document.getElementById("file").onchange=async function(){
+document.getElementById("file").onchange=function(){
 
- let file=this.files[0]
+let file=this.files[0]
 
- let form=new FormData()
+let form=new FormData()
 
- form.append("file",file)
+form.append("file",file)
 
- let xhr=new XMLHttpRequest()
+let xhr=new XMLHttpRequest()
 
- xhr.open("POST","/upload")
+xhr.open("POST","/upload")
 
- xhr.upload.onprogress=(e)=>{
+xhr.upload.onprogress=(e)=>{
 
-  let percent=Math.round((e.loaded/e.total)*100)
+let percent=Math.round((e.loaded/e.total)*100)
 
-  document.getElementById("progress").innerText=percent+"%"
+document.getElementById("progress").innerText=percent+"%"
 
- }
+}
 
- xhr.onload=()=>{
+xhr.onload=()=>{
 
-  let res=JSON.parse(xhr.response)
+let res=JSON.parse(xhr.response)
 
-  socket.emit("message",{user:username,msg:res.url})
+socket.emit("message",{user:username,msg:res.url})
 
- }
+}
 
- xhr.send(form)
+xhr.send(form)
 
 }
 
