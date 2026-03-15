@@ -6,30 +6,51 @@ const io = require("socket.io")(http)
 const User = require("./models/User")
 
 app.use(express.json())
-app.use(express.urlencoded({extended:true}))
 app.use(express.static("public"))
 
-const OWNER = "Lord_lucifer"
-const SUPERADMIN = "Garima"
+let onlineUsers=[]
 
-let onlineUsers = []
+/* REGISTER */
+
+app.post("/register",async(req,res)=>{
+
+const {username,age,gender,email}=req.body
+
+let exist = await User.findOne({username})
+
+if(exist){
+
+return res.json({msg:"Username already exists"})
+
+}
+
+await User.create({
+
+username,
+age,
+gender,
+email
+
+})
+
+res.json({msg:"registered"})
+
+})
+
+/* SOCKET */
 
 io.on("connection",(socket)=>{
 
-const ip = socket.handshake.address
-
 socket.on("join",(data)=>{
 
-socket.username = data.username
-socket.gender = data.gender
-socket.role = data.role
+socket.username=data.username
+socket.role=data.role
 
 onlineUsers.push({
+
 id:socket.id,
-username:data.username,
-gender:data.gender,
-role:data.role,
-ip:ip
+username:data.username
+
 })
 
 io.emit("onlineUsers",onlineUsers)
@@ -38,45 +59,24 @@ io.emit("onlineUsers",onlineUsers)
 
 socket.on("message",(data)=>{
 
-if(data.msg === "/clear"){
+if(data.msg==="/clear"){
 
-if(data.role==="owner" || data.role==="superadmin"){
 io.emit("clearChat")
-}
-
 return
+
 }
 
 io.emit("message",data)
 
 })
 
-socket.on("blockUser",async(data)=>{
-
-await User.updateOne(
-{username:data.blocker},
-{$push:{blocked:data.target}}
-)
-
-})
-
 socket.on("disconnect",()=>{
 
-onlineUsers = onlineUsers.filter(u=>u.id !== socket.id)
+onlineUsers = onlineUsers.filter(u=>u.id!==socket.id)
 
 io.emit("onlineUsers",onlineUsers)
 
 })
-
-})
-
-/* ADMIN DATA */
-
-app.get("/admin/users",async(req,res)=>{
-
-const users = await User.find()
-
-res.json(users)
 
 })
 
