@@ -1,23 +1,23 @@
 <!DOCTYPE html><html>
-<head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Tulip Chat</title><style>
+<head><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tulip Chat</title><style>
 
 *{
-box-sizing:border-box;
 margin:0;
 padding:0;
+box-sizing:border-box;
 font-family:Arial;
 }
 
 body{
 
-height:100dvh;
+height:100vh;
 display:flex;
 flex-direction:column;
 
 background:
-linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),
-url("https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2");
+linear-gradient(rgba(0,0,0,0.55),rgba(0,0,0,0.55)),
+url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee");
 
 background-size:cover;
 background-position:center;
@@ -31,92 +31,20 @@ color:white;
 #header{
 
 height:55px;
+background:#111;
+
 display:flex;
 align-items:center;
 
-background:#ff3b6b;
-
 padding:0 15px;
-
-font-weight:bold;
 
 }
 
 #menuBtn{
 
 font-size:22px;
-margin-right:10px;
+margin-right:15px;
 cursor:pointer;
-
-}
-
-/* sidebar */
-
-#sidebar{
-
-position:fixed;
-left:-260px;
-top:0;
-
-width:260px;
-height:100%;
-
-background:rgba(0,0,0,0.9);
-
-padding:20px;
-
-transition:0.3s;
-
-z-index:10;
-
-}
-
-#sidebar.show{
-left:0;
-}
-
-#overlay{
-
-position:fixed;
-top:0;
-left:0;
-
-width:100%;
-height:100%;
-
-background:rgba(0,0,0,0.5);
-
-display:none;
-
-z-index:9;
-
-}
-
-#overlay.show{
-display:block;
-}
-
-/* users */
-
-#userList{
-list-style:none;
-margin-top:15px;
-}
-
-#userList li{
-
-padding:8px;
-border-radius:6px;
-cursor:pointer;
-
-display:flex;
-justify-content:space-between;
-
-}
-
-#userList li:hover{
-
-background:rgba(255,255,255,0.15);
 
 }
 
@@ -126,6 +54,7 @@ background:rgba(255,255,255,0.15);
 
 flex:1;
 overflow-y:auto;
+
 padding:15px;
 
 }
@@ -134,29 +63,42 @@ padding:15px;
 
 .message{
 
+display:flex;
+
+margin-bottom:12px;
+
+}
+
+.avatar{
+
+width:40px;
+height:40px;
+
+border-radius:50%;
+
+background:#444;
+
+margin-right:10px;
+
+}
+
+.bubble{
+
+background:rgba(0,0,0,0.65);
+
+padding:10px 12px;
+
+border-radius:10px;
+
 max-width:75%;
-padding:10px 14px;
-
-border-radius:14px;
-
-margin-bottom:10px;
-
-background:rgba(255,255,255,0.2);
 
 }
 
-.me{
+.name{
 
-background:#ff3b6b;
-margin-left:auto;
+font-weight:bold;
 
-}
-
-.system{
-
-text-align:center;
-font-size:13px;
-opacity:0.8;
+color:#ffb84d;
 
 }
 
@@ -164,21 +106,11 @@ opacity:0.8;
 
 .chatMedia{
 
-max-width:230px;
+max-width:240px;
 
-border-radius:10px;
+border-radius:8px;
 
 margin-top:6px;
-
-}
-
-/* typing */
-
-#typing{
-
-font-size:12px;
-opacity:0.8;
-padding-left:15px;
 
 }
 
@@ -187,17 +119,23 @@ padding-left:15px;
 #inputArea{
 
 display:flex;
+
 padding:10px;
-background:rgba(0,0,0,0.75);
+
+background:rgba(0,0,0,0.8);
 
 }
 
 #msgInput{
 
 flex:1;
+
 padding:10px;
-border:none;
+
 border-radius:20px;
+
+border:none;
+
 outline:none;
 
 }
@@ -210,49 +148,114 @@ padding:8px 12px;
 
 border:none;
 
+border-radius:8px;
+
 background:#ff3b6b;
 
 color:white;
-
-border-radius:8px;
 
 cursor:pointer;
 
 }
 
-#uploadStatus{
+/* sidebar */
 
-font-size:12px;
+#sidebar{
 
-padding-left:15px;
+position:fixed;
+
+top:0;
+left:-260px;
+
+width:260px;
+height:100%;
+
+background:rgba(0,0,0,0.9);
+
+padding:15px;
+
+transition:0.3s;
+
+z-index:10;
 
 }
 
-.friendBtn{
+#sidebar.show{
 
-background:#4CAF50;
+left:0;
 
 }
 
-</style></head><body><div id="sidebar"><h3>Online Users</h3><p id="onlineCount">0 users online</p><ul id="userList"></ul></div><div id="overlay" onclick="closeMenu()"></div><div id="header"><span id="menuBtn" onclick="toggleMenu()">☰</span>
+.menuItem{
+
+padding:10px;
+
+border-bottom:1px solid rgba(255,255,255,0.1);
+
+cursor:pointer;
+
+}
+
+/* profile panel */
+
+#profilePanel{
+
+position:fixed;
+
+right:-260px;
+top:0;
+
+width:260px;
+height:100%;
+
+background:rgba(0,0,0,0.9);
+
+padding:15px;
+
+transition:0.3s;
+
+z-index:10;
+
+}
+
+#profilePanel.show{
+
+right:0;
+
+}
+
+</style></head><body><div id="sidebar"><h3>Current room</h3><div class="menuItem">Adult room</div>
+<div class="menuItem">Room list</div>
+<div class="menuItem">Friends wall</div>
+<div class="menuItem">News</div>
+<div class="menuItem">Games</div>
+<div class="menuItem">Leaderboard</div>
+<div class="menuItem">Rules</div>
+<div class="menuItem">Support ticket</div></div><div id="profilePanel"><h3>Profile</h3><div class="menuItem">Chat options</div>
+<div class="menuItem">Level info</div>
+<div class="menuItem">Wallet</div>
+<div class="menuItem">Admin panel</div>
+<div class="menuItem">Reload</div>
+<div class="menuItem">Leave room</div>
+<div class="menuItem">Logout</div></div><div id="header"><span id="menuBtn" onclick="toggleMenu()">☰</span>
 
 Tulip Chat
 
-</div><div id="messages"></div><div id="typing"></div><div id="uploadStatus"></div><div id="inputArea"><input id="msgInput" placeholder="Type message"><button onclick="sendMsg()">Send</button>
+<span style="margin-left:auto;cursor:pointer" onclick="toggleProfile()">⚙</span>
 
-<button onclick="addEmoji()">😀</button>
+</div><div id="messages"></div><div id="inputArea"><input id="msgInput" placeholder="Type here"><button onclick="sendMsg()">Send</button>
 
 <input type="file" id="fileInput" accept="image/*,video/*,image/gif" style="display:none"><button onclick="fileInput.click()">📷</button>
 
 </div><script src="/socket.io/socket.io.js"></script><script>
 
-const socket = io()
+const socket=io()
 
-let username = localStorage.getItem("username")
+let username=localStorage.getItem("username")
 
 if(!username){
 
-username = prompt("Enter name")
+username=prompt("Enter name")
 
 localStorage.setItem("username",username)
 
@@ -260,45 +263,39 @@ localStorage.setItem("username",username)
 
 socket.emit("join",username)
 
-/* menu */
+/* menus */
 
 function toggleMenu(){
 
 sidebar.classList.toggle("show")
-overlay.classList.toggle("show")
 
 }
 
-function closeMenu(){
+function toggleProfile(){
 
-sidebar.classList.remove("show")
-overlay.classList.remove("show")
+profilePanel.classList.toggle("show")
 
 }
 
 /* message */
 
-function addMessage(html,type=""){
+function addMsg(user,msg){
 
 let div=document.createElement("div")
 
-div.className="message "+type
+div.className="message"
 
-div.innerHTML=html
+div.innerHTML=`
+<div class="avatar"></div>
+<div class="bubble">
+<div class="name">${user}</div>
+${msg}
+</div>
+`
 
 messages.appendChild(div)
 
 messages.scrollTop=messages.scrollHeight
-
-}
-
-/* time */
-
-function getTime(){
-
-let d=new Date()
-
-return d.getHours()+":"+("0"+d.getMinutes()).slice(-2)
 
 }
 
@@ -308,15 +305,9 @@ function sendMsg(){
 
 let msg=msgInput.value
 
-if(msg=="") return
+if(msg=="")return
 
-socket.emit("chat message",{
-
-user:username,
-msg:msg,
-time:getTime()
-
-})
+socket.emit("chat message",{user:username,msg:msg})
 
 msgInput.value=""
 
@@ -326,163 +317,47 @@ msgInput.value=""
 
 socket.on("chat message",(data)=>{
 
-let type=""
-
-if(data.user===username) type="me"
-
-addMessage("<b>"+data.user+"</b> "+data.time+"<br>"+data.msg,type)
-
-})
-
-/* system */
-
-socket.on("system",(msg)=>{
-
-addMessage(msg,"system")
-
-})
-
-/* users */
-
-socket.on("user list",(users)=>{
-
-onlineCount.innerText=users.length+" users online"
-
-userList.innerHTML=""
-
-users.forEach(u=>{
-
-let li=document.createElement("li")
-
-li.innerHTML=u+" <span><button onclick='sendDM(\""+u+"\")'>DM</button> <button class='friendBtn' onclick='sendFriend(\""+u+"\")'>Add</button></span>"
-
-userList.appendChild(li)
-
-})
-
-})
-
-/* dm */
-
-function sendDM(user){
-
-let msg=prompt("DM "+user)
-
-if(!msg) return
-
-socket.emit("private message",{
-
-from:username,
-to:user,
-msg:msg
-
-})
-
-}
-
-/* friend */
-
-function sendFriend(user){
-
-alert("Friend request sent to "+user)
-
-}
-
-/* emoji */
-
-function addEmoji(){
-
-msgInput.value+="😊"
-
-}
-
-/* typing */
-
-msgInput.addEventListener("input",()=>{
-
-socket.emit("typing",username)
-
-})
-
-socket.on("typing",(user)=>{
-
-typing.innerText=user+" is typing..."
-
-setTimeout(()=>typing.innerText="",1500)
+addMsg(data.user,data.msg)
 
 })
 
 /* upload */
 
-fileInput.addEventListener("change",function(){
+fileInput.onchange=function(){
 
 let file=this.files[0]
-
-if(!file) return
 
 let form=new FormData()
 
 form.append("image",file)
 
-let xhr=new XMLHttpRequest()
+fetch("/upload",{method:"POST",body:form})
 
-xhr.open("POST","/upload")
+.then(r=>r.json())
 
-xhr.upload.onprogress=function(e){
-
-if(e.lengthComputable){
-
-let percent=Math.round((e.loaded/e.total)*100)
-
-uploadStatus.innerText="Uploading "+percent+"%"
-
-}
-
-}
-
-xhr.onload=function(){
-
-uploadStatus.innerText=""
-
-let data=JSON.parse(xhr.responseText)
+.then(data=>{
 
 let url=data.url
 
-let ext=url.split('.').pop().toLowerCase()
+let ext=url.split('.').pop()
 
 let media=""
 
-if(ext==="gif"){
+if(ext==="mp4"){
 
-media="<img class='chatMedia' src='"+url+"'>"
+media=`<video class="chatMedia" controls autoplay loop src="${url}"></video>`
 
-}
+}else{
 
-else if(ext==="mp4" || ext==="webm"){
-
-media="<video class='chatMedia' autoplay loop controls src='"+url+"'></video>"
+media=`<img class="chatMedia" src="${url}">`
 
 }
 
-else{
-
-media="<img class='chatMedia' src='"+url+"'>"
-
-}
-
-socket.emit("chat message",{
-
-user:username,
-msg:media,
-time:getTime()
+socket.emit("chat message",{user:username,msg:media})
 
 })
 
 }
-
-xhr.send(form)
-
-})
 
 </script></body>
 </html>
