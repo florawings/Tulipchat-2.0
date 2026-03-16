@@ -3,158 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tulip Pro | Master</title>
+    <title>Tulip Pro | Owner Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #f43f5e;
-            --owner-gold: #fbbf24;
-            --glass: rgba(15, 23, 42, 0.7);
-            --sidebar-bg: rgba(15, 23, 42, 0.85);
-        }
-
-        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        :root { --primary: #f43f5e; --owner-gold: #fbbf24; --glass: rgba(15, 23, 42, 0.85); }
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
 
         body {
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+            margin: 0; height: 100vh; display: flex; flex-direction: column;
             background: #000 url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200') no-repeat center center fixed;
-            background-size: cover;
-            overflow: hidden;
-            color: #f8fafc;
+            background-size: cover; overflow: hidden; color: #f8fafc;
         }
 
         /* --- SLIM HEADER --- */
         header {
-            height: 55px;
-            background: var(--glass);
-            backdrop-filter: blur(15px);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 1100;
+            height: 55px; background: var(--glass); backdrop-filter: blur(15px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 1100;
         }
 
-        .brand { font-weight: 600; font-size: 18px; letter-spacing: 1px; }
-        .brand span { color: var(--primary); }
-
-        /* --- LAYOUT ENGINE --- */
-        #main-container { display: flex; flex: 1; overflow: hidden; }
-
-        /* --- GLASS SIDEBAR --- */
+        /* --- SIDEBAR FIX (SLIDER) --- */
         #sidebar {
-            background: var(--sidebar-bg);
-            backdrop-filter: blur(25px);
-            transition: 0.4s ease;
-            z-index: 2000;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid rgba(255,255,255,0.1);
+            position: fixed; left: -100%; top: 0; width: 280px; height: 100%;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2000;
+            padding: 20px; display: flex; flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+        }
+        #sidebar.open { left: 0; }
+
+        /* PC View: Sidebar hamesha nahi dikhega jab tak click na ho (Slider Fix) */
+        @media screen and (min-width: 1024px) {
+            #sidebar.open { left: 0; position: fixed; }
         }
 
-        /* Mobile Adjustments */
-        @media screen and (max-width: 767px) {
-            #sidebar { position: fixed; left: -100%; width: 75%; height: 100%; }
-            #sidebar.open { left: 0; box-shadow: 20px 0 50px rgba(0,0,0,0.5); }
-            .msg { max-width: 85%; }
+        /* --- OWNER PANEL STYLING --- */
+        #owner-panel {
+            display: none; background: rgba(251, 191, 36, 0.1);
+            border: 1px solid var(--owner-gold); border-radius: 12px;
+            padding: 10px; margin-top: 15px; font-size: 12px;
+        }
+        .admin-btn {
+            width: 100%; padding: 8px; margin-top: 5px;
+            background: var(--owner-gold); color: black;
+            border: none; border-radius: 5px; font-weight: bold; cursor: pointer;
         }
 
-        /* PC Adjustments */
-        @media screen and (min-width: 768px) {
-            #sidebar { position: static; width: 280px; left: 0; }
-            #sidebar-toggle { display: none; }
-            .msg { max-width: 60%; }
-        }
+        /* --- CHAT AREA --- */
+        #chat-section { flex: 1; display: flex; flex-direction: column; background: rgba(0,0,0,0.2); }
+        #chat-scroller { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
 
-        /* --- MODERN CHAT BUBBLES --- */
-        #chat-scroller {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            background: rgba(0,0,0,0.2);
-        }
+        .msg { padding: 10px 14px; border-radius: 18px; font-size: 14px; animation: pop 0.2s; }
+        @keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .msg.me { align-self: flex-end; background: linear-gradient(135deg, #f43f5e, #fb7185); border-bottom-right-radius: 2px; }
+        .msg.other { align-self: flex-start; background: rgba(255,255,255,0.15); border-bottom-left-radius: 2px; }
 
-        .msg {
-            padding: 10px 14px;
-            border-radius: 18px;
-            font-size: 14px;
-            position: relative;
-            animation: popIn 0.2s ease-out;
-            backdrop-filter: blur(8px);
-        }
-
-        @keyframes popIn { from { opacity:0; transform: scale(0.9); } to { opacity:1; transform: scale(1); } }
-
-        .msg.me {
-            align-self: flex-end;
-            background: linear-gradient(135deg, #f43f5e 0%, #fb7185 100%);
-            border-bottom-right-radius: 2px;
-            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
-        }
-
-        .msg.other {
-            align-self: flex-start;
-            background: rgba(255, 255, 255, 0.12);
-            border-bottom-left-radius: 2px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        /* FIX: Undefined Name Solution */
-        .u-name { font-size: 11px; font-weight: 600; margin-bottom: 2px; display: block; opacity: 0.9; }
-        .u-name.owner { color: var(--owner-gold); text-shadow: 0 0 8px rgba(251,191,36,0.4); }
-
-        /* --- INPUT AREA --- */
-        .input-area {
-            padding: 12px;
-            background: var(--glass);
-            display: flex;
-            gap: 10px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        #msgIn {
-            flex: 1;
-            padding: 10px 18px;
-            border-radius: 25px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.05);
-            color: white;
-            outline: none;
-        }
-
-        #sendBtn {
-            background: var(--primary);
-            border: none;
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            color: white;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
-        }
-
-        .user-item {
-            padding: 10px;
-            margin-bottom: 6px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: 0.2s;
-        }
-        .user-item:hover { background: rgba(255,255,255,0.1); }
-        .user-item.owner-gold { border-left: 3px solid var(--owner-gold); }
+        .input-area { padding: 12px; background: var(--glass); display: flex; gap: 10px; }
+        #msgIn { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.2); background: none; color: white; }
+        #sendBtn { background: var(--primary); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; }
 
         #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1500; }
+        .user-item { padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 5px; cursor: pointer; display: flex; gap: 10px; align-items: center; }
     </style>
 </head>
 <body>
@@ -162,24 +72,33 @@
 <div id="overlay" onclick="toggleSidebar()"></div>
 
 <header>
-    <div id="sidebar-toggle" onclick="toggleSidebar()" style="font-size:22px; cursor:pointer;">☰</div>
-    <div class="brand">TULIP <span>PRO</span></div>
-    <div id="status" style="font-size:10px; color:var(--owner-gold); font-weight:600;">Public Room</div>
+    <div onclick="toggleSidebar()" style="font-size:24px; cursor:pointer;">☰</div>
+    <div style="font-weight:600;">TULIP <span style="color:var(--primary)">PRO</span></div>
+    <div id="room-status" style="font-size:10px; color:var(--owner-gold);">Public</div>
 </header>
 
-<div id="main-container">
-    <div id="sidebar">
-        <h3 style="color:var(--primary); font-size:16px; margin:0 0 15px 0;">Online Users</h3>
-        <div id="online-list" style="flex:1; overflow-y:auto;"></div>
-        <button onclick="location.href='index.html'" style="margin-top:10px; width:100%; padding:10px; background:rgba(244,63,94,0.1); color:var(--primary); border:1px solid var(--primary); border-radius:10px; font-weight:600;">🚪 LOGOUT</button>
+<div id="sidebar">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="color:var(--primary); margin:0;">Online</h3>
+        <span onclick="toggleSidebar()" style="font-size:24px; cursor:pointer;">&times;</span>
     </div>
 
-    <div id="chat-section" style="flex:1; display:flex; flex-direction:column;">
-        <div id="chat-scroller"></div>
-        <div class="input-area">
-            <input type="text" id="msgIn" placeholder="Write something..." autocomplete="off">
-            <button id="sendBtn" onclick="send()">➤</button>
-        </div>
+    <div id="online-list" style="flex:1; overflow-y:auto; margin-top:20px;"></div>
+
+    <div id="owner-panel">
+        <p style="margin:0 0 5px 0; font-weight:bold; color:var(--owner-gold);">👑 OWNER DASHBOARD</p>
+        <button class="admin-btn" onclick="socket.emit('adminClear')">Clear All Chat</button>
+        <button class="admin-btn" style="background:#ef4444; color:white;" onclick="alert('Kick System Loading...')">Kick Users</button>
+    </div>
+
+    <button onclick="location.href='index.html'" style="margin-top:15px; width:100%; padding:10px; background:none; border:1px solid #ef4444; color:#ef4444; border-radius:10px;">Logout</button>
+</div>
+
+<div id="chat-section">
+    <div id="chat-scroller"></div>
+    <div class="input-area">
+        <input type="text" id="msgIn" placeholder="Type a message..." autocomplete="off">
+        <button id="sendBtn" onclick="send()">➤</button>
     </div>
 </div>
 
@@ -188,13 +107,12 @@
     const socket = io();
     const params = new URLSearchParams(window.location.search);
     const username = params.get('username') || "Guest";
-    const gender = params.get('gender') || "Male";
     const role = params.get('role') || "user";
-
-    let selectedUser = 'all';
+    const gender = params.get('gender') || "Male";
 
     socket.emit('join', { username, gender, role });
 
+    // Slider Fix: Sidebar toggle logic
     function toggleSidebar() {
         const sb = document.getElementById('sidebar');
         const ov = document.getElementById('overlay');
@@ -202,56 +120,39 @@
         ov.style.display = sb.classList.contains('open') ? 'block' : 'none';
     }
 
-    // --- USER LIST UPDATE (FIXED UNDEFINED) ---
+    // Owner Panel Visibility
+    if(role === 'owner') {
+        document.getElementById('owner-panel').style.display = 'block';
+    }
+
     socket.on('updateUserList', (users) => {
         const list = document.getElementById('online-list');
         list.innerHTML = users.map(u => `
-            <div class="user-item ${u.role === 'owner' ? 'owner-gold' : ''}" onclick="startDM('${u.username}')">
-                <span style="font-size:20px;">${u.gender === 'Female' ? '👩' : '👨'}</span>
-                <span style="color:${u.role === 'owner' ? 'var(--owner-gold)' : 'white'}; font-weight:600; font-size:13px;">${u.username}</span>
+            <div class="user-item" onclick="startDM('${u.username}')">
+                <span>${u.gender === 'Female' ? '👩' : '👨'}</span>
+                <span style="color:${u.role === 'owner' ? 'var(--owner-gold)' : 'white'}">${u.username}</span>
             </div>
-        `).join('') + `<div onclick="startDM('all')" class="user-item" style="opacity:0.5; margin-top:10px; font-size:12px;">🌍 Return to Public</div>`;
+        `).join('');
     });
 
-    function startDM(user) {
-        selectedUser = user;
-        document.getElementById('status').innerText = (user === 'all') ? "Public Room" : "DM: " + user;
-        if(window.innerWidth < 768) toggleSidebar();
-    }
-
-    // --- MESSAGE RENDERING (FIXED UNDEFINED) ---
     socket.on('newMessage', (data) => {
         const div = document.createElement('div');
-        const isMe = data.user === username;
-        div.className = `msg ${isMe ? 'me' : 'other'}`;
-        
-        const senderName = data.user || "Guest";
-        const senderIcon = data.gender === 'Female' ? '👩' : '👨';
-        const nameClass = data.role === 'owner' ? 'u-name owner' : 'u-name';
-        const pvtTag = data.to !== 'all' ? ' <small style="color:gold;">(PVT)</small>' : '';
-
-        div.innerHTML = `<span class="${nameClass}">${senderIcon} ${senderName}${pvtTag}</span>${data.text}`;
-        
-        const scroller = document.getElementById('chat-scroller');
-        scroller.appendChild(div);
-        scroller.scrollTop = scroller.scrollHeight;
+        div.className = `msg ${data.user === username ? 'me' : 'other'}`;
+        div.innerHTML = `<small style="font-size:10px; display:block; color:${data.role==='owner'?'gold':'inherit'}">${data.user}</small>${data.text}`;
+        const sc = document.getElementById('chat-scroller');
+        sc.appendChild(div);
+        sc.scrollTop = sc.scrollHeight;
     });
 
     function send() {
         const input = document.getElementById('msgIn');
-        const val = input.value.trim();
-        if(!val) return;
-
-        if(val === '/clear' && role === 'owner') {
-            socket.emit('adminClear');
-        } else {
-            socket.emit('sendMessage', { message: val, to: selectedUser });
+        if(input.value.trim()) {
+            socket.emit('sendMessage', { message: input.value, to: 'all' });
+            input.value = '';
         }
-        input.value = '';
     }
 
     socket.on('clearScreen', () => { document.getElementById('chat-scroller').innerHTML = ''; });
-    document.getElementById('msgIn').addEventListener('keypress', (e) => { if(e.key === 'Enter') send(); });
 </script>
 </body>
 </html>
