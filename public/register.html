@@ -1,118 +1,17 @@
-<!DOCTYPE html>
-<html>
-<head>
-
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
-<title>Tulip Chat Register</title>
-
-<style>
-
-body{
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-background:linear-gradient(135deg,#ff6b81,#ff8fab);
-font-family:Arial;
-}
-
-.card{
-background:white;
-padding:30px;
-border-radius:10px;
-width:280px;
-text-align:center;
-box-shadow:0 5px 20px rgba(0,0,0,0.2);
-}
-
-input,select{
-width:100%;
-padding:10px;
-margin:6px 0;
-border:1px solid #ddd;
-border-radius:5px;
-}
-
-button{
-width:100%;
-padding:10px;
-background:#ff2e63;
-color:white;
-border:none;
-border-radius:5px;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="card">
-
-<h3>🌷 Tulip Chat Register</h3>
-
-<input id="username" placeholder="Name">
-
-<input id="age" placeholder="Age">
-
-<select id="gender">
-<option>Male</option>
-<option>Female</option>
-</select>
-
-<input id="email" placeholder="Email">
-
-<input id="password" type="password" placeholder="Password">
-
-<button onclick="register()">Register</button>
-
-<p>
-Already have account?
-<a href="login.html">Login</a>
-</p>
-
-</div>
-
-<script>
-
-async function register(){
-
-let username=document.getElementById("username").value
-let age=document.getElementById("age").value
-let gender=document.getElementById("gender").value
-let email=document.getElementById("email").value
-let password=document.getElementById("password").value
-
-let res=await fetch("/register",{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-username,
-age,
-gender,
-email,
-password
-})
-})
-
-let data=await res.json()
-
-if(data.error){
-alert(data.error)
-return
-}
-
-alert("Registered successfully")
-
-window.location="login.html"
-
-}
-
-</script>
-
+<body class="auth-page">
+    <div class="auth-card">
+        <div class="brand"><h1>Register</h1></div>
+        <form action="/auth/register" method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email Address" required>
+            <input type="number" name="age" placeholder="Age" required>
+            <select name="gender" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit" class="btn btn-primary">Create Account</button>
+        </form>
+        <p class="auth-footer">Already have account? <a href="login.html">Login</a></p>
+    </div>
 </body>
-</html>
