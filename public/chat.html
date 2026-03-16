@@ -2,282 +2,201 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tulip Hot | Adult Private Suite</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tulip Hot | Uncensored</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Lexend:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root {
-            --neon-pink: #ff0055;
-            --deep-red: #8b0000;
-            --black-glass: rgba(10, 10, 12, 0.98);
-            --border-red: #ff2d55;
-        }
-
-        /* Prevent Zoom & Fix Scroll */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Lexend', sans-serif; -webkit-tap-highlight-color: transparent; }
+        :root { --hot: #ff0055; --bg: #0a0a0c; }
         
-        body, html {
-            height: 100dvh; width: 100vw; overflow: hidden; position: fixed;
-            background: #000; color: #fff;
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Lexend', sans-serif; }
+        
+        body, html { 
+            height: 100%; width: 100%; background: var(--bg); color: #fff; 
+            overflow: hidden; position: fixed;
         }
 
-        /* 18+ ADULT BACKGROUND ENGINE */
-        .hardcore-bg {
+        /* 18+ Background - Full Visual */
+        .main-wallpaper {
             position: fixed; inset: 0;
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)), 
-                        url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1470&auto=format&fit=crop') center/cover no-repeat;
-            z-index: -1; filter: contrast(1.2) brightness(0.6);
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), 
+                        url('https://images.unsplash.com/photo-1534120247760-c44c3e4a62f1?q=80&w=1500') center/cover;
+            z-index: -1;
         }
 
-        /* Layout Architecture */
-        .app-container { display: flex; flex-direction: column; height: 100%; width: 100%; position: relative; }
+        .wrapper { display: flex; flex-direction: column; height: 100dvh; }
 
-        /* Neon Header */
         header {
-            height: 60px; background: var(--black-glass); display: flex; align-items: center;
-            justify-content: space-between; padding: 0 15px; z-index: 1000;
-            border-bottom: 2px solid var(--border-red); box-shadow: 0 0 20px rgba(255, 45, 85, 0.4);
-        }
-        .logo { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 20px; color: #fff; letter-spacing: 2px; }
-        .logo span { color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); }
-
-        /* THE FIX: MESSAGE DISPLAY AREA */
-        #chat-scroller {
-            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column;
-            gap: 15px; position: relative; 
-            padding-bottom: 240px; /* Crucial space for input & panels */
-            scrollbar-width: none;
+            height: 60px; background: rgba(0,0,0,0.9); display: flex; 
+            align-items: center; justify-content: space-between; padding: 0 15px;
+            border-bottom: 2px solid var(--hot); box-shadow: 0 0 15px var(--hot);
+            z-index: 100;
         }
 
-        /* Sophisticated Message Engineering */
-        .msg-row { display: flex; flex-direction: column; width: 100%; max-width: 88%; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes popIn { from { opacity: 0; scale: 0.9; transform: translateY(20px); } to { opacity: 1; scale: 1; transform: translateY(0); } }
-
-        .me { align-self: flex-end; }
-        .other { align-self: flex-start; }
-
-        .sender-info { font-size: 10px; font-weight: 700; margin-bottom: 5px; text-transform: uppercase; color: #ff9fb2; }
-        .me .sender-info { text-align: right; }
-
-        .bubble {
-            padding: 14px 18px; border-radius: 20px; font-size: 15px; line-height: 1.5;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.5); position: relative; border: 1px solid rgba(255,255,255,0.1);
-        }
-        .me .bubble { background: linear-gradient(135deg, var(--neon-pink), var(--deep-red)); border-bottom-right-radius: 4px; color: #fff; }
-        .other .bubble { background: #1a1a1e; border-bottom-left-radius: 4px; color: #eee; }
-
-        .msg-media { max-width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.2); display: block; }
-
-        /* Control Station (Floating Dock) */
-        .dock-station {
-            position: fixed; bottom: 0; width: 100%; background: var(--black-glass);
-            border-top: 1px solid var(--border-red); padding: 15px; z-index: 2000;
-            backdrop-filter: blur(15px);
+        /* THE FIX: Simple Scrollable Message Area */
+        #messages {
+            flex: 1; overflow-y: scroll; padding: 15px;
+            display: flex; flex-direction: column; gap: 10px;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 150px; /* Space for input */
         }
 
-        /* Upload Progress Monitor */
-        #progress-dock { display: none; margin-bottom: 12px; }
-        .pg-bar { height: 6px; background: #222; border-radius: 10px; overflow: hidden; }
-        .pg-fill { height: 100%; width: 0%; background: var(--neon-pink); box-shadow: 0 0 10px var(--neon-pink); transition: 0.3s; }
+        .msg { max-width: 85%; padding: 10px 15px; border-radius: 18px; position: relative; word-wrap: break-word; }
+        .name { font-size: 10px; font-weight: 700; margin-bottom: 3px; display: block; opacity: 0.8; }
+        
+        .me { align-self: flex-end; background: var(--hot); color: white; border-bottom-right-radius: 2px; }
+        .other { align-self: flex-start; background: #222; border-bottom-left-radius: 2px; }
 
-        /* Media Panel Grid */
-        #media-grid {
-            display: none; grid-template-columns: repeat(4, 1fr); gap: 10px;
-            padding: 15px; background: rgba(0,0,0,0.5); border-radius: 15px;
-            margin-bottom: 15px; border: 1px solid var(--border-red); max-height: 200px; overflow-y: auto;
-        }
-        .media-thumb { width: 100%; border-radius: 8px; border: 1px solid #444; cursor: pointer; }
+        .chat-img { max-width: 100%; border-radius: 10px; margin-top: 5px; display: block; }
 
-        .input-bar { display: flex; align-items: center; gap: 10px; }
-        .btn-circle {
-            width: 45px; height: 45px; background: #222; border-radius: 50%; display: flex;
-            align-items: center; justify-content: center; cursor: pointer; color: #fff; border: 1px solid #333;
-        }
-        .btn-circle.active { color: var(--neon-pink); border-color: var(--neon-pink); }
-
-        #msg-field {
-            flex: 1; height: 45px; background: rgba(255,255,255,0.05); border: 1px solid #333;
-            padding: 0 20px; border-radius: 25px; color: #fff; font-size: 16px; outline: none;
+        /* Floating Input Area */
+        .controls {
+            position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.95);
+            padding: 15px; border-top: 1px solid #333; z-index: 200;
         }
 
-        .send-pill {
-            background: var(--neon-pink); border: none; padding: 0 20px; height: 45px;
-            border-radius: 25px; color: #fff; font-weight: 800; text-transform: uppercase;
+        .input-row { display: flex; gap: 10px; align-items: center; }
+        
+        #text-box {
+            flex: 1; background: #1a1a1e; border: 1px solid #444; border-radius: 25px;
+            padding: 12px 20px; color: white; font-size: 16px; outline: none;
         }
 
-        /* User Drawer */
-        #drawer {
-            position: fixed; left: -300px; top: 0; width: 280px; height: 100%;
-            background: #0d0d0f; z-index: 3000; transition: 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1);
-            padding: 25px; border-right: 2px solid var(--border-red);
+        .action-btn { font-size: 20px; color: #fff; cursor: pointer; padding: 5px; }
+        .send-btn { background: var(--hot); border: none; padding: 10px 20px; border-radius: 20px; color: #fff; font-weight: 700; }
+
+        /* Spicy Panel */
+        #spicy-tray {
+            display: none; grid-template-columns: repeat(4, 1fr); gap: 8px;
+            padding: 10px; background: #111; border-radius: 10px; margin-bottom: 10px;
+            border: 1px solid var(--hot); max-height: 180px; overflow-y: auto;
         }
-        #drawer.open { left: 0; }
-        .u-item { padding: 12px; background: #1a1a1e; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; border: 1px solid #333; }
-        .online { width: 8px; height: 8px; background: #00ff00; border-radius: 50%; box-shadow: 0 0 5px #00ff00; }
+        .stk { width: 100%; border-radius: 5px; cursor: pointer; }
+
+        /* Progress Bar */
+        #up-bar { display: none; height: 4px; background: #222; border-radius: 2px; margin-bottom: 8px; overflow: hidden; }
+        #up-fill { height: 100%; width: 0%; background: var(--hot); transition: 0.3s; }
     </style>
 </head>
 <body>
 
-<div class="hardcore-bg"></div>
+<div class="main-wallpaper"></div>
 
-<div class="app-container">
+<div class="wrapper">
     <header>
-        <div class="btn-circle" onclick="toggleDrawer()"><i class="fas fa-stream"></i></div>
-        <div class="logo">TULIP <span>HOT</span></div>
-        <div id="target-label" style="font-size:10px; color:var(--neon-pink); font-weight:700;">GLOBAL</div>
+        <div style="font-weight:900; letter-spacing:1px;">TULIP <span style="color:var(--hot)">HOT</span></div>
+        <div id="target" style="font-size:10px; color:var(--hot)">GLOBAL LOBBY</div>
     </header>
 
-    <main id="chat-scroller"></main>
+    <div id="messages"></div>
 
-    <div class="dock-station">
-        <div id="progress-dock">
-            <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;">
-                <span>STAGING MEDIA...</span><span id="pg-text">0%</span>
-            </div>
-            <div class="pg-bar"><div id="pg-fill" class="pg-fill"></div></div>
+    <div class="controls">
+        <div id="up-bar"><div id="up-fill"></div></div>
+        
+        <div id="spicy-tray">
+            <img class="stk" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6Z3R6Z3R6/3o7TKMGpxx87Z4I6T6/giphy.gif" onclick="sendMedia(this.src)">
+            <img class="stk" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/l41lTfO3vD04A7088/giphy.gif" onclick="sendMedia(this.src)">
+            <img class="stk" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/3o7TKVUn7iM8FMEU24/giphy.gif" onclick="sendMedia(this.src)">
+            <div class="stk" style="background:var(--hot); height:50px; display:flex; align-items:center; justify-content:center;" onclick="sendMedia('🎁 SEXY BOX 🎁')">🎁</div>
         </div>
 
-        <div id="media-grid">
-            <img class="media-thumb" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6Z3R6Z3R6/3o7TKMGpxx87Z4I6T6/giphy.gif" onclick="sendMedia(this.src)">
-            <img class="media-thumb" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/l41lTfO3vD04A7088/giphy.gif" onclick="sendMedia(this.src)">
-            <img class="media-thumb" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/3o7TKVUn7iM8FMEU24/giphy.gif" onclick="sendMedia(this.src)">
-            <div class="media-thumb" style="background:var(--neon-pink); height:60px; display:flex; align-items:center; justify-content:center; font-size:24px;" onclick="sendMedia('🎁 SEXY SURPRISE 🎁')">🎁</div>
-        </div>
-
-        <div class="input-bar">
-            <label for="file-up" class="btn-circle"><i class="fas fa-camera-retro"></i></label>
-            <input type="file" id="file-up" hidden accept="image/*">
+        <div class="input-row">
+            <label for="img-in"><i class="fas fa-camera action-btn"></i></label>
+            <input type="file" id="img-in" hidden accept="image/*">
             
-            <div class="btn-circle" id="fire-btn" onclick="toggleSpicy()"><i class="fas fa-fire"></i></div>
+            <i class="fas fa-fire action-btn" onclick="toggleTray()" id="fire-icon"></i>
             
-            <input type="text" id="msg-field" placeholder="Type something dirty..." autocomplete="off">
+            <input type="text" id="text-box" placeholder="Write message..." autocomplete="off">
             
-            <button class="send-pill" onclick="sendText()">SEND</button>
+            <button class="send-btn" onclick="sendMsg()">SEND</button>
         </div>
     </div>
-</div>
-
-<div id="drawer">
-    <h3 style="color:var(--neon-pink); margin-bottom:25px; font-family:'Orbitron';">Elite Members</h3>
-    <div id="users-list"></div>
-    <div onclick="setTarget('all')" style="margin-top:20px; padding:15px; background:#222; border-radius:10px; text-align:center; cursor:pointer;">🌍 Global Lounge</div>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
     const socket = io();
-    const urlParams = new URLSearchParams(window.location.search);
-    const STATE = {
-        name: urlParams.get('username') || "Player",
-        role: urlParams.get('role') || "user",
+    const params = new URLSearchParams(window.location.search);
+    const USER = {
+        name: params.get('username') || "User_" + Math.floor(Math.random()*1000),
+        role: params.get('role') || "user",
         target: 'all'
     };
 
-    socket.emit('join', { username: STATE.name, role: STATE.role });
+    socket.emit('join', { username: USER.name, role: USER.role });
 
-    // --- CRITICAL FIX: MESSAGE RENDERING ---
+    // RE-ENGINEERED RECEIVE LOGIC
     socket.on('newMessage', (data) => {
-        const scroller = document.getElementById('chat-scroller');
+        const box = document.getElementById('messages');
+        const isMe = data.user === USER.name;
         
-        // Data Validation to avoid "Undefined" errors
-        const sender = data.user || "System";
-        const textContent = data.text || "";
-        const isMe = sender === STATE.name;
-
-        const row = document.createElement('div');
-        row.className = `msg-row ${isMe ? 'me' : 'other'}`;
-
-        let html = `<span class="sender-info">${sender} ${data.role === 'owner' ? '👑' : ''}</span>`;
-        html += `<div class="bubble">`;
-
+        // Creating the message element simply
+        const div = document.createElement('div');
+        div.className = `msg ${isMe ? 'me' : 'other'}`;
+        
+        let content = `<span class="name">${data.user} ${data.role==='owner'?'👑':''}</span>`;
+        
         if(data.type === 'image') {
-            html += `<img src="${textContent}" class="msg-media" onload="forceScroll()">`;
+            content += `<img src="${data.text}" class="chat-img" onload="scrollToEnd()">`;
         } else {
-            // Force text rendering
-            html += `<span>${textContent}</span>`;
+            // Text Fix: Directly putting text without complex wrappers
+            content += `<span>${data.text}</span>`;
         }
-
-        html += `</div>`;
-        row.innerHTML = html;
         
-        scroller.appendChild(row);
-        forceScroll();
+        div.innerHTML = content;
+        box.appendChild(div);
+        scrollToEnd();
     });
 
-    // --- LOGIC ENGINE ---
-    function sendText() {
-        const f = document.getElementById('msg-field');
-        if(f.value.trim()) {
-            socket.emit('sendMessage', {
-                type: 'text', text: f.value, to: STATE.target, user: STATE.name, role: STATE.role
-            });
-            f.value = '';
-        }
+    function sendMsg() {
+        const input = document.getElementById('text-box');
+        if(!input.value.trim()) return;
+        
+        socket.emit('sendMessage', {
+            type: 'text', text: input.value, to: USER.target, user: USER.name, role: USER.role
+        });
+        input.value = '';
     }
 
     function sendMedia(url) {
         socket.emit('sendMessage', {
-            type: 'image', text: url, to: STATE.target, user: STATE.name, role: STATE.role
+            type: 'image', text: url, to: USER.target, user: USER.name, role: USER.role
         });
-        if(document.getElementById('media-grid').style.display === 'grid') toggleSpicy();
+        document.getElementById('spicy-tray').style.display = 'none';
     }
 
-    // Photo Upload with Live Progress Bar
-    document.getElementById('file-up').addEventListener('change', function(e) {
+    // File Upload Logic
+    document.getElementById('img-in').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if(!file) return;
-
         const reader = new FileReader();
-        const dock = document.getElementById('progress-dock');
-        const fill = document.getElementById('pg-fill');
-        const txt = document.getElementById('pg-text');
-
-        dock.style.display = 'block';
-
+        const bar = document.getElementById('up-bar');
+        const fill = document.getElementById('up-fill');
+        
+        bar.style.display = 'block';
         reader.onprogress = (ev) => {
-            const pct = Math.round((ev.loaded / ev.total) * 100);
-            fill.style.width = pct + '%';
-            txt.innerText = pct + '%';
+            fill.style.width = Math.round((ev.loaded / ev.total) * 100) + '%';
         };
-
         reader.onload = () => {
             sendMedia(reader.result);
-            setTimeout(() => { dock.style.display = 'none'; fill.style.width = '0%'; }, 1000);
+            setTimeout(() => { bar.style.display = 'none'; fill.style.width = '0%'; }, 1000);
         };
         reader.readAsDataURL(file);
     });
 
-    // UI Helpers
-    function toggleDrawer() { document.getElementById('drawer').classList.toggle('open'); }
-    function toggleSpicy() {
-        const g = document.getElementById('media-grid');
-        const b = document.getElementById('fire-btn');
-        g.style.display = (g.style.display === 'grid') ? 'none' : 'grid';
-        b.classList.toggle('active');
-    }
-    function forceScroll() {
-        const s = document.getElementById('chat-scroller');
-        s.scrollTop = s.scrollHeight;
-    }
-    function setTarget(u) {
-        STATE.target = u;
-        document.getElementById('target-label').innerText = u === 'all' ? "GLOBAL" : "DM: " + u;
-        toggleDrawer();
+    function scrollToEnd() {
+        const box = document.getElementById('messages');
+        box.scrollTop = box.scrollHeight;
     }
 
-    socket.on('updateUserList', (users) => {
-        document.getElementById('users-list').innerHTML = users.map(u => `
-            <div class="u-item" onclick="setTarget('${u.username}')">
-                <div class="online"></div>
-                <span style="font-weight:600;">${u.username}</span>
-            </div>
-        `).join('');
-    });
+    function toggleTray() {
+        const tray = document.getElementById('spicy-tray');
+        tray.style.display = (tray.style.display === 'grid') ? 'none' : 'grid';
+    }
 
-    document.getElementById('msg-field').addEventListener('keypress', (e) => { if(e.key==='Enter') sendText(); });
+    document.getElementById('text-box').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMsg(); });
 </script>
 </body>
 </html>
