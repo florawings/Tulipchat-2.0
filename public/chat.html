@@ -1,20 +1,105 @@
-/* Purane CSS ko isse replace karein taaki messages sahi jagah aayein */
-#chat-display {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 20px;
-    height: calc(100vh - 130px); /* Top aur Bottom bar ke liye jagah */
-    overflow-y: auto;
-    margin-top: 60px; /* Header ke niche se shuru ho */
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Chat</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="/socket.io/socket.io.js"></script>
+
+</head>
+
+<body>
+
+<div class="top">
+
+Tulip Chat
+
+<button onclick="logout()">Logout</button>
+
+</div>
+
+<div id="chat"></div>
+
+<div id="online"></div>
+
+<input id="msg" placeholder="Type message">
+
+<button onclick="send()">Send</button>
+
+<script>
+
+const socket=io()
+
+const username=localStorage.getItem("username")
+
+socket.emit("join",username)
+
+const chat=document.getElementById("chat")
+
+const online=document.getElementById("online")
+
+socket.on("chatHistory",(msgs)=>{
+
+msgs.forEach(m=>{
+addMsg(m)
+})
+
+})
+
+socket.on("chat",(msg)=>{
+
+addMsg(msg)
+
+})
+
+socket.on("clearChat",()=>{
+
+chat.innerHTML=""
+
+})
+
+socket.on("onlineUsers",(users)=>{
+
+online.innerHTML="Online: "+users.join(", ")
+
+})
+
+function addMsg(m){
+
+const div=document.createElement("div")
+
+div.innerText=m.user+": "+m.text
+
+chat.appendChild(div)
+
 }
 
-.msg-box {
-    max-width: 75%;
-    padding: 10px 15px;
-    border-radius: 15px;
-    word-wrap: break-word;
+function send(){
+
+const text=document.getElementById("msg").value
+
+socket.emit("chat",{
+user:username,
+text
+})
+
+document.getElementById("msg").value=""
+
 }
 
-.sent { align-self: flex-end; background: #ff0055; color: white; }
-.received { align-self: flex-start; background: #222; color: #eee; }
+function logout(){
+
+localStorage.removeItem("username")
+
+window.location="login.html"
+
+}
+
+</script>
+
+</body>
+
+</html>
