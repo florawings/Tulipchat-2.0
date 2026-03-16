@@ -2,14 +2,6 @@ const socket=io()
 
 let username=localStorage.getItem("username")
 
-if(!username){
-
- username=prompt("Enter username")
-
- localStorage.setItem("username",username)
-
-}
-
 socket.emit("join",username)
 
 /* SEND MESSAGE */
@@ -17,8 +9,6 @@ socket.emit("join",username)
 function send(){
 
  const msg=document.getElementById("msg").value
-
- if(msg==="") return
 
  socket.emit("chat",{
   user:username,
@@ -35,22 +25,12 @@ socket.on("chat",(msg)=>{
 
  const div=document.createElement("div")
 
- if(msg.image){
+ div.classList.add("msg")
 
-  const img=document.createElement("img")
-  img.src=msg.image
-  img.style.maxWidth="200px"
-
-  div.appendChild(img)
-
+ if(msg.user==="Lord_lucifer"){
+ div.innerHTML="👑 "+msg.user+": "+msg.text
  }else{
-
-  if(msg.user==="Lord_lucifer"){
-   div.innerHTML="👑 "+msg.user+": "+msg.text
-  }else{
-   div.innerHTML=msg.user+": "+msg.text
-  }
-
+ div.innerHTML=msg.user+": "+msg.text
  }
 
  document.getElementById("chat").appendChild(div)
@@ -68,7 +48,6 @@ socket.on("onlineUsers",(users)=>{
  users.forEach(u=>{
 
   const div=document.createElement("div")
-
   div.innerText="🟢 "+u
 
   div.onclick=()=>openDM(u)
@@ -105,7 +84,6 @@ function sendImage(){
 function sendDM(){
 
  const msg=document.getElementById("dmInput").value
-
  const to=document.getElementById("dmUser").value
 
  socket.emit("dm",{
@@ -115,8 +93,6 @@ function sendDM(){
  })
 
 }
-
-/* RECEIVE DM */
 
 socket.on("dm",(data)=>{
 
@@ -129,31 +105,3 @@ socket.on("dm",(data)=>{
  document.getElementById("dmMessages").appendChild(div)
 
 })
-
-/* CLEAR CHAT */
-
-socket.on("clearChat",()=>{
- document.getElementById("chat").innerHTML=""
-})
-
-/* SIDEBAR */
-
-function toggleMenu(){
-
- const bar=document.getElementById("sidebar")
-
- if(bar.style.display==="none"){
-  bar.style.display="block"
- }else{
-  bar.style.display="none"
- }
-
-}
-
-function openDM(user){
-
- document.getElementById("dmPopup").style.display="block"
-
- document.getElementById("dmUser").value=user
-
-}
