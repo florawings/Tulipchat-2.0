@@ -7,19 +7,17 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-/* MIDDLEWARE */
-
 app.use(express.json());
+
+/* PUBLIC FOLDER */
 app.use(express.static(path.join(__dirname, "public")));
 
-/* ROOT FIX */
-
+/* ROOT PAGE */
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/login.html"));
+  res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
-/* USERS MEMORY */
-
+/* USERS */
 let users = [
   { username: "Lord_lucifer", password: "766521", role: "owner" }
 ];
@@ -28,7 +26,6 @@ let onlineUsers = [];
 let messages = [];
 
 /* REGISTER */
-
 app.post("/register", (req, res) => {
 
   const { username, password } = req.body;
@@ -43,18 +40,13 @@ app.post("/register", (req, res) => {
     return res.json({ error: "User already exists" });
   }
 
-  users.push({
-    username,
-    password,
-    role: "user"
-  });
+  users.push({ username, password });
 
   res.json({ success: true });
 
 });
 
 /* LOGIN */
-
 app.post("/login", (req, res) => {
 
   const { username, password } = req.body;
@@ -67,16 +59,11 @@ app.post("/login", (req, res) => {
     return res.json({ error: "Invalid login" });
   }
 
-  res.json({
-    success: true,
-    username: user.username,
-    role: user.role
-  });
+  res.json({ success: true });
 
 });
 
-/* SOCKET CHAT */
-
+/* SOCKET */
 io.on("connection", (socket) => {
 
   socket.on("join", (username) => {
@@ -89,13 +76,9 @@ io.on("connection", (socket) => {
 
     io.emit("onlineUsers", onlineUsers);
 
-    /* OLD CHAT */
-
     socket.emit("chatHistory", messages);
 
   });
-
-  /* CHAT MESSAGE */
 
   socket.on("chat", (msg) => {
 
@@ -115,8 +98,6 @@ io.on("connection", (socket) => {
 
   });
 
-  /* DISCONNECT */
-
   socket.on("disconnect", () => {
 
     onlineUsers = onlineUsers.filter(
@@ -129,12 +110,10 @@ io.on("connection", (socket) => {
 
 });
 
-/* SERVER START */
+/* START SERVER */
 
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
-
   console.log("Server running on port " + PORT);
-
 });
