@@ -2,27 +2,39 @@ const express=require("express")
 const router=express.Router()
 const User=require("../models/User")
 
-router.post("/register",async(req,res)=>{
-
-const user=new User(req.body)
-await user.save()
-
-res.json({msg:"registered"})
-
-})
+const OWNER="Lord_lucifer"
+const OWNER_PASS="766521"
 
 router.post("/login",async(req,res)=>{
 
+const {username,password}=req.body
+
+/* OWNER LOGIN */
+
+if(username===OWNER && password===OWNER_PASS){
+
+return res.json({
+username:OWNER,
+role:"owner"
+})
+
+}
+
+/* NORMAL USER */
+
 const user=await User.findOne({
-username:req.body.username,
-password:req.body.password
+username:username,
+password:password
 })
 
 if(!user){
-return res.json({error:"login failed"})
+return res.json({error:"Invalid login"})
 }
 
-res.json(user)
+res.json({
+username:user.username,
+role:"user"
+})
 
 })
 
