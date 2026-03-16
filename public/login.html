@@ -1,46 +1,82 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
-<title>Tulip Chat</title>
+<title>Tulip Chat Login</title>
 
 <style>
 
 body{
+font-family:sans-serif;
+margin:0;
 height:100vh;
 display:flex;
-justify-content:center;
 align-items:center;
-background:linear-gradient(135deg,#ff6b81,#ff8fab);
-font-family:Arial;
+justify-content:center;
+background:linear-gradient(180deg,#ff4f7a,#ff7ca0);
 }
 
-.card{
+#box{
+
 background:white;
-padding:30px;
-border-radius:10px;
-width:280px;
+padding:40px;
+width:320px;
+border-radius:15px;
 text-align:center;
-box-shadow:0 5px 20px rgba(0,0,0,0.2);
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
+
+}
+
+h2{
+
+color:#ff4f7a;
+
 }
 
 input{
+
 width:100%;
-padding:10px;
-margin:6px 0;
-border:1px solid #ddd;
-border-radius:5px;
+padding:12px;
+margin-top:15px;
+border-radius:8px;
+border:1px solid #ccc;
+font-size:16px;
+
 }
 
 button{
+
+margin-top:20px;
 width:100%;
-padding:10px;
-background:#ff2e63;
+padding:12px;
+background:#ff2d5a;
 color:white;
 border:none;
-border-radius:5px;
+border-radius:8px;
+font-size:16px;
+cursor:pointer;
+
+}
+
+button:hover{
+
+background:#e01e4c;
+
+}
+
+a{
+
+color:#ff2d5a;
+text-decoration:none;
+
+}
+
+#error{
+
+color:red;
+margin-top:10px;
+
 }
 
 </style>
@@ -49,9 +85,9 @@ border-radius:5px;
 
 <body>
 
-<div class="card">
+<div id="box">
 
-<h3>🌷 Tulip Chat</h3>
+<h2>🌷 Tulip Chat</h2>
 
 <input id="username" placeholder="Username">
 
@@ -59,10 +95,9 @@ border-radius:5px;
 
 <button onclick="login()">Login</button>
 
-<p>
-Don't have account?
-<a href="register.html">Register</a>
-</p>
+<div id="error"></div>
+
+<p>Don't have account? <a href="register.html">Register</a></p>
 
 </div>
 
@@ -70,27 +105,50 @@ Don't have account?
 
 async function login(){
 
-let username=document.getElementById("username").value
-let password=document.getElementById("password").value
+const username=document.getElementById("username").value
+const password=document.getElementById("password").value
 
-let res=await fetch("/login",{
+if(username=="" || password==""){
+
+document.getElementById("error").innerText="Enter username and password"
+return
+
+}
+
+const res = await fetch("/login",{
+
 method:"POST",
+
 headers:{
 "Content-Type":"application/json"
 },
+
 body:JSON.stringify({
 username,
 password
 })
+
 })
 
-let data=await res.json()
+const data = await res.json()
 
-if(data.error){
-alert(data.error)
-return
+if(data.success){
+
+localStorage.setItem("username",data.username)
+localStorage.setItem("role",data.role)
+
+window.location="chat.html"
+
+}else{
+
+document.getElementById("error").innerText=data.error
+
 }
 
-localStorage.setItem("username",username)
+}
 
-window.location="chat
+</script>
+
+</body>
+
+</html>
