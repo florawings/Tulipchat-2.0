@@ -1,50 +1,18 @@
-module.exports=(io)=>{
+const Message=require("../models/Message")
 
-let onlineUsers=[]
-let chatHistory=[]
+module.exports=(io,socket)=>{
 
-io.on("connection",(socket)=>{
+socket.on("chat message",async(data)=>{
 
-socket.on("join",(user)=>{
-
-socket.username=user
-onlineUsers.push(user)
-
-io.emit("online",onlineUsers)
-
-io.emit("message",{
-system:true,
-text:user+" joined the chat"
+const msg=new Message({
+user:data.user,
+text:data.text,
+time:new Date()
 })
 
-})
+await msg.save()
 
-socket.on("message",(data)=>{
-
-if(data.text==="/clear"){
-chatHistory=[]
-io.emit("clear")
-return
-}
-
-chatHistory.push(data)
-
-io.emit("message",data)
-
-})
-
-socket.on("disconnect",()=>{
-
-onlineUsers=onlineUsers.filter(u=>u!==socket.username)
-
-io.emit("online",onlineUsers)
-
-io.emit("message",{
-system:true,
-text:socket.username+" left chat"
-})
-
-})
+io.emit("chat message",data)
 
 })
 
