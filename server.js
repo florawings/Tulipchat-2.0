@@ -4,14 +4,6 @@ const { Server } = require("socket.io")
 const multer = require("multer")
 const path = require("path")
 
-const authRoutes = require("./routes/auth")
-const adminRoutes = require("./routes/admin")
-const friendRoutes = require("./routes/friends")
-const reportRoutes = require("./routes/report")
-
-const chatSocket = require("./sockets/chatSocket")
-const dmSocket = require("./sockets/dmSocket")
-
 const app = express()
 const server = http.createServer(app)
 const io = new Server(server)
@@ -26,7 +18,7 @@ const OWNER = "lord_lucifer"
 const OWNER_PASS = "766521"
 const SUPER_ADMIN = "Garima"
 
-/* DATA STORAGE */
+/* DATA */
 
 let onlineUsers = []
 let bannedUsers = []
@@ -35,136 +27,102 @@ let mutedUsers = []
 /* FILE UPLOAD */
 
 const storage = multer.diskStorage({
-destination: "uploads/",
-filename: (req, file, cb) => {
-cb(null, Date.now() + "-" + file.originalname)
+destination:"uploads/",
+filename:(req,file,cb)=>{
+cb(null,Date.now()+"-"+file.originalname)
 }
 })
 
-const upload = multer({ storage })
+const upload = multer({storage})
 
-app.post("/upload", upload.single("file"), (req, res) => {
+app.post("/upload",upload.single("file"),(req,res)=>{
 
 res.json({
-url: "/uploads/" + req.file.filename
+url:"/uploads/"+req.file.filename
 })
 
 })
 
 /* ROUTES */
 
-app.use("/auth", authRoutes)
-app.use("/admin", adminRoutes)
-app.use("/friends", friendRoutes)
-app.use("/report", reportRoutes)
+const authRoutes = require("./routes/auth")
+const adminRoutes = require("./routes/admin")
+const friendRoutes = require("./routes/friends")
+const reportRoutes = require("./routes/report")
 
-/* SOCKET CONNECTION */
+app.use("/auth",authRoutes)
+app.use("/admin",adminRoutes)
+app.use("/friends",friendRoutes)
+app.use("/report",reportRoutes)
 
-io.on("connection", (socket) => {
+/* SOCKETS */
 
-console.log("User connected:", socket.id)
+const chatSocket = require("./sockets/chatSocket")
+const dmSocket = require("./sockets/dmSocket")
 
-/* JOIN CHAT */
+io.on("connection",(socket)=>{
 
-socket.on("join", (user) => {
+chatSocket(io,socket)
+dmSocket(io,socket)
 
-if (bannedUsers.includes(user.username)) {
+/* JOIN */
+
+socket.on("join",(user)=>{
+
+if(bannedUsers.includes(user.username)){
 socket.emit("banned")
 return
 }
 
 onlineUsers.push({
-id: socket.id,
-username: user.username,
-ip: socket.handshake.address
+id:socket.id,
+username:user.username,
+ip:socket.handshake.address
 })
 
-io.emit("onlineUsers", onlineUsers)
+io.emit("onlineUsers",onlineUsers)
 
-socket.broadcast.emit("system", user.username + " joined the chat")
-
-})
-
-/* CHAT MESSAGE */
-
-socket.on("chat message", (data) => {
-
-if (mutedUsers.includes(data.username)) {
-return
-}
-
-io.emit("chat message", data)
+socket.broadcast.emit("system",user.username+" joined")
 
 })
 
-/* DM MESSAGE */
+/* COMMANDS */
 
-socket.on("dm", (data) => {
-
-const target = onlineUsers.find(u => u.username === data.to)
-
-if (target) {
-
-io.to(target.id).emit("dm", data)
-
-}
-
-})
-
-/* OWNER COMMANDS */
-
-socket.on("ban", (username) => {
-
+socket.on("ban",(username)=>{
 bannedUsers.push(username)
-
-io.emit("system", username + " banned by owner")
-
+io.emit("system",username+" banned")
 })
 
-socket.on("mute", (username) => {
-
+socket.on("mute",(username)=>{
 mutedUsers.push(username)
-
-io.emit("system", username + " muted")
-
 })
 
-socket.on("kick", (username) => {
+socket.on("kick",(username)=>{
 
-const user = onlineUsers.find(u => u.username === username)
+const user = onlineUsers.find(u=>u.username===username)
 
-if (user) {
-
+if(user){
 io.to(user.id).emit("kick")
-
 }
 
 })
 
-socket.on("clearChat", () => {
-
+socket.on("clearChat",()=>{
 io.emit("clearChat")
-
 })
 
-/* DISCONNECT */
+socket.on("disconnect",()=>{
 
-socket.on("disconnect", () => {
+onlineUsers = onlineUsers.filter(u=>u.id !== socket.id)
 
-onlineUsers = onlineUsers.filter(u => u.id !== socket.id)
-
-io.emit("onlineUsers", onlineUsers)
+io.emit("onlineUsers",onlineUsers)
 
 })
 
 })
-
-/* SERVER START */
 
 const PORT = process.env.PORT || 3000
 
-server.listen(PORT, () => {
-
-console.log("Tulip Chat Server running on port " + PORT)
-
+server.listen(PORT,()=>{
+console.log("Tulip Chat running on "+PORT)
 })
