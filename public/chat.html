@@ -1,348 +1,149 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Tulip Chat</title>
+<!DOCTYPE html><html>
+<head><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tulip Chat</title><style>
 
-<link rel="stylesheet" href="/style.css">
-
-<script src="/socket.io/socket.io.js"></script>
-
-<style>
+/* GLOBAL */
 
 body{
 margin:0;
-font-family:sans-serif;
+font-family:Arial;
 background:#f2f2f2;
 }
 
-header{
-background:#ff5a76;
+/* HEADER */
+
+.header{
+background:#ff4f7b;
 color:white;
-padding:10px;
+padding:12px;
 display:flex;
 align-items:center;
 justify-content:space-between;
 }
 
-#menuBtn{
+.menu{
 font-size:22px;
 cursor:pointer;
 }
 
+/* SIDEBAR */
+
 #sidebar{
 position:fixed;
-left:0;
+left:-260px;
 top:0;
-width:0;
+width:260px;
 height:100%;
-background:#fff;
-overflow:hidden;
-transition:0.3s;
+background:white;
 border-right:1px solid #ddd;
+padding:10px;
+transition:0.3s;
+overflow:auto;
 }
 
 #sidebar.open{
-width:230px;
-}
-
-#onlineUsers{
-padding:10px;
+left:0;
 }
 
 .user{
-padding:8px;
-cursor:pointer;
+padding:10px;
 border-bottom:1px solid #eee;
+cursor:pointer;
 }
 
+/* CHAT WINDOW */
+
 #chat{
-margin-left:0;
-padding:10px;
 height:70vh;
-overflow-y:auto;
+overflow:auto;
+background:white;
+padding:10px;
 }
 
 .msg{
-margin:6px 0;
 padding:6px;
-background:#fff;
-border-radius:6px;
+margin-bottom:8px;
+border-bottom:1px solid #eee;
 }
 
-#messageBar{
-position:fixed;
-bottom:0;
-width:100%;
+/* INPUT AREA */
+
+#inputArea{
 display:flex;
-background:white;
-padding:5px;
+padding:10px;
+background:#eee;
 }
 
-#messageInput{
+#msg{
 flex:1;
 padding:8px;
 }
 
+button{
+padding:8px;
+margin-left:5px;
+}
+
+/* DM POPUP */
+
 #dmPopup{
 position:fixed;
 right:10px;
-bottom:80px;
+bottom:10px;
 width:260px;
 background:white;
 border:1px solid #ccc;
 display:none;
-flex-direction:column;
 }
 
 #dmMessages{
-height:200px;
+height:160px;
 overflow:auto;
-padding:10px;
+padding:8px;
 }
 
-#dmInput{
-width:100%;
-padding:6px;
-}
+</style></head><body><!-- HEADER --><div class="header"><span class="menu" onclick="toggleSidebar()">☰</span>
 
-</style>
-</head>
+<span>Tulip Chat</span>
 
-<body>
+<div><span id="dmBell">🔔</span>
 
-<header>
+<a id="ownerPanel"
+href="/admin.html"
+style="display:none;color:white;margin-left:10px">
+Owner Panel
+</a>
 
-<span id="menuBtn" onclick="toggleSidebar()">☰</span>
+</div></div><!-- SIDEBAR --><div id="sidebar"><h3>Online Users</h3><div id="onlineUsers"></div></div><!-- CHAT --><div id="chat"></div><!-- MESSAGE INPUT --><div id="inputArea"><input id="msg" placeholder="Type message"><button onclick="send()">Send</button>
 
-<div>
-🌷 Tulip Chat
-</div>
+<input type="file" id="imgFile"><button onclick="sendImage()">Image</button>
 
-<div>
+</div><!-- DM POPUP --><div id="dmPopup"><div id="dmMessages"></div><input id="dmInput" placeholder="DM message"><button onclick="sendDM()">Send</button>
 
-<span id="ownerBadge"></span>
+<button onclick="closeDM()">Close</button>
 
-<span id="dmBell">🔔</span>
-
-</div>
-
-</header>
-
-
-<div id="sidebar">
-
-<h3 style="padding:10px">Online Users</h3>
-
-<div id="onlineUsers"></div>
-
-</div>
-
-
-<div id="chat"></div>
-
-
-<div id="messageBar">
-
-<input id="messageInput" placeholder="Type message">
-
-<input type="file" id="imgFile">
-
-<button onclick="sendMsg()">Send</button>
-
-</div>
-
-
-
-<div id="dmPopup">
-
-<div style="background:#ff5a76;color:white;padding:6px">
-DM
-<button onclick="closeDM()" style="float:right">X</button>
-</div>
-
-<div id="dmMessages"></div>
-
-<input id="dmInput" placeholder="DM message">
-
-<button onclick="sendDM()">Send</button>
-
-</div>
-
-
-
-<script>
-
-const socket = io()
-
-let username = localStorage.getItem("username")
-
-if(!username){
-location.href="/login.html"
-}
-
-if(username === "Lord_lucifer"){
-document.getElementById("ownerBadge").innerText="(OWNER)"
-}
-
-socket.emit("join", username)
-
-
+</div><!-- SOCKET --><script src="/socket.io/socket.io.js"></script><!-- CLIENT LOGIC --><script src="client.js"></script><!-- UI SCRIPT --><script>
 
 function toggleSidebar(){
 
-document.getElementById("sidebar").classList.toggle("open")
+document.getElementById("sidebar")
+.classList.toggle("open")
 
 }
 
+function openDM(){
 
-
-socket.on("onlineUsers", users => {
-
-const list = document.getElementById("onlineUsers")
-
-list.innerHTML=""
-
-users.forEach(u => {
-
-let div=document.createElement("div")
-
-div.className="user"
-
-div.innerText="🟢 "+u
-
-div.onclick=()=>openDM(u)
-
-list.appendChild(div)
-
-})
-
-})
-
-
-
-function sendMsg(){
-
-let input=document.getElementById("messageInput")
-
-let msg=input.value
-
-let file=document.getElementById("imgFile").files[0]
-
-if(file){
-
-let form=new FormData()
-
-form.append("image",file)
-
-fetch("/upload",{method:"POST",body:form})
-.then(r=>r.json())
-.then(d=>{
-socket.emit("chat",username+": "+d.url)
-})
-
-}else{
-
-socket.emit("chat",username+": "+msg)
+document.getElementById("dmPopup")
+.style.display="block"
 
 }
-
-input.value=""
-
-}
-
-
-
-socket.on("chat", msg=>{
-
-renderMsg(msg)
-
-})
-
-
-
-function renderMsg(msg){
-
-let div=document.createElement("div")
-
-div.className="msg"
-
-if(msg.includes(".gif")){
-
-div.innerHTML=`<img src="${msg}" width="200">`
-
-}else if(msg.includes(".png")||msg.includes(".jpg")){
-
-div.innerHTML=`<img src="${msg}" width="200">`
-
-}else{
-
-div.innerText=msg
-
-}
-
-document.getElementById("chat").appendChild(div)
-
-}
-
-
-
-let currentDM=null
-
-
-
-function openDM(user){
-
-currentDM=user
-
-document.getElementById("dmPopup").style.display="flex"
-
-}
-
-
 
 function closeDM(){
 
-document.getElementById("dmPopup").style.display="none"
+document.getElementById("dmPopup")
+.style.display="none"
 
 }
 
-
-
-function sendDM(){
-
-let msg=document.getElementById("dmInput").value
-
-socket.emit("dm",{
-
-to:currentDM,
-
-from:username,
-
-msg:msg
-
-})
-
-document.getElementById("dmInput").value=""
-
-}
-
-
-
-socket.on("dm",data=>{
-
-document.getElementById("dmBell").innerText="🔔1"
-
-let div=document.createElement("div")
-
-div.innerText=data.from+": "+data.msg
-
-document.getElementById("dmMessages").appendChild(div)
-
-})
-
-</script>
-
-
-</body>
- </html>
+</script></body>
+</html>
