@@ -1,182 +1,81 @@
-:root {
-  /* Premium Dark Theme Palette */
-  --bg-deep-slate: #010a17; /* Aur zyada gehra dark blue */
-  --bg-card: rgba(255, 255, 255, 0.04); /* Halka glass effect */
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Blue to Purple gradient */
-  --primary-light: #a855f7; /* Purple accents */
-  --text-white: #f8fafc;
-  --text-dim: #94a3b8;
-  --owner-gold: #fbbf24;
+/* Premium Glassmorphism Theme */
+body.auth-page {
+    background: linear-gradient(45deg, #0f172a, #1e293b);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Poppins', sans-serif;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: 'Poppins', sans-serif; /* Thoda professional font, optional hai */
+.auth-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 40px 30px;
+    border-radius: 25px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
 }
 
-body {
-  background-color: var(--bg-deep-slate);
-  color: var(--text-white);
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+.brand h1 { color: white; margin-top: 10px; font-weight: 600; }
+.brand p { color: #94a3b8; font-size: 14px; margin-bottom: 30px; }
+.logo { font-size: 40px; }
+
+input {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: white;
+    outline: none;
+    box-sizing: border-box;
 }
 
-/* 🏆 Premium App Header 🏆 */
-#app-header {
-  padding: 18px 25px;
-  background: var(--bg-card);
-  backdrop-filter: blur(15px); /* Strong glass effect */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3); /* Smooth shadow */
+.btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
 }
 
-#app-title {
-  font-size: 20px;
-  font-weight: bold;
-  letter-spacing: 0.5px;
-  background: var(--primary-gradient); /* Title par bhi gradient */
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.btn-primary {
+    background: linear-gradient(135deg, #f43f5e, #e11d48);
+    color: white;
+    box-shadow: 0 4px 15px rgba(225, 29, 72, 0.4);
 }
 
-/* Icons styling for premium look */
-.icon-btn {
-  background: none;
-  border: none;
-  color: var(--text-white);
-  font-size: 22px;
-  cursor: pointer;
-  transition: color 0.3s;
-}
-.icon-btn:hover { color: var(--primary-light); }
-
-/* Message Display Area */
-#messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 25px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+.btn-guest {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    margin-top: 10px;
 }
 
-/* 💬 Modern Message Bubbles 💬 */
-.msg-container {
-  max-width: 80%;
-  padding: 12px 18px;
-  border-radius: 20px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  display: flex;
-  flex-direction: column;
+.btn-guest:hover { background: rgba(255,255,255,0.1); }
+
+.divider {
+    margin: 25px 0;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    position: relative;
+}
+.divider span {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    padding: 0 10px;
+    color: #64748b;
+    font-size: 12px;
 }
 
-/* Sender's message style */
-.sent {
-  align-self: flex-end;
-  background: var(--primary-gradient);
-  color: white;
-  border-bottom-right-radius: 5px; /* Bubble peak */
-}
-
-/* Receiver's message style */
-.received {
-  align-self: flex-start;
-  background: var(--bg-card);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  color: var(--text-white);
-  border-bottom-left-radius: 5px; /* Bubble peak */
-}
-
-/* Header inside message (user and tag) */
-.msg-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 5px;
-  font-size: 13px;
-  color: var(--text-dim);
-}
-
-.sent .msg-header { color: rgba(255,255,255,0.8); } /* Sent message header thoda white */
-
-.msg-text {
-  font-size: 15px;
-  line-height: 1.5;
-}
-
-/* User Tags */
-.tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-.tag-owner { background: var(--owner-gold); color: black; box-shadow: 0 0 10px rgba(251, 191, 36, 0.4); } /* Glowing owner tag */
-
-/* Error/System messages with Premium Look */
-.error-msg { background: rgba(239, 68, 68, 0.15); color: #f87171; text-align: center; font-size: 12px; margin: 10px; border-radius: 5px; }
-.system-msg { text-align: center; color: var(--owner-gold); font-size: 12px; margin: 15px 0; font-style: italic; opacity: 0.8; }
-
-/* ⌨️ Premium Input Area ⌨️ */
-.input-area {
-  padding: 18px 20px;
-  background: rgba(1, 10, 23, 0.7); /* Thoda visible deep dark */
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  position: sticky;
-  bottom: 0;
-}
-
-input[type="text"] {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 14px 20px;
-  border-radius: 30px;
-  color: var(--text-white);
-  outline: none;
-  font-size: 15px;
-  transition: border-color 0.3s;
-}
-input[type="text"]:focus {
-  border-color: rgba(168, 85, 247, 0.5); /* Glowing focus effect */
-}
-
-/* Premium Send Button with Gradient */
-.send-btn {
-  background: var(--primary-gradient);
-  border: none;
-  padding: 14px;
-  border-radius: 50%; /* Rounded button */
-  color: white;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(118, 75, 162, 0.4);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.send-btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(118, 75, 162, 0.6); }
-
-/* --- 👑 Floating Owner Menu Card 👑 --- */
-#admin-panel {
-  position: fixed;
-  bottom: 90px;
-  right: 20px;
-  background: rgba(1, 10, 23, 0.95);
-  border: 1px solid rgba(251, 191, 36, 0.5); /* Gold border */
-  padding: 15px;
-  border-radius: 12px;
-  backdrop-filter: blur(15px);
-  z-index: 1000;
-  box-shadow: 0 0 30px rgba(251, 191, 36, 0.2); /* Soft glow */
-}
-
-#admin-panel h3 {
-  font-size: 16px;
-  color: var(--owner-gold);
-  margin-bottom: 12px;
-  text-align: center;
-  letter-spacing: 0.5px;
-}
+.auth-footer { margin-top: 25px; color: #94a3b8; font-size: 14px; }
+.auth-footer a { color: #f43f5e; text-decoration: none; font-weight: 600; }
