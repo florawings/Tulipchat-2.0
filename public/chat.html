@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>Tulip Chat</title>
 
@@ -12,60 +12,76 @@ body{
 margin:0;
 font-family:Arial;
 background:#f6f6f6;
-height:100vh;
-display:flex;
-flex-direction:column;
 }
 
-/* TOP BAR */
-
-#topbar{
-background:#ff5ca8;
-color:white;
-padding:10px;
+#login{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:white;
 display:flex;
-justify-content:space-between;
+flex-direction:column;
+justify-content:center;
 align-items:center;
 }
 
-#menuBtn{
-font-size:22px;
-cursor:pointer;
+#login input{
+margin:5px;
+padding:10px;
+width:200px;
 }
 
-#inbox{
-font-size:18px;
-cursor:pointer;
+#main{
+display:none;
+height:100vh;
 }
 
-/* MAIN LAYOUT */
-
-#container{
-flex:1;
+#topbar{
+height:50px;
+background:#ff6b81;
+color:white;
 display:flex;
-height:100%;
+align-items:center;
+justify-content:space-between;
+padding:0 10px;
 }
 
-/* USERS */
+#menu{
+position:fixed;
+left:-250px;
+top:0;
+width:250px;
+height:100%;
+background:white;
+transition:.3s;
+overflow:auto;
+}
+
+#menu.open{
+left:0;
+}
+
+#onlineList div{
+padding:10px;
+border-bottom:1px solid #eee;
+}
+
+#chatArea{
+display:flex;
+height:calc(100vh - 50px);
+}
 
 #users{
 width:30%;
-background:#222;
-color:white;
+background:#fff;
+border-right:1px solid #ddd;
 overflow:auto;
-display:none;
 }
 
-#users div{
-padding:8px;
-border-bottom:1px solid #444;
-cursor:pointer;
-}
-
-/* CHAT */
-
-#chatArea{
-flex:1;
+#chat{
+width:70%;
 display:flex;
 flex-direction:column;
 }
@@ -74,47 +90,41 @@ flex-direction:column;
 flex:1;
 overflow:auto;
 padding:10px;
-background:white;
 }
 
 .msg{
 margin:5px 0;
-padding:6px;
-background:#f1f1f1;
+padding:8px;
+background:white;
 border-radius:6px;
 }
 
-/* INPUT */
-
 #inputBar{
 display:flex;
-padding:6px;
-background:#ddd;
+padding:10px;
+background:#eee;
 }
 
-#msg{
+#inputBar input{
 flex:1;
-padding:6px;
+padding:10px;
 }
 
-button{
-padding:6px;
-margin-left:4px;
+#inputBar button{
+margin-left:5px;
 }
 
-/* LOGIN */
+#progress{
+font-size:12px;
+color:#555;
+}
 
-#loginBox{
-position:absolute;
-top:0;
-left:0;
-right:0;
-bottom:0;
-background:white;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
+#inboxBadge{
+background:red;
+color:white;
+border-radius:50%;
+padding:2px 6px;
+font-size:12px;
 }
 
 </style>
@@ -123,50 +133,67 @@ align-items:center;
 
 <body>
 
-<div id="loginBox">
+<div id="login">
 
-<h2>Join Tulip Chat</h2>
+<h2>Tulip Chat</h2>
 
-<input id="name" placeholder="Name"><br><br>
+<input id="name" placeholder="Name">
 
-<input id="age" placeholder="Age"><br><br>
+<input id="age" placeholder="Age">
 
 <select id="gender">
-<option value="male">Male</option>
-<option value="female">Female</option>
+<option>Male</option>
+<option>Female</option>
 </select>
 
-<br><br>
-
-<button onclick="join()">Enter Chat</button>
+<button onclick="start()">Enter Chat</button>
 
 </div>
+
+<div id="main">
 
 <div id="topbar">
 
-<span id="menuBtn">☰</span>
+<span onclick="toggleMenu()">☰</span>
 
 <span>Tulip Chat</span>
 
-<span id="inbox">🔔 <span id="count">0</span></span>
+<span>
+📥 <span id="inboxBadge">0</span>
+<button onclick="location.reload()">⟳</button>
+</span>
 
 </div>
 
-<div id="container">
+<div id="menu">
 
-<div id="users"></div>
+<h3 style="padding:10px">Online Users</h3>
+
+<div id="onlineList"></div>
+
+</div>
 
 <div id="chatArea">
 
+<div id="users"></div>
+
+<div id="chat">
+
 <div id="messages"></div>
+
+<div id="progress"></div>
 
 <div id="inputBar">
 
-<input id="msg" placeholder="Type message">
+<input id="msg" placeholder="message">
 
 <input type="file" id="file">
 
 <button onclick="send()">Send</button>
+
+<button onclick="upload()">GIF / Pic</button>
+
+</div>
 
 </div>
 
@@ -178,154 +205,158 @@ align-items:center;
 
 <script>
 
-const socket=io()
+let socket
+let username
+let dmUser=null
+let unread=0
 
-let username=""
-let users=[]
-let inboxCount=0
-
-const messages=document.getElementById("messages")
-
-/* JOIN */
-
-function join(){
+function start(){
 
 username=document.getElementById("name").value
 
-socket.emit("join",{username})
+localStorage.setItem("username",username)
 
-document.getElementById("loginBox").style.display="none"
+document.getElementById("login").style.display="none"
+
+document.getElementById("main").style.display="block"
+
+socket=io()
+
+socket.emit("join",username)
+
+socket.on("chat",(data)=>{
+
+addMsg(data)
+
+})
+
+socket.on("join",(u)=>{
+
+addMsg(u+" joined the chat")
+
+})
+
+socket.on("onlineUsers",(users)=>{
+
+let html=""
+
+users.forEach(u=>{
+
+html+=`<div onclick="openDM('${u}')">${u}</div>`
+
+})
+
+document.getElementById("onlineList").innerHTML=html
+
+})
+
+socket.on("dm",(data)=>{
+
+if(data.to===username){
+
+unread++
+
+document.getElementById("inboxBadge").innerText=unread
+
+addMsg("(DM) "+data.from+": "+data.msg)
 
 }
 
-/* SEND MESSAGE */
+})
+
+}
+
+function addMsg(text){
+
+let div=document.createElement("div")
+
+div.className="msg"
+
+div.innerHTML=text
+
+document.getElementById("messages").appendChild(div)
+
+document.getElementById("messages").scrollTop=999999
+
+}
 
 function send(){
 
-const text=document.getElementById("msg").value
+let text=document.getElementById("msg").value
 
 if(text==="/clear"){
 
-messages.innerHTML=""
+document.getElementById("messages").innerHTML=""
 
 return
 
 }
 
-socket.emit("chat message",{
+if(dmUser){
 
-user:username,
-text:text
+socket.emit("dm",{to:dmUser,msg:text,from:username})
 
-})
+addMsg("(DM to "+dmUser+") "+text)
+
+}else{
+
+socket.emit("chat",username+": "+text)
+
+}
 
 document.getElementById("msg").value=""
 
 }
 
-/* RECEIVE MESSAGE */
+function upload(){
 
-socket.on("chat message",(data)=>{
+let file=document.getElementById("file").files[0]
 
-const div=document.createElement("div")
+if(!file) return
 
-div.className="msg"
+let data=new FormData()
 
-div.innerText=data.user+": "+data.text
+data.append("photo",file)
 
-messages.appendChild(div)
+let xhr=new XMLHttpRequest()
 
-messages.scrollTop=messages.scrollHeight
+xhr.open("POST","/upload")
 
-})
+xhr.upload.onprogress=function(e){
 
-/* ONLINE USERS */
+let percent=Math.round((e.loaded/e.total)*100)
 
-socket.on("onlineUsers",(list)=>{
-
-users=list
-
-const box=document.getElementById("users")
-
-box.innerHTML=""
-
-list.forEach(u=>{
-
-const div=document.createElement("div")
-
-div.innerText=u.username
-
-div.onclick=()=>startDM(u.username)
-
-box.appendChild(div)
-
-})
-
-})
-
-/* MENU TOGGLE */
-
-document.getElementById("menuBtn").onclick=()=>{
-
-const u=document.getElementById("users")
-
-u.style.display=u.style.display==="none"?"block":"none"
+document.getElementById("progress").innerText="upload "+percent+"%"
 
 }
 
-/* DM */
+xhr.onload=function(){
 
-function startDM(user){
+let res=JSON.parse(xhr.responseText)
 
-const msg=prompt("DM to "+user)
-
-socket.emit("dm",{
-
-from:username,
-to:user,
-text:msg
-
-})
+socket.emit("chat",username+`<br><img src="${res.url}" width="150">`)
 
 }
 
-socket.on("dm",(msg)=>{
+xhr.send(data)
 
-inboxCount++
+}
 
-document.getElementById("count").innerText=inboxCount
+function toggleMenu(){
 
-alert("DM from "+msg.from+": "+msg.text)
+let m=document.getElementById("menu")
 
-})
+m.classList.toggle("open")
 
-/* FILE UPLOAD */
+}
 
-document.getElementById("file").addEventListener("change",async function(){
+function openDM(u){
 
-const file=this.files[0]
+dmUser=u
 
-const form=new FormData()
+addMsg("DM with "+u)
 
-form.append("file",file)
-
-const res=await fetch("/upload",{
-
-method:"POST",
-body:form
-
-})
-
-const data=await res.json()
-
-socket.emit("chat message",{
-
-user:username,
-text:data.url
-
-})
-
-})
+}
 
 </script>
 
