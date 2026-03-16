@@ -1,46 +1,21 @@
-const express = require("express")
-const http = require("http")
-const { Server } = require("socket.io")
-const path = require("path")
+const express=require("express")
+const http=require("http")
+const {Server}=require("socket.io")
+const path=require("path")
 
-const app = express()
-const server = http.createServer(app)
-const io = new Server(server)
+const app=express()
+const server=http.createServer(app)
+const io=new Server(server)
 
 app.use(express.json())
 app.use(express.static(path.join(__dirname,"public")))
 
-/* USERS MEMORY */
-
-let users = [
- { username:"Lord_lucifer", password:"766521", role:"owner" }
+let users=[
+ {username:"Lord_lucifer",password:"766521",role:"owner"}
 ]
 
-/* REGISTER */
-
-app.post("/register",(req,res)=>{
-
- const {username,password} = req.body
-
- if(!username || !password){
-  return res.json({error:"Missing fields"})
- }
-
- const exist = users.find(u=>u.username===username)
-
- if(exist){
-  return res.json({error:"User exists"})
- }
-
- users.push({
-  username,
-  password,
-  role:"user"
- })
-
- res.json({success:true})
-
-})
+let onlineUsers=[]
+let dmUsers={}
 
 /* LOGIN */
 
@@ -48,7 +23,7 @@ app.post("/login",(req,res)=>{
 
  const {username,password}=req.body
 
- const user = users.find(
+ const user=users.find(
   u=>u.username===username && u.password===password
  )
 
@@ -64,10 +39,7 @@ app.post("/login",(req,res)=>{
 
 })
 
-/* SOCKET CHAT */
-
-let onlineUsers=[]
-let dmUsers={}
+/* SOCKET */
 
 io.on("connection",(socket)=>{
 
@@ -112,8 +84,4 @@ io.on("connection",(socket)=>{
 
 })
 
-const PORT = process.env.PORT || 3000
-
-server.listen(PORT,()=>{
- console.log("Server running on "+PORT)
-})
+server.listen(process.env.PORT||3000)
