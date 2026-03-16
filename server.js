@@ -9,35 +9,19 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-// View engine aur static files
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Database Connection
-const MONGO_URI = 'YOUR_MONGODB_URL_HERE'; // Apna URL yahan daalein
-mongoose.connect(MONGO_URI)
+mongoose.connect('YOUR_MONGODB_URL')
   .then(async () => {
-    console.log('✅ MongoDB Connected');
-    
-    // Auto-Owner Assignment for Lord_lucifer
-    const owner = await User.findOne({ username: "Lord_lucifer" });
-    if (owner) {
-      await User.findOneAndUpdate({ username: "Lord_lucifer" }, { role: 'owner' });
-      console.log("👑 Lord_lucifer is now the System Owner");
-    }
-  })
-  .catch(err => console.log('❌ DB Error:', err));
+    console.log('✅ Connected to DB');
+    // Lord_lucifer ko Owner banana
+    await User.findOneAndUpdate({ username: "Lord_lucifer" }, { role: 'owner' });
+  });
 
-// Routes
-app.use('/auth', require('./routes/auth'));
-
-// Socket Setup
 const chatSocket = require('./sockets/chatSocket');
 io.on('connection', (socket) => {
-    // Note: Login ke waqt socket.userId set hona chahiye
     chatSocket(io, socket);
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`🚀 Chat Server live on port ${PORT}`));
+server.listen(3000, () => console.log('🚀 Server running on port 3000'));
