@@ -1,32 +1,29 @@
-const express = require("express")
-const router = express.Router()
+const express=require("express")
+const router=express.Router()
+const User=require("../models/User")
 
-let users = []
+router.post("/register",async(req,res)=>{
 
-router.post("/register",(req,res)=>{
-
-const {username,password,email,age,gender} = req.body
-
-users.push({
-username,password,email,age,gender
-})
+const user=new User(req.body)
+await user.save()
 
 res.json({msg:"registered"})
 
 })
 
-router.post("/login",(req,res)=>{
+router.post("/login",async(req,res)=>{
 
-const {username,password} = req.body
-
-const user = users.find(u=>u.username===username && u.password===password)
+const user=await User.findOne({
+username:req.body.username,
+password:req.body.password
+})
 
 if(!user){
-return res.json({error:"invalid login"})
+return res.json({error:"login failed"})
 }
 
-res.json({msg:"login success",user})
+res.json(user)
 
 })
 
-module.exports = router
+module.exports=router
