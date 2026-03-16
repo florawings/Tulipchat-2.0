@@ -1,34 +1,58 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
+const express = require("express")
+const http = require("http")
+const { Server } = require("socket.io")
+const multer = require("multer")
+const path = require("path")
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+const app = express()
+const server = http.createServer(app)
+const io = new Server(server)
 
-app.use(express.json());
-app.use(express.static("public"));
+app.use(express.json())
+app.use(express.static("public"))
+app.use("/uploads", express.static("uploads"))
+
+/* ---------- FILE UPLOAD ---------- */
+
+const storage = multer.diskStorage({
+ destination: "uploads/",
+ filename: (req, file, cb) => {
+  cb(null, Date.now() + path.extname(file.originalname))
+ }
+})
+
+const upload = multer({ storage })
+
+app.post("/upload", upload.single("image"), (req, res) => {
+
+ res.json({
+  url: "/uploads/" + req.file.filename
+ })
+
+})
 
 /* ---------- MEMORY USERS ---------- */
 
 let users = [
- { username: "Lord_lucifer", password: "766521", role: "owner" }
-];
+ { username: "Lord_lucifer", password: "766521", role: "owner", email:"owner@tulip" }
+]
+
+let bannedUsers = []
 
 /* ---------- REGISTER ---------- */
 
 app.post("/register", (req, res) => {
 
- const { username, password, email, age, gender } = req.body;
+ const { username, password, email, age, gender } = req.body
 
  if (!username || !password) {
-  return res.json({ error: "Missing fields" });
+  return res.json({ error: "Missing fields" })
  }
 
- const exist = users.find(u => u.username === username);
+ const exist = users.find(u => u.username === username)
 
  if (exist) {
-  return res.json({ error: "User already exists" });
+  return res.json({ error: "User exists" })
  }
 
  users.push({
@@ -37,69 +61,137 @@ app.post("/register", (req, res) => {
   email,
   age,
   gender,
-  role: "user"
- });
+  role:"user"
+ })
 
- res.json({ success: true });
+ res.json({ success:true })
 
-});
+})
 
 /* ---------- LOGIN ---------- */
 
 app.post("/login", (req, res) => {
 
- const { username, password } = req.body;
+ const { username, password } = req.body
+
+ if(bannedUsers.includes(username)){
+  return res.json({error:"User banned"})
+ }
 
  const user = users.find(
   u => u.username === username && u.password === password
- );
+ )
 
- if (!user) {
-  return res.json({ error: "Invalid login" });
+ if(!user){
+  return res.json({error:"Invalid login"})
  }
 
- res.json({ success: true, role: user.role });
+ res.json({success:true, role:user.role})
 
-});
+})
 
-/* ---------- SOCKET CHAT ---------- */
+/* ---------- ADMIN APIs ---------- */
 
-let onlineUsers = [];
+app.get("/admin/users",(req,res)=>{
+ res.json(users)
+})
 
-io.on("connection", (socket) => {
+app.post("/admin/ban/:name",(req,res)=>{
 
- socket.on("join", (username) => {
+ const name=req.params.name
 
-  socket.username = username;
+ bannedUsers.push(name)
 
-  if (!onlineUsers.includes(username)) {
-   onlineUsers.push(username);
+ res.json({success:true})
+
+})
+
+app.post("/admin/kick/:name",(req,res)=>{
+
+ const name=req.params.name
+
+ const socketId = Object.keys(io.sockets.sockets).find(id=>{
+  return io.sockets.sockets.get(id).username === name
+ })
+
+ if(socketId){
+  io.sockets.sockets.get(socketId).disconnect()
+ }
+
+ res.json({success:true})
+
+})
+
+app.post("/admin/clear",(req,res)=>{
+
+ io.emit("clearChat")
+
+ res.json({success:true})
+
+})
+
+/* ---------- SOCKET ---------- */
+
+let onlineUsers=[]
+let sockets={}
+
+io.on("connection",(socket)=>{
+
+ socket.on("join",(username)=>{
+
+  socket.username=username
+  sockets[username]=socket
+
+  if(!onlineUsers.includes(username)){
+   onlineUsers.push(username)
   }
 
-  io.emit("onlineUsers", onlineUsers);
+  io.emit("onlineUsers",onlineUsers)
 
- });
+ })
 
- socket.on("chat", (msg) => {
-  io.emit("chat", msg);
- });
+ /* CHAT */
 
- socket.on("disconnect", () => {
+ socket.on("chat",(msg)=>{
 
-  onlineUsers = onlineUsers.filter(
-   u => u !== socket.username
-  );
+  io.emit("chat",msg)
 
-  io.emit("onlineUsers", onlineUsers);
+ })
 
- });
+ /* DM */
 
-});
+ socket.on("dm",(data)=>{
 
-/* ---------- SERVER START ---------- */
+  const target=sockets[data.to]
 
-const PORT = process.env.PORT || 3000;
+  if(target){
+   target.emit("dm",data)
+  }
 
-server.listen(PORT, () => {
- console.log("Server running on port " + PORT);
-});
+ })
+
+ /* DISCONNECT */
+
+ socket.on("disconnect",()=>{
+
+  onlineUsers=onlineUsers.filter(
+   u=>u!==socket.username
+  )
+
+  delete sockets[socket.username]
+
+  io.emit("onlineUsers",onlineUsers)
+
+ })
+
+})
+
+/* ---------- START SERVER ---------- */
+
+const PORT = process.env.PORT || 3000
+
+server.listen(PORT,()=>{
+
+ console.log("Server running on port "+PORT)
+
+})
