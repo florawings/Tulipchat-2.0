@@ -1,145 +1,307 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tulip Hot | Ultra</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root { --hot: #ff0055; --dark: #0f0f12; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Lexend', sans-serif; }
-        
-        body { 
-            background: var(--dark); 
-            height: 100dvh; 
-            overflow: hidden; 
-            position: fixed; 
-            width: 100%;
-        }
 
-        /* Full Background Image */
-        .bg-overlay {
-            position: fixed; inset: 0;
-            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), 
-                        url('https://images.unsplash.com/photo-1514924013411-cbf25faa35bb?q=80&w=1500') center/cover;
-            z-index: -1;
-        }
-
-        .main-container { display: flex; flex-direction: column; height: 100%; }
-
-        header {
-            height: 55px; background: #000; border-bottom: 2px solid var(--hot);
-            display: flex; align-items: center; justify-content: center; font-weight: 800;
-            box-shadow: 0 5px 15px rgba(255, 0, 85, 0.3);
-        }
-
-        /* FIXED MESSAGE AREA: Ab yeh center mein dikhega */
-        #chat-flow {
-            flex: 1; overflow-y: auto; padding: 20px 15px;
-            display: flex; flex-direction: column; gap: 12px;
-            padding-bottom: 100px;
-        }
-
-        .bubble {
-            max-width: 80%; padding: 12px 16px; border-radius: 20px;
-            font-size: 15px; line-height: 1.4; position: relative;
-            animation: slideUp 0.3s ease;
-        }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .sender-name { font-size: 10px; font-weight: bold; color: var(--hot); margin-bottom: 4px; display: block; }
-
-        .mine { align-self: flex-end; background: var(--hot); color: #fff; border-bottom-right-radius: 4px; }
-        .others { align-self: flex-start; background: rgba(255,255,255,0.1); backdrop-filter: blur(5px); color: #eee; border-bottom-left-radius: 4px; }
-
-        .chat-media { max-width: 100%; border-radius: 10px; margin-top: 8px; }
-
-        /* Floating Input */
-        .input-zone {
-            position: fixed; bottom: 0; width: 100%; padding: 15px;
-            background: rgba(0,0,0,0.9); border-top: 1px solid #333;
-            display: flex; gap: 10px; align-items: center;
-        }
-
-        #msg-input {
-            flex: 1; background: #222; border: 1px solid #444; color: white;
-            padding: 12px 18px; border-radius: 25px; outline: none; font-size: 16px;
-        }
-
-        .send-pill {
-            background: var(--hot); border: none; padding: 12px 22px;
-            border-radius: 25px; color: #fff; font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-
-<div class="bg-overlay"></div>
-
-<div class="main-container">
-    <header>TULIP <span style="color:var(--hot); margin-left:5px;">HOT</span></header>
-
-    <div id="chat-flow"></div>
-
-    <div class="input-zone">
-        <input type="text" id="msg-input" placeholder="Type a message..." autocomplete="off">
-        <button class="send-pill" onclick="send()">SEND</button>
-    </div>
-</div>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tulip Chat</title>
 
 <script src="/socket.io/socket.io.js"></script>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+height:100vh;
+display:flex;
+flex-direction:column;
+background:linear-gradient(135deg,#ff6a8b,#ff8fab);
+}
+
+/* HEADER */
+
+#header{
+height:55px;
+background:#ff2d5a;
+color:white;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 15px;
+font-size:18px;
+}
+
+#menu{
+cursor:pointer;
+font-size:22px;
+}
+
+#logout{
+background:white;
+color:#ff2d5a;
+border:none;
+padding:6px 12px;
+border-radius:20px;
+}
+
+/* MAIN */
+
+#main{
+flex:1;
+display:flex;
+overflow:hidden;
+}
+
+/* SIDEBAR */
+
+#sidebar{
+width:220px;
+background:white;
+overflow:auto;
+transition:0.3s;
+}
+
+#sidebar.closed{
+width:0;
+}
+
+#sidebar h3{
+padding:10px;
+margin:0;
+border-bottom:1px solid #eee;
+}
+
+/* CHAT AREA */
+
+#chatArea{
+flex:1;
+display:flex;
+flex-direction:column;
+}
+
+/* CHAT MESSAGES */
+
+#chat{
+flex:1;
+overflow:auto;
+padding:10px;
+}
+
+.msg{
+background:white;
+padding:10px;
+margin-bottom:8px;
+border-radius:12px;
+max-width:80%;
+}
+
+/* INPUT AREA */
+
+#sendBox{
+display:flex;
+padding:10px;
+gap:5px;
+background:white;
+}
+
+#msg{
+flex:1;
+padding:12px;
+border-radius:25px;
+border:1px solid #ddd;
+font-size:16px;
+}
+
+button{
+background:#ff2d5a;
+color:white;
+border:none;
+padding:10px 14px;
+border-radius:25px;
+}
+
+/* IMAGE */
+
+.msg img{
+max-width:200px;
+border-radius:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="header">
+
+<span id="menu">☰</span>
+
+<span>Tulip Chat</span>
+
+<button id="logout">Logout</button>
+
+</div>
+
+
+<div id="main">
+
+<div id="sidebar">
+
+<h3>Online Users</h3>
+
+<div id="onlineUsers"></div>
+
+</div>
+
+
+<div id="chatArea">
+
+<div id="chat"></div>
+
+<div id="sendBox">
+
+<input id="msg" placeholder="Type message...">
+
+<button onclick="send()">Send</button>
+
+<input type="file" id="imgFile">
+
+<button onclick="sendImage()">GIF</button>
+
+</div>
+
+</div>
+
+</div>
+
 <script>
-    const socket = io();
-    const myName = new URLSearchParams(window.location.search).get('username') || "Guest";
 
-    socket.emit('join', { username: myName });
+const socket = io()
 
-    // THE MAGIC FIX: "Undefined" aur "Position" dono solve
-    socket.on('newMessage', (data) => {
-        const flow = document.getElementById('chat-flow');
-        
-        // Logical Check: Text ko har jagah dhundega taaki "Undefined" na aaye
-        const messageText = data.text || data.msg || data.message || "Media Attached";
-        const sender = data.user || data.username || "System";
-        const isMe = sender === myName;
+let username = localStorage.getItem("username")
 
-        const div = document.createElement('div');
-        div.className = `bubble ${isMe ? 'mine' : 'others'}`;
-        
-        let html = `<span class="sender-name">${sender}</span>`;
-        
-        if(data.type === 'image' || data.url) {
-            html += `<img src="${messageText}" class="chat-img" onload="scrollDown()">`;
-        } else {
-            html += `<span>${messageText}</span>`;
-        }
+if(!username){
+window.location="login.html"
+}
 
-        div.innerHTML = html;
-        flow.appendChild(div);
-        scrollDown();
-    });
+socket.emit("join",username)
 
-    function send() {
-        const input = document.getElementById('msg-input');
-        if(!input.value.trim()) return;
+/* MESSAGE RENDER */
 
-        // Dono format mein bhej rahe hain taaki server confuse na ho
-        socket.emit('sendMessage', {
-            text: input.value,
-            msg: input.value, // backup
-            user: myName
-        });
-        input.value = '';
-    }
+function render(msg){
 
-    function scrollDown() {
-        const flow = document.getElementById('chat-flow');
-        flow.scrollTop = flow.scrollHeight;
-    }
+const div=document.createElement("div")
 
-    document.getElementById('msg-input').addEventListener('keypress', (e) => {
-        if(e.key === 'Enter') send();
-    });
+div.classList.add("msg")
+
+if(msg.image){
+
+div.innerHTML="<b>"+msg.user+"</b><br><img src='"+msg.image+"'>"
+
+}else{
+
+div.innerHTML="<b>"+msg.user+"</b>: "+msg.text
+
+}
+
+document.getElementById("chat").appendChild(div)
+
+document.getElementById("chat").scrollTop=999999
+
+}
+
+/* SEND MESSAGE */
+
+function send(){
+
+let text=document.getElementById("msg").value
+
+if(!text) return
+
+socket.emit("chat",{
+user:username,
+text:text
+})
+
+document.getElementById("msg").value=""
+
+}
+
+/* SEND IMAGE / GIF */
+
+function sendImage(){
+
+const file=document.getElementById("imgFile").files[0]
+
+if(!file) return
+
+const reader=new FileReader()
+
+reader.onload=function(){
+
+socket.emit("chat",{
+user:username,
+image:reader.result
+})
+
+}
+
+reader.readAsDataURL(file)
+
+}
+
+/* RECEIVE CHAT */
+
+socket.on("chat",msg=>render(msg))
+
+socket.on("chatHistory",msgs=>{
+msgs.forEach(m=>render(m))
+})
+
+socket.on("clearChat",()=>{
+document.getElementById("chat").innerHTML=""
+})
+
+/* ONLINE USERS */
+
+socket.on("onlineUsers",users=>{
+
+const box=document.getElementById("onlineUsers")
+
+box.innerHTML=""
+
+users.forEach(u=>{
+
+const div=document.createElement("div")
+
+div.innerHTML="🟢 "+u
+
+box.appendChild(div)
+
+})
+
+})
+
+/* MENU TOGGLE */
+
+document.getElementById("menu").onclick=()=>{
+
+document.getElementById("sidebar").classList.toggle("closed")
+
+}
+
+/* LOGOUT */
+
+document.getElementById("logout").onclick=()=>{
+
+localStorage.removeItem("username")
+
+window.location="login.html"
+
+}
+
 </script>
+
 </body>
 </html>
