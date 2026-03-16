@@ -12,71 +12,127 @@ app.use(express.json())
 app.use(express.static("public"))
 app.use("/uploads", express.static("uploads"))
 
-/* ---------- FILE UPLOAD ---------- */
+/* ---------------- USERS MEMORY ---------------- */
 
-const storage = multer.diskStorage({
- destination: "uploads",
- filename: (req, file, cb) => {
-  cb(null, Date.now() + "_" + file.originalname)
- }
+let users = []
+
+/* OWNER AUTO CREATE */
+
+users.push({
+ username:"Lord_lucifer",
+ password:"766521",
+ role:"owner"
 })
 
-const upload = multer({ storage })
+/* ---------------- REGISTER ---------------- */
 
-app.post("/upload", upload.single("photo"), (req, res) => {
+app.post("/register",(req,res)=>{
 
- if (!req.file) {
-  return res.json({ error: "no file" })
+ const {username,password,email,age,gender} = req.body
+
+ if(!username || !password){
+  return res.json({error:"Missing fields"})
+ }
+
+ let exist = users.find(u=>u.username===username)
+
+ if(exist){
+  return res.json({error:"User already exists"})
+ }
+
+ users.push({
+  username,
+  password,
+  email,
+  age,
+  gender,
+  role:"user"
+ })
+
+ res.json({success:true})
+
+})
+
+/* ---------------- LOGIN ---------------- */
+
+app.post("/login",(req,res)=>{
+
+ const {username,password} = req.body
+
+ let user = users.find(
+  u=>u.username===username && u.password===password
+ )
+
+ if(!user){
+  return res.json({error:"Invalid login"})
  }
 
  res.json({
-  url: "/uploads/" + req.file.filename
+  success:true,
+  role:user.role
  })
 
 })
 
-/* ---------- SOCKET CHAT ---------- */
+/* ---------------- FILE UPLOAD ---------------- */
 
-let onlineUsers = []
+const storage = multer.diskStorage({
+ destination:"uploads",
+ filename:(req,file,cb)=>{
+  cb(null,Date.now()+"_"+file.originalname)
+ }
+})
 
-io.on("connection", (socket) => {
+const upload = multer({storage})
+
+app.post("/upload",upload.single("photo"),(req,res)=>{
+
+ if(!req.file){
+  return res.json({error:"no file"})
+ }
+
+ res.json({
+  url:"/uploads/"+req.file.filename
+ })
+
+})
+
+/* ---------------- SOCKET CHAT ---------------- */
+
+let onlineUsers=[]
+
+io.on("connection",(socket)=>{
 
  console.log("user connected")
 
- socket.on("join", (username) => {
+ socket.on("join",(username)=>{
 
-  socket.username = username
+  socket.username=username
 
-  if (!onlineUsers.includes(username)) {
+  if(!onlineUsers.includes(username)){
    onlineUsers.push(username)
   }
 
-  io.emit("onlineUsers", onlineUsers)
-
-  io.emit("chat", username + " joined the chat")
+  io.emit("onlineUsers",onlineUsers)
 
  })
 
- socket.on("chat", (msg) => {
+ socket.on("chat",(msg)=>{
 
-  io.emit("chat", msg)
+  io.emit("chat",msg)
 
  })
 
- socket.on("disconnect", () => {
+ socket.on("disconnect",()=>{
 
-  onlineUsers = onlineUsers.filter(u => u !== socket.username)
+  onlineUsers=onlineUsers.filter(
+   u=>u!==socket.username
+  )
 
-  io.emit("onlineUsers", onlineUsers)
+  io.emit("onlineUsers",onlineUsers)
 
  })
 
 })
 
-/* ---------- START SERVER ---------- */
-
-const PORT = process.env.PORT || 3000
-
-server.listen(PORT, () => {
- console.log("Tulip Chat server running on port " + PORT)
-})
+/* ---------------- START SERVER ----------------
