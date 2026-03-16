@@ -1,15 +1,20 @@
-const express=require("express")
-const router=express.Router()
+const express = require('express');
+const router = express.Router();
+const FriendRequest = require('../models/FriendRequest');
 
-let requests=[]
+// Send Request
+router.post('/send-request', async (req, res) => {
+    const { senderId, receiverId } = req.body;
+    const newReq = new FriendRequest({ sender: senderId, receiver: receiverId });
+    await newReq.save();
+    res.json({ success: true, msg: "Request Sent!" });
+});
 
-router.post("/send",(req,res)=>{
-requests.push(req.body)
-res.json({msg:"request sent"})
-})
+// Accept Request
+router.post('/accept-request', async (req, res) => {
+    const { requestId } = req.body;
+    await FriendRequest.findByIdAndUpdate(requestId, { status: 'accepted' });
+    res.json({ success: true, msg: "Now Friends!" });
+});
 
-router.get("/list",(req,res)=>{
-res.json(requests)
-})
-
-module.exports=router
+module.exports = router;
