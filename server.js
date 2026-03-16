@@ -1,60 +1,49 @@
 const express = require('express');
-const http = require('http');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const path = require('path');
-const { Server } = require('socket.io');
-require('dotenv').config();
+const User = require('./models/User'); // Check karein ki path sahi hai
 
 const app = express();
-const server = http.createServer(app);
 
-// Socket.io with Auto-Recovery
-const io = new Server(server, {
-    cors: { origin: "*" },
-    connectionStateRecovery: {}
-});
-
-// --- DATABASE CONNECTION (SAFE MODE) ---
-// Yahan apna link dalein ya Render Environment Variable ka use karein
-const dbURI = process.env.MONGO_URI || "mongodb+srv://YOUR_USER:YOUR_PASSWORD@cluster0.abc.mongodb.net/tulipchat?retryWrites=true&w=majority";
-
-mongoose.set('strictQuery', false);
-mongoose.connect(dbURI)
-    .then(() => console.log("✅ MongoDB Connected Successfully"))
-    .catch(err => {
-        console.log("⚠️ DB Connection Failed, but Server is staying UP.");
-        console.log("Error Detail: " + err.message);
-    });
-
-// --- MIDDLEWARE ---
+// Middleware
+app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- ROUTES ---
-// Agar ye files miss hongi toh server crash karega, dhyan rakhna
-try {
-    const authRoutes = require('./routes/auth');
-    const adminRoutes = require('./routes/admin');
-    const friendRoutes = require('./routes/friends');
-    const shopRoutes = require('./routes/shop');
+// MongoDB Connection
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('✅ MongoDB Connected Successfully'))
+    .catch(err => console.error('❌ Connection Error:', err));
 
-    app.use('/auth', authRoutes);
-    app.use('/admin', adminRoutes);
-    app.use('/friends', friendRoutes);
-    app.use('/shop', shopRoutes);
-} catch (e) {
-    console.log("⚠️ One or more route files are missing: " + e.message);
-}
+// Routes
+app.post('/api/register', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const newUser = new User({ username, password });
+        await newUser.save();
+        res.status(201).json({ message: "Registration Successful!" });
+    } catch (err) {
+        res.status(400).json({ message: "Error: Username already exists or data missing" });
+    }
+});
 
-// --- SOCKET LOGIC ---
-const chatSocket = require('./sockets/chatSocket');
-chatSocket(io);
-app.set('socketio', io);
+app.post('/api/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const user = await User.findOne({ username, password });
+        if (user) {
+            res.json({ message: "Login Successful!", user });
+        } else {
+            res.status(401).json({ message: "Invalid Username or Password" });
+        }
+    } catch (err) {
+        res.status(500).json({ message: "Server Error" });
+    }
+});
 
-// --- RENDER PORT BINDING ---
-// Render ko 0.0.0.0 binding chahiye hoti hai 502 error se bachne ke liye
+// Start Server
 const PORT = process.env.PORT || 10000;
-server.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
     console.log(`🚀 Tulip Hot Engine running on port ${PORT}`);
 });
