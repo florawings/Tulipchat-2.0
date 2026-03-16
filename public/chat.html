@@ -1,95 +1,115 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tulip Hot | Uncensored</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --hot: #ff0055; --dark: #0a0a0c; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        
+        body { background: var(--dark); height: 100vh; overflow: hidden; position: fixed; width: 100%; }
 
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tulip Chat</title>
+        /* Adult Background Setup */
+        .wallpaper {
+            position: fixed; inset: 0;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.85)), 
+                        url('https://images.unsplash.com/photo-1502444330042-d1a1ddf9bb5b?q=80&w=1500') center/cover;
+            z-index: -1;
+        }
+
+        .main-app { display: flex; flex-direction: column; height: 100%; }
+
+        header {
+            height: 60px; background: #000; border-bottom: 2px solid var(--hot);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; color: white; letter-spacing: 2px;
+        }
+
+        /* Fixed Message Box */
+        #chat-area {
+            flex: 1; overflow-y: auto; padding: 20px 10px;
+            display: flex; flex-direction: column; gap: 15px;
+            padding-bottom: 150px; /* Input ke liye jagah */
+        }
+
+        .bubble { max-width: 80%; padding: 12px; border-radius: 15px; position: relative; color: white; }
+        .sender { font-size: 10px; font-weight: bold; color: var(--hot); display: block; margin-bottom: 4px; }
+        
+        .me { align-self: flex-end; background: var(--hot); border-bottom-right-radius: 2px; }
+        .others { align-self: flex-start; background: rgba(255,255,255,0.1); border-bottom-left-radius: 2px; }
+
+        /* THE FIX: Input Bar and Gallery/GIF Buttons */
+        .control-bar {
+            position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.95);
+            padding: 15px; border-top: 1px solid #333; z-index: 100;
+        }
+
+        .action-row { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+        .btn-icon { font-size: 22px; color: white; cursor: pointer; transition: 0.3s; }
+        .btn-icon:active { color: var(--hot); transform: scale(1.2); }
+
+        .input-row { display: flex; gap: 10px; }
+        #msg-text {
+            flex: 1; background: #1a1a1e; border: 1px solid #444; color: white;
+            padding: 12px 18px; border-radius: 25px; outline: none; font-size: 16px;
+        }
+
+        .send-btn { background: var(--hot); border: none; padding: 10px 20px; border-radius: 20px; color: white; font-weight: bold; }
+
+        /* GIF Tray */
+        #gif-tray { display: none; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 10px; max-height: 150px; overflow-y: auto; }
+        .gif-item { width: 100%; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="wallpaper"></div>
+
+<div class="main-app">
+    <header>TULIP <span style="color:var(--hot); margin-left:5px;">HOT</span></header>
+
+    <div id="chat-area"></div>
+
+    <div class="control-bar">
+        <div id="gif-tray">
+            <img class="gif-item" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6Z3R6Z3R6/3o7TKMGpxx87Z4I6T6/giphy.gif" onclick="sendMedia(this.src)">
+            <img class="gif-item" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/l41lTfO3vD04A7088/giphy.gif" onclick="sendMedia(this.src)">
+            <img class="gif-item" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/3o7TKVUn7iM8FMEU24/giphy.gif" onclick="sendMedia(this.src)">
+        </div>
+
+        <div class="action-row">
+            <label for="gallery-up"><i class="fas fa-images btn-icon"></i></label>
+            <input type="file" id="gallery-up" hidden accept="image/*">
+            <i class="fas fa-fire btn-icon" onclick="toggleGifs()"></i>
+            <span style="color:#666; font-size:12px;">Share Pic / GIF</span>
+        </div>
+
+        <div class="input-row">
+            <input type="text" id="msg-text" placeholder="Type a message..." autocomplete="off">
+            <button class="send-btn" onclick="send()">SEND</button>
+        </div>
+    </div>
+</div>
 
 <script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    const myUser = new URLSearchParams(window.location.search).get('username') || "Guest";
 
-<style>
+    socket.emit('join', { username: myUser });
 
-*{
-box-sizing:border-box;
-}
-
-body{
-margin:0;
-font-family:Arial;
-height:100vh;
-display:flex;
-flex-direction:column;
-background:linear-gradient(135deg,#ff6a8b,#ff8fab);
-}
-
-/* HEADER */
-
-#header{
-height:55px;
-background:#ff2d5a;
-color:white;
-display:flex;
-align-items:center;
-justify-content:space-between;
-padding:0 15px;
-}
-
-#menu{
-font-size:22px;
-cursor:pointer;
-}
-
-#logout{
-background:white;
-color:#ff2d5a;
-border:none;
-padding:6px 14px;
-border-radius:20px;
-}
-
-/* MAIN */
-
-#main{
-flex:1;
-display:flex;
-overflow:hidden;
-}
-
-/* SIDEBAR */
-
-#sidebar{
-width:220px;
-background:white;
-transition:0.3s;
-overflow:auto;
-}
-
-#sidebar.closed{
-width:0;
-}
-
-#sidebar h3{
-margin:0;
-padding:10px;
-border-bottom:1px solid #eee;
-}
-
-/* CHAT AREA */
-
-#chatArea{
-flex:1;
-display:flex;
-flex-direction:column;
-}
-
-/* CHAT MESSAGES */
-
-#chat{
-flex:1;
-overflow-y:auto;
-padding:10px;
-}
-
-.msg{
-background:white;
-padding:10
+    // Logical Fix for "Undefined"
+    socket.on('newMessage', (data) => {
+        const area = document.getElementById('chat-area');
+        const content = data.text || data.msg || data.message || "";
+        const sender = data.user || data.username || "System";
+        
+        const div = document.createElement('div');
+        div.className = `bubble ${sender === myUser ? 'me' : 'others'}`;
+        
+        let html = `<span class="sender">${sender}</span>`;
+        if(data.type === 'image') {
+            html
+  
