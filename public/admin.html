@@ -1,106 +1,92 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Owner Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tulip Hot | Admin Console</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --admin-red: #ff0033; --dark-ace: #0a0a0b; }
+        body { background: var(--dark-ace); color: white; font-family: 'Inter', sans-serif; margin: 0; }
+        
+        .nav { background: #000; padding: 15px; border-bottom: 2px solid var(--admin-red); display: flex; justify-content: space-between; }
+        
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .card { background: #151518; padding: 20px; border-radius: 15px; border-left: 4px solid var(--admin-red); }
+        .card h3 { margin: 0; font-size: 12px; color: #888; text-transform: uppercase; }
+        .card p { margin: 10px 0 0; font-size: 24px; font-weight: bold; }
 
-<style>
-body{
-font-family:sans-serif;
-background:#f5f5f5;
-padding:20px;
-}
+        .control-list { padding: 0 20px; }
+        .user-row { background: #1a1a1e; margin-bottom: 10px; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .ban-btn { background: var(--admin-red); border: none; color: white; padding: 8px 15px; border-radius: 5px; font-weight: bold; }
+        .warn-btn { background: #ffaa00; border: none; padding: 8px 15px; border-radius: 5px; margin-right: 5px; }
 
-h1{
-color:#ff5a76;
-}
-
-table{
-width:100%;
-background:white;
-border-collapse:collapse;
-}
-
-td,th{
-padding:10px;
-border:1px solid #ddd;
-}
-
-button{
-padding:6px 10px;
-margin-right:5px;
-}
-</style>
+        .broadcast-box { position: fixed; bottom: 20px; width: 90%; left: 5%; background: #000; padding: 15px; border: 1px solid #333; border-radius: 15px; }
+        input { width: 70%; background: #111; border: 1px solid #444; color: white; padding: 10px; border-radius: 5px; }
+    </style>
 </head>
-
 <body>
 
-<h1>Owner Dashboard</h1>
+<div class="nav">
+    <span><b>TULIP</b> <span style="color:var(--admin-red)">ADMIN</span></span>
+    <i class="fas fa-user-shield"></i>
+</div>
 
-<button onclick="clearChat()">Clear Chat</button>
+<div class="stats-grid">
+    <div class="card">
+        <h3>Total Users</h3>
+        <p id="total-u">0</p>
+    </div>
+    <div class="card">
+        <h3>Live Now</h3>
+        <p id="live-u" style="color: #00ff88;">0</p>
+    </div>
+</div>
 
-<h3>Users</h3>
+<div class="control-list">
+    <h2 style="font-size: 16px; margin-bottom: 15px;">Active Users Control</h2>
+    <div id="user-container">
+        </div>
+</div>
 
-<table>
-<thead>
-<tr>
-<th>User</th>
-<th>Email</th>
-<th>Action</th>
-</tr>
-</thead>
+<div class="broadcast-box">
+    <input type="text" id="b-msg" placeholder="Send alert to everyone...">
+    <button class="ban-btn" onclick="sendAlert()">ANNOUNCE</button>
+</div>
 
-<tbody id="userTable"></tbody>
-
-</table>
-
+<script src="/socket.io/socket.io.js"></script>
 <script>
+    const socket = io();
+    // Admin password check logic can be added here
+    
+    socket.on('updateAdminList', (users) => {
+        const container = document.getElementById('user-container');
+        container.innerHTML = '';
+        users.forEach(u => {
+            container.innerHTML += `
+                <div class="user-row">
+                    <span>${u.username}</span>
+                    <div>
+                        <button class="warn-btn" onclick="warnUser('${u.id}')">WARN</button>
+                        <button class="ban-btn" onclick="banUser('${u.id}')">BAN</button>
+                    </div>
+                </div>
+            `;
+        });
+    });
 
-fetch("/admin/users")
-.then(res=>res.json())
-.then(users=>{
+    function banUser(id) {
+        if(confirm("Bhai, pakka ban karna hai?")) {
+            socket.emit('adminAction', { type: 'ban', targetId: id });
+        }
+    }
 
-const table=document.getElementById("userTable")
-
-users.forEach(u=>{
-
-let tr=document.createElement("tr")
-
-tr.innerHTML=`
-<td>${u.username}</td>
-<td>${u.email}</td>
-<td>
-<button onclick="kick('${u.username}')">Kick</button>
-<button onclick="ban('${u.username}')">Ban</button>
-</td>
-`
-
-table.appendChild(tr)
-
-})
-
-})
-
-
-function kick(user){
-
-fetch("/admin/kick/"+user,{method:"POST"})
-
-}
-
-function ban(user){
-
-fetch("/admin/ban/"+user,{method:"POST"})
-
-}
-
-function clearChat(){
-
-fetch("/admin/clear",{method:"POST"})
-
-}
-
+    function sendAlert() {
+        const msg = document.getElementById('b-msg').value;
+        socket.emit('adminAction', { type: 'broadcast', message: msg });
+        document.getElementById('b-msg').value = '';
+    }
 </script>
-
 </body>
 </html>
