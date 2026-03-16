@@ -3,80 +3,46 @@
 
 <head>
 
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Tulip Chat Login</title>
 
 <style>
 
 body{
-font-family:sans-serif;
 margin:0;
+font-family:Arial;
 height:100vh;
 display:flex;
 align-items:center;
 justify-content:center;
-background:linear-gradient(180deg,#ff4f7a,#ff7ca0);
+background:linear-gradient(135deg,#ff6a8b,#ff8fab);
 }
 
-#box{
-
+#card{
 background:white;
-padding:40px;
-width:320px;
+padding:30px;
 border-radius:15px;
+width:300px;
 text-align:center;
-box-shadow:0 10px 30px rgba(0,0,0,0.2);
-
-}
-
-h2{
-
-color:#ff4f7a;
-
 }
 
 input{
-
 width:100%;
-padding:12px;
-margin-top:15px;
-border-radius:8px;
+padding:10px;
+margin-top:10px;
+border-radius:10px;
 border:1px solid #ccc;
-font-size:16px;
-
 }
 
 button{
-
-margin-top:20px;
 width:100%;
 padding:12px;
+margin-top:15px;
+border:none;
+border-radius:20px;
 background:#ff2d5a;
 color:white;
-border:none;
-border-radius:8px;
-font-size:16px;
-cursor:pointer;
-
-}
-
-button:hover{
-
-background:#e01e4c;
-
-}
-
-a{
-
-color:#ff2d5a;
-text-decoration:none;
-
-}
-
-#error{
-
-color:red;
-margin-top:10px;
-
 }
 
 </style>
@@ -85,7 +51,7 @@ margin-top:10px;
 
 <body>
 
-<div id="box">
+<div id="card">
 
 <h2>🌷 Tulip Chat</h2>
 
@@ -95,9 +61,9 @@ margin-top:10px;
 
 <button onclick="login()">Login</button>
 
-<div id="error"></div>
-
-<p>Don't have account? <a href="register.html">Register</a></p>
+<p>Don't have account?
+<a href="register.html">Register</a>
+</p>
 
 </div>
 
@@ -108,17 +74,9 @@ async function login(){
 const username=document.getElementById("username").value
 const password=document.getElementById("password").value
 
-if(username=="" || password==""){
-
-document.getElementById("error").innerText="Enter username and password"
-return
-
-}
-
-const res = await fetch("/login",{
+const res=await fetch("/login",{
 
 method:"POST",
-
 headers:{
 "Content-Type":"application/json"
 },
@@ -130,18 +88,17 @@ password
 
 })
 
-const data = await res.json()
+const data=await res.json()
 
 if(data.success){
 
-localStorage.setItem("username",data.username)
-localStorage.setItem("role",data.role)
+localStorage.setItem("username",username)
 
 window.location="chat.html"
 
 }else{
 
-document.getElementById("error").innerText=data.error
+alert(data.error)
 
 }
 
@@ -150,5 +107,4 @@ document.getElementById("error").innerText=data.error
 </script>
 
 </body>
-
 </html>
