@@ -2,162 +2,92 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tulip Pro Chat</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tulip Pro</title>
     <style>
         :root { --main: #f43f5e; --dark: #0f172a; --card: #1e293b; --text: #f8fafc; }
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { margin: 0; background: var(--dark); color: var(--text); overflow: hidden; height: 100vh; }
-
-        /* UI Structure */
+        body { margin: 0; background: var(--dark); color: var(--text); font-family: sans-serif; overflow: hidden; height: 100vh; }
         #wrapper { display: flex; height: 100%; position: relative; }
-        
-        /* Sidebar (Slide-out) */
-        #sidebar {
-            position: absolute; left: -280px; width: 280px; height: 100%;
-            background: var(--card); border-right: 1px solid rgba(255,255,255,0.1);
-            transition: 0.3s ease; z-index: 1001;
-        }
+        #sidebar { position: absolute; left: -280px; width: 280px; height: 100%; background: var(--card); transition: 0.3s; z-index: 1001; }
         #sidebar.open { left: 0; }
-        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; }
-        #overlay.active { display: block; }
-
-        /* Header */
-        header { 
-            height: 60px; padding: 0 15px; display: flex; align-items: center; 
-            justify-content: space-between; background: rgba(15,23,42,0.9);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .menu-btn { font-size: 24px; cursor: pointer; }
-
-        /* Messages Area */
+        header { height: 60px; padding: 0 15px; display: flex; align-items: center; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.1); }
         #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { max-width: 80%; padding: 10px 15px; border-radius: 15px; font-size: 14px; position: relative; }
+        .msg { max-width: 80%; padding: 10px; border-radius: 12px; font-size: 14px; background: var(--card); align-self: flex-start; }
         .msg.me { align-self: flex-end; background: var(--main); }
-        .msg.other { align-self: flex-start; background: var(--card); }
-        .avatar { font-size: 18px; margin-right: 5px; }
-        .img-msg { max-width: 100%; border-radius: 10px; margin-top: 5px; }
-
-        /* Progress Bar */
-        #progress-container { display: none; height: 4px; background: #334155; }
-        #bar { height: 100%; background: var(--main); width: 0%; transition: 0.1s; }
-
-        /* Bottom Bar */
-        .input-area { padding: 15px; background: var(--dark); border-top: 1px solid rgba(255,255,255,0.1); }
-        .input-wrap { 
-            display: flex; align-items: center; gap: 10px; 
-            background: var(--card); padding: 5px 15px; border-radius: 25px; 
-        }
-        input { flex: 1; background: none; border: none; color: white; padding: 10px; outline: none; }
-        .icon { font-size: 20px; cursor: pointer; color: #94a3b8; }
+        .input-area { padding: 15px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px; }
+        #bar-container { display: none; height: 4px; background: #333; }
+        #bar-fill { height: 100%; background: var(--main); width: 0%; }
     </style>
 </head>
 <body>
-
-<div id="wrapper">
-    <div id="sidebar">
-        <div style="padding:20px; border-bottom:1px solid #333;"><h3>Online Users</h3></div>
-        <div id="user-list" style="padding:10px;"></div>
-    </div>
-    <div id="overlay" onclick="toggleMenu()"></div>
-
-    <div style="flex:1; display:flex; flex-direction:column;">
-        <header>
-            <div class="menu-btn" onclick="toggleMenu()">☰</div>
-            <div style="font-weight:700; font-size:18px;">🌷 Tulip Pro</div>
-            <div>🔔</div>
-        </header>
-
-        <div id="chat-box"></div>
-        
-        <div id="progress-container"><div id="bar"></div></div>
-
-        <div class="input-area">
-            <div class="input-wrap">
-                <span class="icon" onclick="document.getElementById('file').click()">🖼️</span>
+    <div id="wrapper">
+        <div id="sidebar" class="sidebar">
+            <h3 style="padding:20px;">Online Users</h3>
+            <div id="user-list"></div>
+        </div>
+        <div style="flex:1; display:flex; flex-direction:column;">
+            <header>
+                <div onclick="document.getElementById('sidebar').classList.toggle('open')" style="font-size:24px; cursor:pointer;">☰</div>
+                <div style="margin-left:20px; font-weight:bold;">Tulip Chat Pro</div>
+            </header>
+            <div id="chat-box"></div>
+            <div id="bar-container"><div id="bar-fill"></div></div>
+            <div class="input-area">
+                <button onclick="document.getElementById('file').click()">🖼️</button>
                 <input type="file" id="file" hidden onchange="upload()">
-                <input type="text" id="msg" placeholder="Type a message..." onkeypress="if(event.key==='Enter')send()">
-                <span class="icon" style="color:var(--main)" onclick="send()">🚀</span>
+                <input type="text" id="msgInput" placeholder="Type..." style="flex:1; padding:10px; border-radius:20px; border:none; outline:none;">
+                <button onclick="send()" style="background:var(--main); color:white; border:none; padding:10px 20px; border-radius:20px;">Send</button>
             </div>
         </div>
     </div>
-</div>
 
-<script src="/socket.io/socket.io.js"></script>
-<script>
-    const socket = io();
-    const params = new URLSearchParams(window.location.search);
-    const user = params.get('username') || "Guest";
-    const gender = params.get('gender') || "Male";
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const params = new URLSearchParams(window.location.search);
+        const user = params.get('username') || "Guest";
+        const gender = params.get('gender') || "Male";
 
-    socket.emit('join', { username: user, gender: gender });
+        socket.emit('join', { username: user, gender: gender });
 
-    function toggleMenu() {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('overlay').classList.toggle('active');
-    }
-
-    function send() {
-        const input = document.getElementById('msg');
-        if(input.value) {
-            socket.emit('sendMessage', { message: input.value });
-            input.value = '';
+        function send() {
+            const input = document.getElementById('msgInput');
+            if(input.value) { socket.emit('sendMessage', { message: input.value }); input.value = ''; }
         }
-    }
 
-    socket.on('newMessage', (data) => {
-        const box = document.getElementById('chat-box');
-        const div = document.createElement('div');
-        const isMe = data.user === user;
-        const ava = data.gender === 'Female' ? '👩‍' : '👨';
-        
-        div.className = `msg ${isMe ? 'me' : 'other'}`;
-        let html = `<small style="display:block; font-size:10px; opacity:0.7;">${ava} ${data.user}</small>`;
-        
-        if(data.type === 'file') {
-            html += `<img src="${data.text}" class="img-msg">`;
-        } else {
-            html += `<span>${data.text}</span>`;
+        socket.on('newMessage', (data) => {
+            const box = document.getElementById('chat-box');
+            const div = document.createElement('div');
+            const isMe = data.user === user;
+            div.className = `msg ${isMe ? 'me' : ''}`;
+            const avatar = data.gender === 'Female' ? '👩‍🦰' : '👨‍🦱';
+            
+            if(data.type === 'file') {
+                div.innerHTML = `<b>${avatar} ${data.user}:</b><br><img src="${data.text}" style="max-width:200px; border-radius:10px;">`;
+            } else {
+                div.innerHTML = `<b>${avatar} ${data.user}:</b> ${data.text}`;
+            }
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        });
+
+        socket.on('updateUserList', (users) => {
+            document.getElementById('user-list').innerHTML = users.map(u => `<div style="padding:15px; border-bottom:1px solid #333;">${u.gender==='Female'?'👩‍🦰':'👨‍🦱'} ${u.username}</div>`).join('');
+        });
+
+        function upload() {
+            const file = document.getElementById('file').files[0];
+            const fd = new FormData(); fd.append('chatFile', file);
+            const xhr = new XMLHttpRequest();
+            document.getElementById('bar-container').style.display = 'block';
+            xhr.upload.onprogress = (e) => { document.getElementById('bar-fill').style.width = (e.loaded/e.total)*100 + '%'; };
+            xhr.onload = () => {
+                const res = JSON.parse(xhr.responseText);
+                socket.emit('sendMessage', { message: res.url, type: 'file' });
+                document.getElementById('bar-container').style.display = 'none';
+            };
+            xhr.open('POST', '/upload'); xhr.send(fd);
         }
-        
-        div.innerHTML = html;
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
-    });
-
-    socket.on('updateUserList', (users) => {
-        const list = document.getElementById('user-list');
-        list.innerHTML = users.map(u => `
-            <div style="padding:10px; background:rgba(255,255,255,0.05); margin-bottom:5px; border-radius:10px; cursor:pointer" onclick="dm('${u.username}')">
-                ${u.gender === 'Female' ? '👩' : '👨'} ${u.username}
-            </div>
-        `).join('');
-    });
-
-    function upload() {
-        const file = document.getElementById('file').files[0];
-        const fd = new FormData();
-        fd.append('chatFile', file);
-        const xhr = new XMLHttpRequest();
-        document.getElementById('progress-container').style.display='block';
-        xhr.upload.onprogress = (e) => {
-            document.getElementById('bar').style.width = (e.loaded/e.total)*100 + '%';
-        };
-        xhr.onload = () => {
-            const res = JSON.parse(xhr.responseText);
-            socket.emit('sendMessage', { message: res.url, type: 'file' });
-            document.getElementById('progress-container').style.display='none';
-        };
-        xhr.open('POST', '/upload');
-        xhr.send(fd);
-    }
-
-    function dm(target) {
-        if(target === user) return;
-        const m = prompt("Private message to " + target);
-        if(m) socket.emit('privateMessage', { to: target, message: m });
-    }
-</script>
+    </script>
 </body>
 </html>
