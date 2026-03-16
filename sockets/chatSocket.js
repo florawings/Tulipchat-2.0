@@ -1,18 +1,24 @@
-const Message=require("../models/Message")
+let onlineUsers=[]
 
 module.exports=(io,socket)=>{
 
-socket.on("chat message",async(data)=>{
+socket.on("join",(username)=>{
 
-const msg=new Message({
-user:data.user,
-text:data.text,
-time:new Date()
+socket.username=username
+
+if(!onlineUsers.includes(username)){
+onlineUsers.push(username)
+}
+
+io.emit("onlineUsers",onlineUsers)
+
 })
 
-await msg.save()
+socket.on("disconnect",()=>{
 
-io.emit("chat message",data)
+onlineUsers=onlineUsers.filter(u=>u!==socket.username)
+
+io.emit("onlineUsers",onlineUsers)
 
 })
 
