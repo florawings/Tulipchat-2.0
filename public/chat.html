@@ -3,308 +3,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tulip Pro | Adult Elite</title>
+    <title>Tulip Hot | Adult Private Suite</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Lexend:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
-            --hot-pink: #ff2d55;
-            --neon-red: #ff073a;
-            --dark-bg: #0a0a0c;
-            --glass: rgba(18, 18, 22, 0.96);
-            --gold: #ffcc00;
+            --neon-pink: #ff0055;
+            --deep-red: #8b0000;
+            --black-glass: rgba(10, 10, 12, 0.98);
+            --border-red: #ff2d55;
         }
 
-        /* Essential Reset for Mobile */
+        /* Prevent Zoom & Fix Scroll */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Lexend', sans-serif; -webkit-tap-highlight-color: transparent; }
         
         body, html {
             height: 100dvh; width: 100vw; overflow: hidden; position: fixed;
-            background-color: var(--dark-bg); color: #fff;
+            background: #000; color: #fff;
         }
 
-        /* X-Rated Background Engine */
-        .sexy-bg {
+        /* 18+ ADULT BACKGROUND ENGINE */
+        .hardcore-bg {
             position: fixed; inset: 0;
-            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
-                        url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1470&auto=format&fit=crop') center/cover no-repeat;
-            z-index: -1; filter: saturate(1.5);
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)), 
+                        url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1470&auto=format&fit=crop') center/cover no-repeat;
+            z-index: -1; filter: contrast(1.2) brightness(0.6);
         }
 
-        /* Layout Structure */
-        .main-app { display: flex; flex-direction: column; height: 100%; width: 100%; }
+        /* Layout Architecture */
+        .app-container { display: flex; flex-direction: column; height: 100%; width: 100%; position: relative; }
 
         /* Neon Header */
         header {
-            height: 65px; background: var(--glass); display: flex; align-items: center;
-            justify-content: space-between; padding: 0 18px; z-index: 1000;
-            border-bottom: 2px solid var(--neon-red); box-shadow: 0 0 20px rgba(255, 7, 58, 0.3);
+            height: 60px; background: var(--black-glass); display: flex; align-items: center;
+            justify-content: space-between; padding: 0 15px; z-index: 1000;
+            border-bottom: 2px solid var(--border-red); box-shadow: 0 0 20px rgba(255, 45, 85, 0.4);
         }
-        .brand { font-weight: 800; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; }
-        .brand span { color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red); }
+        .logo { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 20px; color: #fff; letter-spacing: 2px; }
+        .logo span { color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); }
 
-        /* Chat Scroller Fix: Messages won't hide anymore */
+        /* THE FIX: MESSAGE DISPLAY AREA */
         #chat-scroller {
-            flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column;
-            gap: 12px; padding-bottom: 220px; /* Space for input & panels */
-            scrollbar-width: none; -webkit-overflow-scrolling: touch;
+            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column;
+            gap: 15px; position: relative; 
+            padding-bottom: 240px; /* Crucial space for input & panels */
+            scrollbar-width: none;
         }
 
-        /* Sophisticated Message Bubbles */
-        .msg-container { display: flex; flex-direction: column; width: 100%; max-width: 85%; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        /* Sophisticated Message Engineering */
+        .msg-row { display: flex; flex-direction: column; width: 100%; max-width: 88%; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { from { opacity: 0; scale: 0.9; transform: translateY(20px); } to { opacity: 1; scale: 1; transform: translateY(0); } }
 
-        .msg-me { align-self: flex-end; }
-        .msg-other { align-self: flex-start; }
+        .me { align-self: flex-end; }
+        .other { align-self: flex-start; }
 
-        .sender-tag { font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #aaa; text-transform: capitalize; }
-        .msg-me .sender-tag { text-align: right; color: var(--hot-pink); }
+        .sender-info { font-size: 10px; font-weight: 700; margin-bottom: 5px; text-transform: uppercase; color: #ff9fb2; }
+        .me .sender-info { text-align: right; }
 
         .bubble {
-            padding: 12px 16px; border-radius: 22px; font-size: 15px; line-height: 1.4;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4); word-wrap: break-word;
+            padding: 14px 18px; border-radius: 20px; font-size: 15px; line-height: 1.5;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5); position: relative; border: 1px solid rgba(255,255,255,0.1);
         }
-        .msg-me .bubble { background: linear-gradient(135deg, var(--neon-red), #b00020); border-bottom-right-radius: 4px; color: #fff; }
-        .msg-other .bubble { background: #1e1e24; border-bottom-left-radius: 4px; border: 1px solid #333; color: #eee; }
+        .me .bubble { background: linear-gradient(135deg, var(--neon-pink), var(--deep-red)); border-bottom-right-radius: 4px; color: #fff; }
+        .other .bubble { background: #1a1a1e; border-bottom-left-radius: 4px; color: #eee; }
 
-        .msg-img { max-width: 100%; border-radius: 12px; margin-top: 8px; border: 2px solid rgba(255,255,255,0.1); display: block; }
+        .msg-media { max-width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.2); display: block; }
 
-        /* Input Control Station (Heavy Duty) */
-        .input-dock {
-            position: fixed; bottom: 0; width: 100%; background: var(--glass);
-            border-top: 1px solid rgba(255,255,255,0.1); padding: 12px; z-index: 2000;
+        /* Control Station (Floating Dock) */
+        .dock-station {
+            position: fixed; bottom: 0; width: 100%; background: var(--black-glass);
+            border-top: 1px solid var(--border-red); padding: 15px; z-index: 2000;
+            backdrop-filter: blur(15px);
         }
 
-        /* Real-time Progress Monitor */
-        #progress-wrapper { display: none; margin-bottom: 10px; }
-        .bar-container { height: 8px; background: #222; border-radius: 10px; overflow: hidden; }
-        .bar-fill { height: 100%; width: 0%; background: var(--neon-red); transition: width 0.3s cubic-bezier(0.1, 0.7, 1.0, 0.1); }
+        /* Upload Progress Monitor */
+        #progress-dock { display: none; margin-bottom: 12px; }
+        .pg-bar { height: 6px; background: #222; border-radius: 10px; overflow: hidden; }
+        .pg-fill { height: 100%; width: 0%; background: var(--neon-pink); box-shadow: 0 0 10px var(--neon-pink); transition: 0.3s; }
 
-        /* Spicy Sticker Grid */
-        #spicy-grid {
+        /* Media Panel Grid */
+        #media-grid {
             display: none; grid-template-columns: repeat(4, 1fr); gap: 10px;
-            background: #121216; padding: 15px; border-radius: 15px;
-            margin-bottom: 15px; border: 1px solid var(--neon-red);
-            max-height: 250px; overflow-y: auto;
+            padding: 15px; background: rgba(0,0,0,0.5); border-radius: 15px;
+            margin-bottom: 15px; border: 1px solid var(--border-red); max-height: 200px; overflow-y: auto;
         }
-        .sticker { width: 100%; border-radius: 10px; cursor: pointer; border: 1px solid #333; }
-        .sticker:active { transform: scale(0.9); }
+        .media-thumb { width: 100%; border-radius: 8px; border: 1px solid #444; cursor: pointer; }
 
-        .input-row { display: flex; align-items: center; gap: 10px; }
-        .icon-btn { 
-            width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;
-            background: #1e1e24; border-radius: 50%; color: #fff; font-size: 20px; border: 1px solid #333;
+        .input-bar { display: flex; align-items: center; gap: 10px; }
+        .btn-circle {
+            width: 45px; height: 45px; background: #222; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; cursor: pointer; color: #fff; border: 1px solid #333;
         }
-        .icon-btn.active { color: var(--neon-red); border-color: var(--neon-red); box-shadow: 0 0 10px var(--neon-red); }
+        .btn-circle.active { color: var(--neon-pink); border-color: var(--neon-pink); }
 
-        #text-input {
-            flex: 1; height: 48px; background: #1e1e24; border: 1px solid #333;
+        #msg-field {
+            flex: 1; height: 45px; background: rgba(255,255,255,0.05); border: 1px solid #333;
             padding: 0 20px; border-radius: 25px; color: #fff; font-size: 16px; outline: none;
         }
-        #text-input:focus { border-color: var(--neon-red); }
 
         .send-pill {
-            background: var(--neon-red); border: none; padding: 0 20px; height: 48px;
-            border-radius: 25px; color: #fff; font-weight: 700; font-size: 14px;
+            background: var(--neon-pink); border: none; padding: 0 20px; height: 45px;
+            border-radius: 25px; color: #fff; font-weight: 800; text-transform: uppercase;
         }
 
-        /* User List Sidebar */
-        #sidebar {
-            position: fixed; right: -320px; top: 0; width: 300px; height: 100%;
-            background: var(--dark-bg); z-index: 3000; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            padding: 25px; border-left: 2px solid var(--neon-red);
+        /* User Drawer */
+        #drawer {
+            position: fixed; left: -300px; top: 0; width: 280px; height: 100%;
+            background: #0d0d0f; z-index: 3000; transition: 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1);
+            padding: 25px; border-right: 2px solid var(--border-red);
         }
-        #sidebar.active { right: 0; }
-        .user-card { 
-            padding: 12px; background: #1e1e24; border-radius: 12px; margin-bottom: 10px;
-            display: flex; align-items: center; gap: 12px; border: 1px solid #333;
-        }
-        .online-dot { width: 10px; height: 10px; background: #4ade80; border-radius: 50%; box-shadow: 0 0 5px #4ade80; }
+        #drawer.open { left: 0; }
+        .u-item { padding: 12px; background: #1a1a1e; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; border: 1px solid #333; }
+        .online { width: 8px; height: 8px; background: #00ff00; border-radius: 50%; box-shadow: 0 0 5px #00ff00; }
     </style>
 </head>
 <body>
 
-<div class="sexy-bg"></div>
+<div class="hardcore-bg"></div>
 
-<div class="main-app">
+<div class="app-container">
     <header>
-        <div class="brand">TULIP <span>HOT</span></div>
-        <div style="display:flex; gap:15px;">
-            <i class="fas fa-users" onclick="toggleMenu()" style="font-size:22px; color:var(--neon-red);"></i>
-        </div>
+        <div class="btn-circle" onclick="toggleDrawer()"><i class="fas fa-stream"></i></div>
+        <div class="logo">TULIP <span>HOT</span></div>
+        <div id="target-label" style="font-size:10px; color:var(--neon-pink); font-weight:700;">GLOBAL</div>
     </header>
 
     <main id="chat-scroller"></main>
 
-    <div class="input-dock">
-        <div id="progress-wrapper">
-            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
-                <span id="status-txt">Uploading...</span>
-                <span id="pct-txt">0%</span>
+    <div class="dock-station">
+        <div id="progress-dock">
+            <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;">
+                <span>STAGING MEDIA...</span><span id="pg-text">0%</span>
             </div>
-            <div class="bar-container"><div id="bar-fill" class="bar-fill"></div></div>
+            <div class="pg-bar"><div id="pg-fill" class="pg-fill"></div></div>
         </div>
 
-        <div id="spicy-grid">
-            <img class="sticker" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6Z3R6Z3R6/3o7TKMGpxx87Z4I6T6/giphy.gif" onclick="sendSpicy(this.src)">
-            <img class="sticker" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/l41lTfO3vD04A7088/giphy.gif" onclick="sendSpicy(this.src)">
-            <img class="sticker" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/3o7TKVUn7iM8FMEU24/giphy.gif" onclick="sendSpicy(this.src)">
-            <div class="sticker" style="background:var(--neon-red); height:60px; display:flex; align-items:center; justify-content:center; font-size:24px;" onclick="sendSpicy('🎁 SEXY GIFT 🎁')">🎁</div>
+        <div id="media-grid">
+            <img class="media-thumb" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6Z3R6Z3R6/3o7TKMGpxx87Z4I6T6/giphy.gif" onclick="sendMedia(this.src)">
+            <img class="media-thumb" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/l41lTfO3vD04A7088/giphy.gif" onclick="sendMedia(this.src)">
+            <img class="media-thumb" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/3o7TKVUn7iM8FMEU24/giphy.gif" onclick="sendMedia(this.src)">
+            <div class="media-thumb" style="background:var(--neon-pink); height:60px; display:flex; align-items:center; justify-content:center; font-size:24px;" onclick="sendMedia('🎁 SEXY SURPRISE 🎁')">🎁</div>
         </div>
 
-        <div class="input-row">
-            <label for="img-input" class="icon-btn"><i class="fas fa-plus"></i></label>
-            <input type="file" id="img-input" hidden accept="image/*">
+        <div class="input-bar">
+            <label for="file-up" class="btn-circle"><i class="fas fa-camera-retro"></i></label>
+            <input type="file" id="file-up" hidden accept="image/*">
             
-            <div class="icon-btn" id="fire-toggle" onclick="toggleSpicy()"><i class="fas fa-fire"></i></div>
+            <div class="btn-circle" id="fire-btn" onclick="toggleSpicy()"><i class="fas fa-fire"></i></div>
             
-            <input type="text" id="text-input" placeholder="Say something dirty..." autocomplete="off">
+            <input type="text" id="msg-field" placeholder="Type something dirty..." autocomplete="off">
             
-            <button class="send-pill" onclick="sendChat()">SEND</button>
+            <button class="send-pill" onclick="sendText()">SEND</button>
         </div>
     </div>
 </div>
 
-<div id="sidebar">
-    <h2 style="color:var(--neon-red); margin-bottom:20px;">Hookup Room</h2>
-    <div id="user-container"></div>
-    <div onclick="setGlobal()" style="margin-top:20px; padding:15px; background:var(--neon-red); border-radius:10px; text-align:center; font-weight:700;">PUBLIC LOBBY</div>
+<div id="drawer">
+    <h3 style="color:var(--neon-pink); margin-bottom:25px; font-family:'Orbitron';">Elite Members</h3>
+    <div id="users-list"></div>
+    <div onclick="setTarget('all')" style="margin-top:20px; padding:15px; background:#222; border-radius:10px; text-align:center; cursor:pointer;">🌍 Global Lounge</div>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
     const socket = io();
-    const query = new URLSearchParams(window.location.search);
-    const ME = {
-        name: query.get('username') || "Stranger",
-        role: query.get('role') || "user",
+    const urlParams = new URLSearchParams(window.location.search);
+    const STATE = {
+        name: urlParams.get('username') || "Player",
+        role: urlParams.get('role') || "user",
         target: 'all'
     };
 
-    // Join Server
-    socket.emit('join', { username: ME.name, role: ME.role });
+    socket.emit('join', { username: STATE.name, role: STATE.role });
 
-    // --- MESSAGE RENDERING ENGINE (THE FIX) ---
+    // --- CRITICAL FIX: MESSAGE RENDERING ---
     socket.on('newMessage', (data) => {
         const scroller = document.getElementById('chat-scroller');
         
-        // Critical: Validate all data points
-        const senderName = data.user || "Unknown";
-        const contentBody = data.text || "";
-        const isMyMsg = data.user === ME.name;
+        // Data Validation to avoid "Undefined" errors
+        const sender = data.user || "System";
+        const textContent = data.text || "";
+        const isMe = sender === STATE.name;
 
-        const container = document.createElement('div');
-        container.className = `msg-container ${isMyMsg ? 'msg-me' : 'msg-other'}`;
+        const row = document.createElement('div');
+        row.className = `msg-row ${isMe ? 'me' : 'other'}`;
 
-        let contentHTML = `<span class="sender-tag">${senderName} ${data.role === 'owner' ? '👑' : ''}</span>`;
-        contentHTML += `<div class="bubble">`;
+        let html = `<span class="sender-info">${sender} ${data.role === 'owner' ? '👑' : ''}</span>`;
+        html += `<div class="bubble">`;
 
         if(data.type === 'image') {
-            // Check if it's a URL or Base64
-            contentHTML += `<img src="${contentBody}" class="msg-img" onload="scrollToBottom()">`;
+            html += `<img src="${textContent}" class="msg-media" onload="forceScroll()">`;
         } else {
-            // Text Content
-            contentHTML += `<span>${contentBody}</span>`;
+            // Force text rendering
+            html += `<span>${textContent}</span>`;
         }
 
-        contentHTML += `</div>`;
-        container.innerHTML = contentHTML;
+        html += `</div>`;
+        row.innerHTML = html;
         
-        scroller.appendChild(container);
-        scrollToBottom();
+        scroller.appendChild(row);
+        forceScroll();
     });
 
-    // --- CORE FUNCTIONS ---
-    function sendChat() {
-        const input = document.getElementById('text-input');
-        const val = input.value.trim();
-        if(!val) return;
-
-        socket.emit('sendMessage', {
-            type: 'text',
-            text: val,
-            to: ME.target,
-            user: ME.name,
-            role: ME.role
-        });
-        input.value = '';
+    // --- LOGIC ENGINE ---
+    function sendText() {
+        const f = document.getElementById('msg-field');
+        if(f.value.trim()) {
+            socket.emit('sendMessage', {
+                type: 'text', text: f.value, to: STATE.target, user: STATE.name, role: STATE.role
+            });
+            f.value = '';
+        }
     }
 
-    function sendSpicy(url) {
+    function sendMedia(url) {
         socket.emit('sendMessage', {
-            type: 'image',
-            text: url,
-            to: ME.target,
-            user: ME.name,
-            role: ME.role
+            type: 'image', text: url, to: STATE.target, user: STATE.name, role: STATE.role
         });
-        toggleSpicy();
+        if(document.getElementById('media-grid').style.display === 'grid') toggleSpicy();
     }
 
-    // --- IMAGE UPLOAD + PROGRESS ENGINE ---
-    document.getElementById('img-input').addEventListener('change', function(e) {
+    // Photo Upload with Live Progress Bar
+    document.getElementById('file-up').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if(!file) return;
 
         const reader = new FileReader();
-        const wrap = document.getElementById('progress-wrapper');
-        const fill = document.getElementById('bar-fill');
-        const txt = document.getElementById('pct-txt');
+        const dock = document.getElementById('progress-dock');
+        const fill = document.getElementById('pg-fill');
+        const txt = document.getElementById('pg-text');
 
-        wrap.style.display = 'block';
+        dock.style.display = 'block';
 
         reader.onprogress = (ev) => {
-            if(ev.lengthComputable) {
-                const pct = Math.round((ev.loaded / ev.total) * 100);
-                fill.style.width = pct + '%';
-                txt.innerText = pct + '%';
-            }
+            const pct = Math.round((ev.loaded / ev.total) * 100);
+            fill.style.width = pct + '%';
+            txt.innerText = pct + '%';
         };
 
         reader.onload = () => {
-            socket.emit('sendMessage', {
-                type: 'image',
-                text: reader.result,
-                to: ME.target,
-                user: ME.name,
-                role: ME.role
-            });
-            setTimeout(() => { wrap.style.display = 'none'; fill.style.width = '0%'; }, 1000);
+            sendMedia(reader.result);
+            setTimeout(() => { dock.style.display = 'none'; fill.style.width = '0%'; }, 1000);
         };
         reader.readAsDataURL(file);
     });
 
-    // --- UI HELPERS ---
-    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
-    function toggleSpicy() { 
-        const grid = document.getElementById('spicy-grid');
-        const btn = document.getElementById('fire-toggle');
-        grid.style.display = (grid.style.display === 'grid') ? 'none' : 'grid';
-        btn.classList.toggle('active');
+    // UI Helpers
+    function toggleDrawer() { document.getElementById('drawer').classList.toggle('open'); }
+    function toggleSpicy() {
+        const g = document.getElementById('media-grid');
+        const b = document.getElementById('fire-btn');
+        g.style.display = (g.style.display === 'grid') ? 'none' : 'grid';
+        b.classList.toggle('active');
     }
-    function scrollToBottom() {
-        const scroller = document.getElementById('chat-scroller');
-        scroller.scrollTop = scroller.scrollHeight;
+    function forceScroll() {
+        const s = document.getElementById('chat-scroller');
+        s.scrollTop = s.scrollHeight;
     }
-    function setGlobal() {
-        ME.target = 'all';
-        toggleMenu();
+    function setTarget(u) {
+        STATE.target = u;
+        document.getElementById('target-label').innerText = u === 'all' ? "GLOBAL" : "DM: " + u;
+        toggleDrawer();
     }
 
     socket.on('updateUserList', (users) => {
-        const container = document.getElementById('user-container');
-        container.innerHTML = users.map(u => `
-            <div class="user-card" onclick="ME.target='${u.username}'; toggleMenu()">
-                <div class="online-dot"></div>
+        document.getElementById('users-list').innerHTML = users.map(u => `
+            <div class="u-item" onclick="setTarget('${u.username}')">
+                <div class="online"></div>
                 <span style="font-weight:600;">${u.username}</span>
             </div>
         `).join('');
     });
 
-    // Enter Key Fix
-    document.getElementById('text-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChat(); });
+    document.getElementById('msg-field').addEventListener('keypress', (e) => { if(e.key==='Enter') sendText(); });
 </script>
 </body>
 </html>
