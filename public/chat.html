@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tulip Pro | Multi-Device</title>
+    <title>Tulip Pro | Master</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #f43f5e;
             --owner-gold: #fbbf24;
-            --glass: rgba(15, 23, 42, 0.85);
-            --text: #f8fafc;
+            --glass: rgba(15, 23, 42, 0.7);
+            --sidebar-bg: rgba(15, 23, 42, 0.85);
         }
 
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -23,119 +23,97 @@
             background: #000 url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200') no-repeat center center fixed;
             background-size: cover;
             overflow: hidden;
-            color: var(--text);
+            color: #f8fafc;
         }
 
-        /* --- HEADER --- */
+        /* --- SLIM HEADER --- */
         header {
-            height: 60px;
+            height: 55px;
             background: var(--glass);
             backdrop-filter: blur(15px);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
-            border-bottom: 1px solid rgba(244, 63, 94, 0.3);
+            padding: 0 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             z-index: 1100;
         }
 
-        .brand { font-weight: 600; font-size: 20px; letter-spacing: 1px; }
+        .brand { font-weight: 600; font-size: 18px; letter-spacing: 1px; }
         .brand span { color: var(--primary); }
 
-        /* --- MAIN LAYOUT (The Responsive Part) --- */
-        #main-container {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-        }
+        /* --- LAYOUT ENGINE --- */
+        #main-container { display: flex; flex: 1; overflow: hidden; }
 
-        /* --- SIDEBAR --- */
+        /* --- GLASS SIDEBAR --- */
         #sidebar {
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(20px);
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(25px);
+            transition: 0.4s ease;
             z-index: 2000;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
+            border-right: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* --- CHAT SECTION --- */
-        #chat-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: rgba(0,0,0,0.3);
-            position: relative;
-        }
-
-        #chat-scroller {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        /* --- RESPONSIVE ADJUSTMENTS --- */
-        
-        /* Mobile Version (< 768px) */
+        /* Mobile Adjustments */
         @media screen and (max-width: 767px) {
-            #sidebar {
-                position: fixed;
-                left: -100%;
-                width: 80%;
-                height: 100%;
-            }
-            #sidebar.open { left: 0; }
-            #sidebar-toggle { display: block; }
+            #sidebar { position: fixed; left: -100%; width: 75%; height: 100%; }
+            #sidebar.open { left: 0; box-shadow: 20px 0 50px rgba(0,0,0,0.5); }
             .msg { max-width: 85%; }
         }
 
-        /* PC & Tablet Version (>= 768px) */
+        /* PC Adjustments */
         @media screen and (min-width: 768px) {
-            #sidebar {
-                position: static;
-                width: 300px;
-                left: 0;
-                border-right: 1px solid rgba(255,255,255,0.1);
-            }
+            #sidebar { position: static; width: 280px; left: 0; }
             #sidebar-toggle { display: none; }
             .msg { max-width: 60%; }
-            #overlay { display: none !important; }
         }
 
-        /* --- CHAT BUBBLES --- */
+        /* --- MODERN CHAT BUBBLES --- */
+        #chat-scroller {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: rgba(0,0,0,0.2);
+        }
+
         .msg {
-            padding: 10px 15px;
+            padding: 10px 14px;
             border-radius: 18px;
             font-size: 14px;
-            line-height: 1.4;
-            animation: slideUp 0.3s ease;
+            position: relative;
+            animation: popIn 0.2s ease-out;
+            backdrop-filter: blur(8px);
         }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @keyframes popIn { from { opacity:0; transform: scale(0.9); } to { opacity:1; transform: scale(1); } }
 
         .msg.me {
             align-self: flex-end;
-            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
-            border-bottom-right-radius: 4px;
+            background: linear-gradient(135deg, #f43f5e 0%, #fb7185 100%);
+            border-bottom-right-radius: 2px;
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
         }
 
         .msg.other {
             align-self: flex-start;
-            background: rgba(255, 255, 255, 0.15);
-            border-bottom-left-radius: 4px;
-            backdrop-filter: blur(5px);
+            background: rgba(255, 255, 255, 0.12);
+            border-bottom-left-radius: 2px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .u-name { font-size: 10px; font-weight: bold; margin-bottom: 3px; display: block; }
-        .u-name.owner { color: var(--owner-gold); }
+        /* FIX: Undefined Name Solution */
+        .u-name { font-size: 11px; font-weight: 600; margin-bottom: 2px; display: block; opacity: 0.9; }
+        .u-name.owner { color: var(--owner-gold); text-shadow: 0 0 8px rgba(251,191,36,0.4); }
 
         /* --- INPUT AREA --- */
         .input-area {
-            padding: 15px;
+            padding: 12px;
             background: var(--glass);
             display: flex;
             gap: 10px;
@@ -144,7 +122,7 @@
 
         #msgIn {
             flex: 1;
-            padding: 12px 18px;
+            padding: 10px 18px;
             border-radius: 25px;
             border: 1px solid rgba(255,255,255,0.2);
             background: rgba(255,255,255,0.05);
@@ -155,27 +133,28 @@
         #sendBtn {
             background: var(--primary);
             border: none;
-            width: 45px;
-            height: 45px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             color: white;
             cursor: pointer;
+            box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
         }
 
-        /* Online List Styling */
         .user-item {
-            padding: 12px;
-            margin-bottom: 8px;
+            padding: 10px;
+            margin-bottom: 6px;
             background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-            cursor: pointer;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             gap: 10px;
+            transition: 0.2s;
         }
-        .user-item.owner-border { border-left: 3px solid var(--owner-gold); }
+        .user-item:hover { background: rgba(255,255,255,0.1); }
+        .user-item.owner-gold { border-left: 3px solid var(--owner-gold); }
 
-        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1500; }
+        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1500; }
     </style>
 </head>
 <body>
@@ -183,22 +162,22 @@
 <div id="overlay" onclick="toggleSidebar()"></div>
 
 <header>
-    <div id="sidebar-toggle" onclick="toggleSidebar()" style="font-size:24px; cursor:pointer;">☰</div>
+    <div id="sidebar-toggle" onclick="toggleSidebar()" style="font-size:22px; cursor:pointer;">☰</div>
     <div class="brand">TULIP <span>PRO</span></div>
-    <div id="status" style="font-size:11px; color:var(--owner-gold);">Public Room</div>
+    <div id="status" style="font-size:10px; color:var(--owner-gold); font-weight:600;">Public Room</div>
 </header>
 
 <div id="main-container">
     <div id="sidebar">
-        <h3 style="color:var(--primary); margin-top:0;">Online</h3>
+        <h3 style="color:var(--primary); font-size:16px; margin:0 0 15px 0;">Online Users</h3>
         <div id="online-list" style="flex:1; overflow-y:auto;"></div>
-        <button onclick="location.href='index.html'" style="margin-top:10px; width:100%; padding:10px; background:rgba(255,0,0,0.2); color:white; border:none; border-radius:8px;">Logout</button>
+        <button onclick="location.href='index.html'" style="margin-top:10px; width:100%; padding:10px; background:rgba(244,63,94,0.1); color:var(--primary); border:1px solid var(--primary); border-radius:10px; font-weight:600;">🚪 LOGOUT</button>
     </div>
 
-    <div id="chat-section">
+    <div id="chat-section" style="flex:1; display:flex; flex-direction:column;">
         <div id="chat-scroller"></div>
         <div class="input-area">
-            <input type="text" id="msgIn" placeholder="Type a message..." autocomplete="off">
+            <input type="text" id="msgIn" placeholder="Write something..." autocomplete="off">
             <button id="sendBtn" onclick="send()">➤</button>
         </div>
     </div>
@@ -207,10 +186,10 @@
 <script src="/socket.io/socket.io.js"></script>
 <script>
     const socket = io();
-    const urlParams = new URLSearchParams(window.location.search);
-    const username = urlParams.get('username') || "Guest";
-    const gender = urlParams.get('gender') || "Male";
-    const role = urlParams.get('role') || "user";
+    const params = new URLSearchParams(window.location.search);
+    const username = params.get('username') || "Guest";
+    const gender = params.get('gender') || "Male";
+    const role = params.get('role') || "user";
 
     let selectedUser = 'all';
 
@@ -223,43 +202,39 @@
         ov.style.display = sb.classList.contains('open') ? 'block' : 'none';
     }
 
-    // --- RENDER USERS ---
+    // --- USER LIST UPDATE (FIXED UNDEFINED) ---
     socket.on('updateUserList', (users) => {
         const list = document.getElementById('online-list');
         list.innerHTML = users.map(u => `
-            <div class="user-item ${u.role === 'owner' ? 'owner-border' : ''}" onclick="startDM('${u.username}')">
-                <span>${u.gender === 'Female' ? '👩' : '👨'}</span>
-                <span style="color:${u.role === 'owner' ? 'var(--owner-gold)' : 'white'}">${u.username}</span>
+            <div class="user-item ${u.role === 'owner' ? 'owner-gold' : ''}" onclick="startDM('${u.username}')">
+                <span style="font-size:20px;">${u.gender === 'Female' ? '👩' : '👨'}</span>
+                <span style="color:${u.role === 'owner' ? 'var(--owner-gold)' : 'white'}; font-weight:600; font-size:13px;">${u.username}</span>
             </div>
-        `).join('') + `<div onclick="startDM('all')" class="user-item" style="opacity:0.6; margin-top:15px;">🌍 Public Room</div>`;
+        `).join('') + `<div onclick="startDM('all')" class="user-item" style="opacity:0.5; margin-top:10px; font-size:12px;">🌍 Return to Public</div>`;
     });
 
     function startDM(user) {
         selectedUser = user;
         document.getElementById('status').innerText = (user === 'all') ? "Public Room" : "DM: " + user;
-        document.getElementById('msgIn').placeholder = (user === 'all') ? "Type a message..." : "Private msg to " + user + "...";
         if(window.innerWidth < 768) toggleSidebar();
     }
 
-    // --- MESSAGE HANDLING ---
+    // --- MESSAGE RENDERING (FIXED UNDEFINED) ---
     socket.on('newMessage', (data) => {
         const div = document.createElement('div');
         const isMe = data.user === username;
         div.className = `msg ${isMe ? 'me' : 'other'}`;
         
-        const nameStyle = data.role === 'owner' ? 'u-name owner' : 'u-name';
-        const icon = data.gender === 'Female' ? '👩' : '👨';
-        const dmTag = data.to !== 'all' ? '<span style="color:var(--owner-gold); font-size:9px;"> [PVT]</span>' : '';
+        const senderName = data.user || "Guest";
+        const senderIcon = data.gender === 'Female' ? '👩' : '👨';
+        const nameClass = data.role === 'owner' ? 'u-name owner' : 'u-name';
+        const pvtTag = data.to !== 'all' ? ' <small style="color:gold;">(PVT)</small>' : '';
 
-        div.innerHTML = `<span class="${nameStyle}">${icon} ${data.user}${dmTag}</span>${data.text}`;
+        div.innerHTML = `<span class="${nameClass}">${senderIcon} ${senderName}${pvtTag}</span>${data.text}`;
         
-        const box = document.getElementById('chat-scroller');
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
-    });
-
-    socket.on('clearScreen', () => {
-        document.getElementById('chat-scroller').innerHTML = '<div style="text-align:center; color:gray;">Room cleared</div>';
+        const scroller = document.getElementById('chat-scroller');
+        scroller.appendChild(div);
+        scroller.scrollTop = scroller.scrollHeight;
     });
 
     function send() {
@@ -275,6 +250,7 @@
         input.value = '';
     }
 
+    socket.on('clearScreen', () => { document.getElementById('chat-scroller').innerHTML = ''; });
     document.getElementById('msgIn').addEventListener('keypress', (e) => { if(e.key === 'Enter') send(); });
 </script>
 </body>
