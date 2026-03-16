@@ -32,28 +32,25 @@ justify-content:space-between;
 padding:0 15px;
 }
 
-/* CONTAINER */
+/* MAIN */
 
-#container{
+#main{
 flex:1;
 display:flex;
+overflow:hidden;
 }
 
 /* SIDEBAR */
 
 #sidebar{
-position:fixed;
-left:-220px;
-top:0;
 width:220px;
-height:100%;
 background:white;
 overflow:auto;
 transition:0.3s;
 }
 
-#sidebar.open{
-left:0;
+#sidebar.closed{
+width:0;
 }
 
 #onlineUsers div{
@@ -75,8 +72,6 @@ flex:1;
 overflow:auto;
 padding:10px;
 }
-
-/* MESSAGE */
 
 .msg{
 background:white;
@@ -125,7 +120,7 @@ width:250px;
 background:white;
 border-radius:10px;
 display:none;
-box-shadow:0 5px 15px rgba(0,0,0,0.2);
+box-shadow:0 5px 15px rgba(0,0,0,0.3);
 }
 
 #dmMessages{
@@ -143,17 +138,16 @@ padding:10px;
 <div id="header">
 
 <span id="menuBtn">☰</span>
-
 <span>Tulip Chat</span>
-
 <span id="dmBell">🔔</span>
 
 </div>
 
+<div id="main">
+
 <div id="sidebar">
 
 <h3 style="padding:10px">Online Users</h3>
-
 <div id="onlineUsers"></div>
 
 </div>
@@ -164,13 +158,15 @@ padding:10px;
 
 <div id="sendBox">
 
-<input id="msg">
+<input id="msg" placeholder="Type message">
 
 <button onclick="send()">Send</button>
 
 <input type="file" id="imgFile">
 
 <button onclick="sendImage()">GIF</button>
+
+</div>
 
 </div>
 
@@ -196,7 +192,7 @@ let username=localStorage.getItem("username")
 
 socket.emit("join",username)
 
-/* CHAT */
+/* MESSAGE RENDER */
 
 function render(msg){
 
@@ -210,11 +206,7 @@ div.innerHTML="<b>"+msg.user+"</b><br><img src='"+msg.image+"'>"
 
 }else{
 
-if(msg.user==="Lord_lucifer"){
-div.innerHTML="👑 "+msg.user+": "+msg.text
-}else{
 div.innerHTML=msg.user+": "+msg.text
-}
 
 }
 
@@ -229,10 +221,8 @@ function send(){
 const msg=document.getElementById("msg").value
 
 socket.emit("chat",{
-
 user:username,
 text:msg
-
 })
 
 document.getElementById("msg").value=""
@@ -250,10 +240,8 @@ const reader=new FileReader()
 reader.onload=function(){
 
 socket.emit("chat",{
-
 user:username,
 image:reader.result
-
 })
 
 }
@@ -265,21 +253,15 @@ reader.readAsDataURL(file)
 /* RECEIVE */
 
 socket.on("chat",msg=>{
-
 render(msg)
-
 })
 
 socket.on("chatHistory",msgs=>{
-
 msgs.forEach(m=>render(m))
-
 })
 
 socket.on("clearChat",()=>{
-
 document.getElementById("chat").innerHTML=""
-
 })
 
 /* ONLINE USERS */
@@ -297,10 +279,8 @@ const div=document.createElement("div")
 div.innerText="🟢 "+u
 
 div.onclick=()=>{
-
 document.getElementById("dmUser").value=u
 openDM()
-
 }
 
 box.appendChild(div)
@@ -317,11 +297,9 @@ const msg=document.getElementById("dmInput").value
 const to=document.getElementById("dmUser").value
 
 socket.emit("dm",{
-
 from:username,
 to:to,
 text:msg
-
 })
 
 }
@@ -341,9 +319,7 @@ document.getElementById("dmMessages").appendChild(div)
 /* SIDEBAR */
 
 document.getElementById("menuBtn").onclick=()=>{
-
-document.getElementById("sidebar").classList.toggle("open")
-
+document.getElementById("sidebar").classList.toggle("closed")
 }
 
 /* DM TOGGLE */
