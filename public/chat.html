@@ -2,188 +2,351 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tulip Pro | Lord Lucifer Fix</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Tulip Pro | Ultimate Hookup Suite</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root { --primary: #f43f5e; --owner: #fbbf24; --glass: rgba(15, 23, 42, 0.95); }
-        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; touch-action: manipulation; }
+        :root {
+            --primary: #f43f5e;
+            --secondary: #8b5cf6;
+            --dark: #0f172a;
+            --glass: rgba(15, 23, 42, 0.92);
+            --owner-gold: #fbbf24;
+            --text: #f8fafc;
+            --system-msg: #334155;
+        }
+
+        /* Reset & Base Styles */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        body { 
-            height: 100dvh; width: 100vw; display: flex; flex-direction: column; 
-            background: #000 url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200') center/cover no-repeat fixed;
-            overflow: hidden; position: fixed; 
+        body, html {
+            height: 100%; width: 100%; overflow: hidden; position: fixed;
+            background: #000; color: var(--text);
         }
 
-        header { height: 50px; background: var(--glass); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 1001; border-bottom: 1px solid rgba(255,255,255,0.1); }
-
-        /* CHAT AREA FIX: Isse messages hamesha upar dikhenge */
-        #chat-scroller { 
-            flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; 
-            gap: 12px; padding-bottom: 160px; /* Input space */
-            -webkit-overflow-scrolling: touch;
+        /* Full Screen Background */
+        .bg-overlay {
+            position: fixed; inset: 0;
+            background: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1600') center/cover no-repeat;
+            filter: brightness(0.4) blur(2px); z-index: -1;
         }
 
-        .msg { padding: 10px 14px; border-radius: 15px; color: white; max-width: 80%; font-size: 14px; word-wrap: break-word; line-height: 1.4; }
-        .msg.me { align-self: flex-end; background: var(--primary); border-bottom-right-radius: 2px; box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3); }
-        .msg.other { align-self: flex-start; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-bottom-left-radius: 2px; }
-        .msg img { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; }
-
-        /* PROGRESS BAR FIX */
-        #p-wrap { display: none; padding: 8px 15px; background: var(--glass); border-top: 1px solid var(--primary); }
-        .p-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
-        .p-fill { height: 100%; width: 0%; background: var(--primary); transition: width 0.3s ease; }
-
-        /* MEDIA PANEL FIX */
-        #media-panel { 
-            display: none; background: var(--glass); padding: 12px; 
-            grid-template-columns: repeat(4, 1fr); gap: 10px; border-top: 1px solid rgba(255,255,255,0.1);
+        /* Layout Structure */
+        .app-wrapper {
+            display: flex; flex-direction: column; height: 100dvh; width: 100%;
         }
-        .media-item { width: 100%; border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
 
-        /* INPUT AREA FIX */
-        .input-wrapper { position: fixed; bottom: 0; width: 100%; background: var(--glass); z-index: 1000; }
-        .input-row { display: flex; align-items: center; gap: 10px; padding: 12px; }
-        #msgIn { flex: 1; padding: 12px 18px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; font-size: 16px; outline: none; }
-        
-        #sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: #0f172a; transition: 0.3s; z-index: 2000; padding: 20px; }
+        /* Header Engine */
+        header {
+            height: 60px; background: var(--glass); display: flex; align-items: center;
+            justify-content: space-between; padding: 0 20px; z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(15px);
+        }
+
+        .logo-box { display: flex; align-items: center; gap: 10px; }
+        .logo-text { font-weight: 800; font-size: 20px; letter-spacing: 1px; }
+        .logo-text span { color: var(--primary); }
+        .status-badge { font-size: 10px; background: var(--owner-gold); color: #000; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+
+        /* Sidebar System */
+        #sidebar {
+            position: fixed; left: -300px; top: 0; width: 300px; height: 100%;
+            background: var(--dark); z-index: 2000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 25px; display: flex; flex-direction: column; box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+        }
         #sidebar.open { left: 0; }
-        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; }
+        .sidebar-header { margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
+        .user-item { 
+            padding: 15px; background: rgba(255,255,255,0.03); border-radius: 12px; margin-bottom: 10px;
+            display: flex; align-items: center; gap: 12px; transition: 0.2s; cursor: pointer;
+        }
+        .user-item:hover { background: rgba(244, 63, 94, 0.1); border: 1px solid var(--primary); }
+
+        /* Chat Core Engine */
+        #chat-scroller {
+            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column;
+            gap: 15px; scroll-behavior: smooth; padding-bottom: 180px;
+        }
+
+        /* Message Bubble Engineering */
+        .message-row { display: flex; flex-direction: column; width: 100%; position: relative; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .bubble {
+            max-width: 85%; padding: 12px 16px; border-radius: 20px; position: relative;
+            font-size: 14px; line-height: 1.5; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .me { align-self: flex-end; }
+        .me .bubble {
+            background: linear-gradient(135deg, var(--primary), #e11d48);
+            border-bottom-right-radius: 4px;
+        }
+
+        .other { align-self: flex-start; }
+        .other .bubble {
+            background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(10px);
+            border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sender-name { font-size: 10px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .me .sender-name { text-align: right; color: rgba(255,255,255,0.7); }
+        .other .sender-name { color: var(--primary); }
+
+        .msg-img { max-width: 100%; border-radius: 12px; margin-top: 8px; display: block; border: 1px solid rgba(255,255,255,0.2); }
+
+        /* Input Control Station */
+        .control-station {
+            position: fixed; bottom: 0; width: 100%; background: var(--glass);
+            backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1);
+            padding: 15px; z-index: 1500;
+        }
+
+        /* Progress Engine */
+        #upload-monitor { display: none; margin-bottom: 12px; }
+        .monitor-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+        .monitor-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: 0.3s; }
+
+        /* Media Panel Engine */
+        #spicy-panel {
+            display: none; grid-template-columns: repeat(4, 1fr); gap: 10px;
+            padding: 15px; background: rgba(0,0,0,0.4); border-radius: 15px;
+            margin-bottom: 15px; border: 1px solid var(--primary); max-height: 250px; overflow-y: auto;
+        }
+        .spicy-item { width: 100%; border-radius: 8px; cursor: pointer; transition: 0.3s; border: 1px solid rgba(255,255,255,0.1); }
+        .spicy-item:hover { transform: scale(1.05); border-color: var(--primary); }
+
+        .input-row { display: flex; align-items: center; gap: 12px; }
+        .action-btn { 
+            width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; 
+            justify-content: center; cursor: pointer; background: rgba(255,255,255,0.05); 
+            transition: 0.3s; font-size: 20px; color: white;
+        }
+        .action-btn:active { transform: scale(0.9); background: var(--primary); }
+
+        #main-input {
+            flex: 1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2);
+            padding: 12px 20px; border-radius: 30px; color: white; outline: none; font-size: 16px;
+        }
+
+        .send-btn {
+            background: var(--primary); border: none; padding: 10px 20px; border-radius: 25px;
+            color: white; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(244, 63, 94, 0.4);
+        }
+
+        /* Overlay */
+        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1800; backdrop-filter: blur(4px); }
     </style>
 </head>
 <body>
 
-<div id="overlay" onclick="toggleSidebar()"></div>
+<div class="bg-overlay"></div>
+<div id="overlay" onclick="ui.toggleSidebar()"></div>
 
-<header>
-    <div onclick="toggleSidebar()" style="cursor:pointer; font-size:24px; color:white;">☰</div>
-    <div style="color:white; font-weight:600;">TULIP <span style="color:var(--primary)">PRO</span></div>
-    <div id="target-ui" style="font-size:10px; color:var(--owner);">GLOBAL</div>
-</header>
-
-<div id="sidebar">
-    <h3 style="color:white; margin-bottom:20px;">Users Online</h3>
-    <div id="user-list"></div>
-</div>
-
-<div id="chat-scroller"></div>
-
-<div class="input-wrapper">
-    <div id="p-wrap">
-        <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--primary); margin-bottom:5px;">
-            <span>Sending Media...</span><span id="p-pct">0%</span>
+<div class="app-wrapper">
+    <header>
+        <div class="action-btn" onclick="ui.toggleSidebar()"><i class="fas fa-bars"></i></div>
+        <div class="logo-box">
+            <div class="logo-text">TULIP <span>PRO</span></div>
+            <div class="status-badge" id="room-name">GLOBAL</div>
         </div>
-        <div class="p-bar"><div id="p-fill" class="p-fill"></div></div>
+        <div class="action-btn" onclick="location.reload()"><i class="fas fa-sync-alt"></i></div>
+    </header>
+
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h2 style="color:var(--primary)">Members Online</h2>
+            <p style="font-size: 12px; opacity: 0.6;">Select a user for Private Chat</p>
+        </div>
+        <div id="user-list-container" style="flex:1; overflow-y:auto;"></div>
+        <button onclick="chatEngine.setTarget('all')" style="width:100%; padding:15px; background:var(--primary); border:none; color:white; border-radius:12px; font-weight:700; margin-top:10px;">GLOBAL LOUNGE</button>
     </div>
 
-    <div id="media-panel">
-        <img class="media-item" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJqZ3R6Z3R6Z3R6Z3R6/3o7TKMGpxx87Z4I6T6/giphy.gif" onclick="sendMedia(this.src)">
-        <img class="media-item" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/l41lTfO3vD04A7088/giphy.gif" onclick="sendMedia(this.src)">
-        <div class="media-item" style="background:#333; height:50px; display:flex; align-items:center; justify-content:center; font-size:20px;" onclick="sendMedia('🎁 SEX GIFT 🎁')">🎁</div>
-    </div>
+    <main id="chat-scroller"></main>
 
-    <div class="input-row">
-        <label for="f-up" style="cursor:pointer; font-size:24px;">🖼️</label>
-        <input type="file" id="f-up" hidden accept="image/*">
-        <span onclick="toggleMedia()" style="cursor:pointer; font-size:24px;">🔥</span>
-        <input type="text" id="msgIn" placeholder="Type hot message..." autocomplete="off">
-        <button onclick="sendMsg()" style="background:var(--primary); border:none; color:white; padding:10px 20px; border-radius:20px; font-weight:600;">Send</button>
+    <div class="control-station">
+        <div id="upload-monitor">
+            <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;">
+                <span style="color:var(--primary); font-weight:600;"><i class="fas fa-cloud-upload-alt"></i> Uploading...</span>
+                <span id="pct-val" style="color:white;">0%</span>
+            </div>
+            <div class="monitor-bar"><div id="monitor-fill" class="monitor-fill"></div></div>
+        </div>
+
+        <div id="spicy-panel">
+            <img class="spicy-item" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6Z3R6Z3R6/3o7TKMGpxx87Z4I6T6/giphy.gif" onclick="chatEngine.sendMedia(this.src)">
+            <img class="spicy-item" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/l41lTfO3vD04A7088/giphy.gif" onclick="chatEngine.sendMedia(this.src)">
+            <img class="spicy-item" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/3o7TKVUn7iM8FMEU24/giphy.gif" onclick="chatEngine.sendMedia(this.src)">
+            <div class="spicy-item" style="background:linear-gradient(45deg, #f43f5e, #8b5cf6); height:60px; display:flex; align-items:center; justify-content:center; font-size:24px;" onclick="chatEngine.sendMedia('🎁 Premium Sex Gift 🎁')">🎁</div>
+        </div>
+
+        <div class="input-row">
+            <label for="media-upload" class="action-btn"><i class="fas fa-camera"></i></label>
+            <input type="file" id="media-upload" hidden accept="image/*">
+            
+            <div class="action-btn" onclick="ui.toggleSpicy()"><i class="fas fa-fire" style="color:#ff4d4d"></i></div>
+            
+            <input type="text" id="main-input" placeholder="Type a message..." autocomplete="off">
+            
+            <button class="send-btn" onclick="chatEngine.sendText()">SEND</button>
+        </div>
     </div>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-    const socket = io();
+    // --- Configuration & State ---
     const params = new URLSearchParams(window.location.search);
-    const myName = params.get('username') || "Guest";
-    let activeTarget = 'all';
+    const STATE = {
+        username: params.get('username') || "Stranger",
+        role: params.get('role') || "user",
+        target: 'all',
+        isSidebarOpen: false,
+        isSpicyOpen: false
+    };
 
-    socket.emit('join', { username: myName, role: params.get('role') });
+    const socket = io();
 
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('overlay').style.display = document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none';
-    }
-
-    function toggleMedia() {
-        const p = document.getElementById('media-panel');
-        p.style.display = (p.style.display === 'grid') ? 'none' : 'grid';
-    }
-
-    // --- PHOTO UPLOAD WITH LIVE % PROGRESS ---
-    document.getElementById('f-up').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if(!file) return;
-        
-        const reader = new FileReader();
-        document.getElementById('p-wrap').style.display = 'block';
-
-        reader.onprogress = (ev) => {
-            const pct = Math.round((ev.loaded / ev.total) * 100);
-            document.getElementById('p-fill').style.width = pct + '%';
-            document.getElementById('p-pct').innerText = pct + '%';
-        };
-
-        reader.onload = () => {
-            socket.emit('sendMessage', { type: 'image', text: reader.result, to: activeTarget, user: myName });
-            setTimeout(() => { 
-                document.getElementById('p-wrap').style.display = 'none';
-                document.getElementById('p-fill').style.width = '0%';
-            }, 1000);
-        };
-        reader.readAsDataURL(file);
-    });
-
-    function sendMedia(url) {
-        socket.emit('sendMessage', { type: 'image', text: url, to: activeTarget, user: myName });
-        toggleMedia();
-    }
-
-    // --- CRITICAL MESSAGE FIX ---
-    socket.on('newMessage', (data) => {
-        const scroller = document.getElementById('chat-scroller');
-        const div = document.createElement('div');
-        div.className = `msg ${data.user === myName ? 'me' : 'other'}`;
-        
-        const sender = data.user || "System";
-        const text = data.text || ""; // Prevents "undefined"
-
-        let html = `<small style="display:block; font-size:10px; font-weight:600; margin-bottom:2px; opacity:0.8;">${sender}</small>`;
-        
-        if(data.type === 'image') {
-            html += `<img src="${text}">`;
-        } else {
-            html += `<span>${text}</span>`;
+    // --- UI Engine ---
+    const ui = {
+        toggleSidebar: () => {
+            STATE.isSidebarOpen = !STATE.isSidebarOpen;
+            document.getElementById('sidebar').classList.toggle('open', STATE.isSidebarOpen);
+            document.getElementById('overlay').style.display = STATE.isSidebarOpen ? 'block' : 'none';
+        },
+        toggleSpicy: () => {
+            STATE.isSpicyOpen = !STATE.isSpicyOpen;
+            document.getElementById('spicy-panel').style.display = STATE.isSpicyOpen ? 'grid' : 'none';
+        },
+        updateProgress: (pct) => {
+            const monitor = document.getElementById('upload-monitor');
+            const fill = document.getElementById('monitor-fill');
+            const val = document.getElementById('pct-val');
+            
+            monitor.style.display = 'block';
+            fill.style.width = pct + '%';
+            val.innerText = pct + '%';
+            
+            if(pct >= 100) {
+                setTimeout(() => { monitor.style.display = 'none'; fill.style.width = '0%'; }, 1000);
+            }
         }
-        
-        div.innerHTML = html;
-        scroller.appendChild(div);
-        
-        // Auto-scroll logic
-        scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' });
-    });
+    };
 
-    function sendMsg() {
-        const inp = document.getElementById('msgIn');
-        if(inp.value.trim()) {
-            socket.emit('sendMessage', { type: 'text', text: inp.value, to: activeTarget, user: myName });
-            inp.value = '';
+    // --- Chat Logic Engine ---
+    const chatEngine = {
+        init: () => {
+            socket.emit('join', { username: STATE.username, role: STATE.role });
+            
+            // Listeners
+            socket.on('newMessage', (data) => chatEngine.renderMessage(data));
+            socket.on('updateUserList', (users) => chatEngine.renderUserList(users));
+            
+            // Input Listeners
+            document.getElementById('main-input').addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') chatEngine.sendText();
+            });
+            
+            document.getElementById('media-upload').addEventListener('change', chatEngine.handleFileUpload);
+        },
+
+        setTarget: (user) => {
+            STATE.target = user;
+            document.getElementById('room-name').innerText = user === 'all' ? "GLOBAL" : "DM: " + user;
+            ui.toggleSidebar();
+        },
+
+        sendText: () => {
+            const input = document.getElementById('main-input');
+            const val = input.value.trim();
+            if(!val) return;
+
+            socket.emit('sendMessage', {
+                type: 'text',
+                text: val,
+                to: STATE.target,
+                user: STATE.username,
+                role: STATE.role
+            });
+            input.value = '';
+        },
+
+        sendMedia: (url) => {
+            socket.emit('sendMessage', {
+                type: 'image',
+                text: url,
+                to: STATE.target,
+                user: STATE.username,
+                role: STATE.role
+            });
+            if(STATE.isSpicyOpen) ui.toggleSpicy();
+        },
+
+        handleFileUpload: (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+
+            const reader = new FileReader();
+            reader.onprogress = (ev) => {
+                if(ev.lengthComputable) {
+                    const pct = Math.round((ev.loaded / ev.total) * 100);
+                    ui.updateProgress(pct);
+                }
+            };
+
+            reader.onload = () => {
+                chatEngine.sendMedia(reader.result);
+            };
+            reader.readAsDataURL(file);
+        },
+
+        renderMessage: (data) => {
+            const scroller = document.getElementById('chat-scroller');
+            const isMe = data.user === STATE.username;
+            
+            // Critical: Proper Data Handling to avoid Undefined
+            const sender = data.user || "System";
+            const content = data.text || "";
+
+            const row = document.createElement('div');
+            row.className = `message-row ${isMe ? 'me' : 'other'}`;
+
+            let innerHTML = `<div class="sender-name">${sender} ${data.role === 'owner' ? '👑' : ''}</div>`;
+            innerHTML += `<div class="bubble">`;
+            
+            if(data.type === 'image') {
+                innerHTML += `<img src="${content}" class="msg-img" onload="document.getElementById('chat-scroller').scrollTop = document.getElementById('chat-scroller').scrollHeight">`;
+            } else {
+                innerHTML += `<span>${content}</span>`;
+            }
+            
+            innerHTML += `</div>`;
+            row.innerHTML = innerHTML;
+            
+            scroller.appendChild(row);
+            
+            // Smooth scroll to bottom
+            scroller.scrollTop = scroller.scrollHeight;
+        },
+
+        renderUserList: (users) => {
+            const container = document.getElementById('user-list-container');
+            container.innerHTML = users.map(u => `
+                <div class="user-item" onclick="chatEngine.setTarget('${u.username}')">
+                    <div style="width:10px; height:10px; border-radius:50%; background:#4ade80;"></div>
+                    <span style="color:white; font-weight:500;">${u.username}</span>
+                    ${u.role === 'owner' ? '<span style="color:var(--owner-gold); font-size:10px; margin-left:auto;">OWNER</span>' : ''}
+                </div>
+            `).join('');
         }
-    }
+    };
 
-    socket.on('updateUserList', (users) => {
-        document.getElementById('user-list').innerHTML = users.map(u => `
-            <div onclick="setTarget('${u.username}')" style="padding:12px; color:white; border-bottom:1px solid #222; cursor:pointer;">${u.username}</div>
-        `).join('') + `<div onclick="setTarget('all')" style="padding:12px; color:var(--primary); font-weight:bold; cursor:pointer;">🌍 Back to Global</div>`;
-    });
-
-    function setTarget(u) {
-        activeTarget = u;
-        document.getElementById('target-ui').innerText = u === 'all' ? "GLOBAL" : "PRIVATE: " + u;
-        toggleSidebar();
-    }
-
-    document.getElementById('msgIn').addEventListener('keypress', (e) => { if(e.key==='Enter') sendMsg(); });
+    // Launch Engine
+    chatEngine.init();
 </script>
+
 </body>
 </html>
