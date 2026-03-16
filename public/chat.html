@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tulip Pro | 18+ Edition</title>
+    <title>Tulip Pro | X-Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #f43f5e; --owner: #fbbf24; --glass: rgba(15, 23, 42, 0.95); }
@@ -17,31 +17,33 @@
 
         header { height: 50px; background: var(--glass); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 1001; border-bottom: 1px solid rgba(255,255,255,0.1); }
 
-        #chat-container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; }
-        #chat-scroller { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 120px; }
+        #chat-scroller { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 140px; }
 
-        /* Bubble Style */
+        /* Bubble Styles */
         .msg { padding: 10px 14px; border-radius: 18px; color: white; max-width: 85%; font-size: 14px; word-wrap: break-word; position: relative; }
         .msg.me { align-self: flex-end; background: linear-gradient(135deg, #f43f5e, #e11d48); border-bottom-right-radius: 2px; }
         .msg.other { align-self: flex-start; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-bottom-left-radius: 2px; }
-        
-        /* Image/Adult Content Container */
-        .msg img { max-width: 100%; border-radius: 12px; margin-top: 8px; display: block; border: 1px solid rgba(255,255,255,0.1); }
-        .private-tag { font-size: 9px; color: #fbbf24; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 10px; margin-bottom: 4px; display: inline-block; }
+        .msg img { max-width: 100%; border-radius: 12px; margin-top: 8px; display: block; }
 
+        /* GIF/Sticker Panel */
+        #media-panel { 
+            display: none; position: absolute; bottom: 70px; left: 10px; right: 10px; 
+            background: var(--glass); border-radius: 15px; padding: 10px; 
+            grid-template-columns: repeat(4, 1fr); gap: 8px; z-index: 2000;
+            max-height: 200px; overflow-y: auto; border: 1px solid var(--primary);
+        }
+        .media-item { width: 100%; cursor: pointer; border-radius: 8px; transition: 0.2s; }
+        .media-item:active { transform: scale(0.9); }
+
+        /* Input Area */
         .input-wrapper { position: absolute; bottom: 0; width: 100%; background: var(--glass); padding: 12px; z-index: 1000; }
-        .input-row { display: flex; align-items: center; gap: 12px; }
-        
+        .input-row { display: flex; align-items: center; gap: 10px; }
         #msgIn { flex: 1; padding: 12px 18px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; outline: none; font-size: 16px; }
 
-        /* Progress Bar for high-quality images */
-        #upload-box { display: none; margin-bottom: 8px; }
-        .p-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
-        .p-fill { height: 100%; width: 0%; background: var(--primary); transition: 0.2s; }
-
-        #sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: #0f172a; transition: 0.3s; z-index: 2000; padding: 20px; }
+        /* Sidebar & Overlay */
+        #sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: #0f172a; transition: 0.3s; z-index: 3000; padding: 20px; }
         #sidebar.open { left: 0; }
-        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; }
+        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2500; }
     </style>
 </head>
 <body>
@@ -50,30 +52,28 @@
 
 <header>
     <div onclick="toggleSidebar()" style="cursor:pointer; font-size:24px; color:white;">☰</div>
-    <div style="color:white; font-weight:600; letter-spacing:1px;">TULIP <span style="color:var(--primary)">PRO</span></div>
-    <div id="chat-mode" style="font-size:10px; color:var(--owner); font-weight:bold;">GLOBAL</div>
+    <div style="color:white; font-weight:600;">TULIP <span style="color:var(--primary)">PRO</span></div>
+    <div id="target-ui" style="font-size:10px; color:var(--owner);">GLOBAL</div>
 </header>
 
 <div id="sidebar">
-    <h3 style="color:white; margin-bottom:20px;">Users Around You</h3>
+    <h3 style="color:white; margin-bottom:20px;">Users Online</h3>
     <div id="user-list"></div>
 </div>
 
-<div id="chat-container">
+<div id="chat-container" style="flex:1; position:relative; overflow:hidden;">
     <div id="chat-scroller"></div>
     
+    <div id="media-panel">
+        <img class="media-item" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJqZ3R6Z3R6Z3R6Z3R6/3o7TKMGpxx87Z4I6T6/giphy.gif" onclick="sendMedia(this.src)">
+        <img class="media-item" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJqZ3R6Z3R6Z3R6Z3R6/l41lTfO3vD04A7088/giphy.gif" onclick="sendMedia(this.src)">
+        <div class="media-item" style="background:#333; height:60px; display:flex; align-items:center; justify-content:center; border-radius:8px;" onclick="sendMedia('🎁 SEX GIFT 🎁')">🎁</div>
+    </div>
+
     <div class="input-wrapper">
-        <div id="upload-box">
-            <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--primary); margin-bottom:4px;">
-                <span>Sending media...</span><span id="p-val">0%</span>
-            </div>
-            <div class="p-bar"><div id="p-fill" class="p-fill"></div></div>
-        </div>
-        
         <div class="input-row">
-            <label for="adult-media" style="cursor:pointer; font-size:24px;" title="Send Photo/GIF">🔞</label>
-            <input type="file" id="adult-media" hidden accept="image/*">
-            <input type="text" id="msgIn" placeholder="Write something hot..." autocomplete="off">
+            <span onclick="toggleMedia()" style="cursor:pointer; font-size:24px;">🔥</span>
+            <input type="text" id="msgIn" placeholder="Type something..." autocomplete="off">
             <button onclick="sendMsg()" style="background:var(--primary); border:none; color:white; width:45px; height:45px; border-radius:50%; font-size:20px;">➤</button>
         </div>
     </div>
@@ -84,10 +84,9 @@
     const socket = io();
     const params = new URLSearchParams(window.location.search);
     const myName = params.get('username') || "Stranger";
-    const myRole = params.get('role') || "user";
-    let targetUser = 'all';
+    let activeTarget = 'all';
 
-    socket.emit('join', { username: myName, role: myRole, gender: params.get('gender') });
+    socket.emit('join', { username: myName, role: params.get('role'), gender: params.get('gender') });
 
     function toggleSidebar() {
         const sb = document.getElementById('sidebar');
@@ -96,81 +95,59 @@
         ov.style.display = sb.classList.contains('open') ? 'block' : 'none';
     }
 
-    // --- FIX: TEXT AND IMAGE RENDERING ---
+    function toggleMedia() {
+        const panel = document.getElementById('media-panel');
+        panel.style.display = (panel.style.display === 'grid') ? 'none' : 'grid';
+    }
+
+    function sendMedia(url) {
+        socket.emit('sendMessage', { type: 'image', text: url, to: activeTarget, user: myName });
+        toggleMedia();
+    }
+
     socket.on('newMessage', (data) => {
         const div = document.createElement('div');
         div.className = `msg ${data.user === myName ? 'me' : 'other'}`;
         
-        const isPrivate = data.to !== 'all';
-        const senderName = data.user || "System";
-        const messageText = data.text || ""; // Fix for undefined
+        // Fix for undefined content
+        const sender = data.user || "System";
+        const content = data.text || "";
 
-        let html = '';
-        if(isPrivate) html += `<span class="private-tag">PRIVATE 🔒</span><br>`;
-        html += `<small style="display:block; font-size:10px; font-weight:bold; opacity:0.8;">${senderName}</small>`;
-        
+        let html = `<small style="display:block; font-size:10px; opacity:0.7;">${sender}</small>`;
         if(data.type === 'image') {
-            html += `<img src="${messageText}">`;
+            if(content.includes('giphy') || content.includes('http')) {
+                html += `<img src="${content}">`;
+            } else {
+                html += `<div style="padding:10px; background:rgba(0,0,0,0.2); border-radius:10px;">${content}</div>`;
+            }
         } else {
-            html += `<span>${messageText}</span>`; // Full message rendering
+            html += `<span>${content}</span>`;
         }
         
         div.innerHTML = html;
-        const sc = document.getElementById('chat-scroller');
-        sc.appendChild(div);
-        sc.scrollTop = sc.scrollHeight;
-    });
-
-    // --- FILE UPLOAD WITH PROGRESS ---
-    document.getElementById('adult-media').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if(!file) return;
-
-        const reader = new FileReader();
-        document.getElementById('upload-box').style.display = 'block';
-
-        reader.onprogress = (ev) => {
-            if (ev.lengthComputable) {
-                const pct = Math.round((ev.loaded / ev.total) * 100);
-                document.getElementById('p-fill').style.width = pct + '%';
-                document.getElementById('p-val').innerText = pct + '%';
-            }
-        };
-
-        reader.onload = () => {
-            socket.emit('sendMessage', { 
-                type: 'image', text: reader.result, to: targetUser, user: myName, role: myRole 
-            });
-            setTimeout(() => { document.getElementById('upload-box').style.display = 'none'; }, 1000);
-        };
-        reader.readAsDataURL(file);
+        document.getElementById('chat-scroller').appendChild(div);
+        document.getElementById('chat-scroller').scrollTop = document.getElementById('chat-scroller').scrollHeight;
     });
 
     socket.on('updateUserList', (users) => {
         document.getElementById('user-list').innerHTML = users.map(u => `
-            <div onclick="setTarget('${u.username}')" style="padding:15px; border-bottom:1px solid #222; color:white; cursor:pointer; display:flex; justify-content:space-between;">
-                <span>${u.username}</span>
-                <span style="font-size:10px; color:#4ade80;">Online</span>
-            </div>
-        `).join('') + `<div onclick="setTarget('all')" style="padding:15px; color:var(--primary); font-weight:bold; cursor:pointer; text-align:center;">🌍 ENTER PUBLIC LOUNGE</div>`;
+            <div onclick="setTarget('${u.username}')" style="padding:12px; color:white; border-bottom:1px solid #222; cursor:pointer;">${u.username}</div>
+        `).join('') + `<div onclick="setTarget('all')" style="padding:12px; color:var(--primary); cursor:pointer;">🌍 GLOBAL</div>`;
     });
 
     function setTarget(u) {
-        targetUser = u;
-        document.getElementById('chat-mode').innerText = u === 'all' ? "GLOBAL" : "CHAT WITH: " + u;
+        activeTarget = u;
+        document.getElementById('target-ui').innerText = u === 'all' ? "GLOBAL" : "DM: " + u;
         toggleSidebar();
     }
 
     function sendMsg() {
         const inp = document.getElementById('msgIn');
         if(inp.value.trim()) {
-            socket.emit('sendMessage', { 
-                type: 'text', text: inp.value, to: targetUser, user: myName, role: myRole 
-            });
+            socket.emit('sendMessage', { type: 'text', text: inp.value, to: activeTarget, user: myName });
             inp.value = '';
         }
     }
-    document.getElementById('msgIn').addEventListener('keypress', (e) => { if(e.key==='Enter') sendMsg(); });
 </script>
 </body>
 </html>
