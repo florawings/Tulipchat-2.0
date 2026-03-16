@@ -1,60 +1,82 @@
-const express=require("express")
-const http=require("http")
-const {Server}=require("socket.io")
-const mongoose=require("mongoose")
-const multer=require("multer")
+const express = require("express")
+const http = require("http")
+const { Server } = require("socket.io")
+const multer = require("multer")
+const path = require("path")
 
-const authRoutes=require("./routes/auth")
-const adminRoutes=require("./routes/admin")
-
-const chatSocket=require("./sockets/chatSocket")
-const dmSocket=require("./sockets/dmSocket")
-
-const app=express()
-const server=http.createServer(app)
-const io=new Server(server)
+const app = express()
+const server = http.createServer(app)
+const io = new Server(server)
 
 app.use(express.json())
 app.use(express.static("public"))
-app.use("/uploads",express.static("uploads"))
+app.use("/uploads", express.static("uploads"))
 
-mongoose.connect(process.env.MONGO_URL || "mongodb://127.0.0.1:27017/tulipchat")
+/* ---------- FILE UPLOAD ---------- */
 
-// ROUTES
-app.use("/",authRoutes)
-app.use("/admin",adminRoutes)
+const storage = multer.diskStorage({
+ destination: "uploads",
+ filename: (req, file, cb) => {
+  cb(null, Date.now() + "_" + file.originalname)
+ }
+})
 
-// PROFILE PHOTO UPLOAD
-const storage=multer.diskStorage({
+const upload = multer({ storage })
 
-destination:"uploads",
+app.post("/upload", upload.single("photo"), (req, res) => {
 
-filename:(req,file,cb)=>{
-cb(null,Date.now()+"_"+file.originalname)
-}
+ if (!req.file) {
+  return res.json({ error: "no file" })
+ }
+
+ res.json({
+  url: "/uploads/" + req.file.filename
+ })
 
 })
 
-const upload=multer({storage})
+/* ---------- SOCKET CHAT ---------- */
 
-app.post("/upload",upload.single("photo"),(req,res)=>{
+let onlineUsers = []
 
-res.json({
-url:"/uploads/"+req.file.filename
+io.on("connection", (socket) => {
+
+ console.log("user connected")
+
+ socket.on("join", (username) => {
+
+  socket.username = username
+
+  if (!onlineUsers.includes(username)) {
+   onlineUsers.push(username)
+  }
+
+  io.emit("onlineUsers", onlineUsers)
+
+  io.emit("chat", username + " joined the chat")
+
+ })
+
+ socket.on("chat", (msg) => {
+
+  io.emit("chat", msg)
+
+ })
+
+ socket.on("disconnect", () => {
+
+  onlineUsers = onlineUsers.filter(u => u !== socket.username)
+
+  io.emit("onlineUsers", onlineUsers)
+
+ })
+
 })
 
-})
+/* ---------- START SERVER ---------- */
 
-// SOCKETS
-io.on("connection",(socket)=>{
+const PORT = process.env.PORT || 3000
 
-chatSocket(io,socket)
-dmSocket(io,socket)
-
-})
-
-const PORT=process.env.PORT || 3000
-
-server.listen(PORT,()=>{
-console.log("Tulip Chat running on "+PORT)
+server.listen(PORT, () => {
+ console.log("Tulip Chat server running on port " + PORT)
 })
