@@ -53,12 +53,6 @@ transition:0.3s;
 width:0;
 }
 
-#onlineUsers div{
-padding:10px;
-border-bottom:1px solid #eee;
-cursor:pointer;
-}
-
 /* CHAT */
 
 #chatArea{
@@ -123,12 +117,6 @@ display:none;
 box-shadow:0 5px 15px rgba(0,0,0,0.3);
 }
 
-#dmMessages{
-height:200px;
-overflow:auto;
-padding:10px;
-}
-
 </style>
 
 </head>
@@ -138,7 +126,9 @@ padding:10px;
 <div id="header">
 
 <span id="menuBtn">☰</span>
+
 <span>Tulip Chat</span>
+
 <span id="dmBell">🔔</span>
 
 </div>
@@ -148,6 +138,7 @@ padding:10px;
 <div id="sidebar">
 
 <h3 style="padding:10px">Online Users</h3>
+
 <div id="onlineUsers"></div>
 
 </div>
@@ -158,7 +149,7 @@ padding:10px;
 
 <div id="sendBox">
 
-<input id="msg" placeholder="Type message">
+<input id="msg">
 
 <button onclick="send()">Send</button>
 
@@ -176,7 +167,7 @@ padding:10px;
 
 <div id="dmMessages"></div>
 
-<input id="dmUser" placeholder="username">
+<input id="dmUser">
 
 <input id="dmInput">
 
@@ -192,7 +183,7 @@ let username=localStorage.getItem("username")
 
 socket.emit("join",username)
 
-/* MESSAGE RENDER */
+/* RENDER */
 
 function render(msg){
 
@@ -201,13 +192,9 @@ const div=document.createElement("div")
 div.classList.add("msg")
 
 if(msg.image){
-
 div.innerHTML="<b>"+msg.user+"</b><br><img src='"+msg.image+"'>"
-
 }else{
-
 div.innerHTML=msg.user+": "+msg.text
-
 }
 
 document.getElementById("chat").appendChild(div)
@@ -252,9 +239,7 @@ reader.readAsDataURL(file)
 
 /* RECEIVE */
 
-socket.on("chat",msg=>{
-render(msg)
-})
+socket.on("chat",msg=>render(msg))
 
 socket.on("chatHistory",msgs=>{
 msgs.forEach(m=>render(m))
@@ -304,25 +289,13 @@ text:msg
 
 }
 
-socket.on("dm",data=>{
-
-document.getElementById("dmBell").innerText="🔔"
-
-const div=document.createElement("div")
-
-div.innerText=data.from+": "+data.text
-
-document.getElementById("dmMessages").appendChild(div)
-
-})
-
 /* SIDEBAR */
 
 document.getElementById("menuBtn").onclick=()=>{
 document.getElementById("sidebar").classList.toggle("closed")
 }
 
-/* DM TOGGLE */
+/* DM */
 
 document.getElementById("dmBell").onclick=openDM
 
