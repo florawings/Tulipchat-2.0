@@ -2,4 +2,19 @@
 
 <div id="users"></div>
 
-<button onclick="location.reload()">Refresh</button>
+<script>
+
+async function loadUsers(){
+
+let res=await fetch("/admin/users")
+
+let users=await res.json()
+
+document.getElementById("users").innerHTML=
+users.map(u=>`<p>${u.username}</p>`).join("")
+
+}
+
+loadUsers()
+
+</script>
