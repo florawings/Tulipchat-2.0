@@ -11,15 +11,15 @@
 
 body{
 margin:0;
-font-family:Arial;
 height:100vh;
 display:flex;
-align-items:center;
 justify-content:center;
+align-items:center;
 background:linear-gradient(135deg,#ff6a8b,#ff8fab);
+font-family:Arial;
 }
 
-#card{
+.card{
 background:white;
 padding:30px;
 border-radius:15px;
@@ -51,7 +51,7 @@ color:white;
 
 <body>
 
-<div id="card">
+<div class="card">
 
 <h2>🌷 Tulip Chat</h2>
 
@@ -61,7 +61,7 @@ color:white;
 
 <button onclick="login()">Login</button>
 
-<p>Don't have account?
+<p>
 <a href="register.html">Register</a>
 </p>
 
@@ -81,10 +81,7 @@ headers:{
 "Content-Type":"application/json"
 },
 
-body:JSON.stringify({
-username,
-password
-})
+body:JSON.stringify({username,password})
 
 })
 
