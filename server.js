@@ -1,34 +1,34 @@
-const express = require("express")
-const http = require("http")
-const { Server } = require("socket.io")
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
 
-const app = express()
-const server = http.createServer(app)
-const io = new Server(server)
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-app.use(express.json())
-app.use(express.static("public"))
+app.use(express.json());
+app.use(express.static("public"));
 
-/* ----- MEMORY DATABASE ----- */
+/* ---------- MEMORY USERS ---------- */
 
 let users = [
  { username: "Lord_lucifer", password: "766521", role: "owner" }
-]
+];
 
-/* ----- REGISTER ----- */
+/* ---------- REGISTER ---------- */
 
-app.post("/register",(req,res)=>{
+app.post("/register", (req, res) => {
 
- const {username,password,email,age,gender}=req.body
+ const { username, password, email, age, gender } = req.body;
 
- if(!username || !password){
-  return res.json({error:"Missing fields"})
+ if (!username || !password) {
+  return res.json({ error: "Missing fields" });
  }
 
- let exist=users.find(u=>u.username===username)
+ const exist = users.find(u => u.username === username);
 
- if(exist){
-  return res.json({error:"User already exists"})
+ if (exist) {
+  return res.json({ error: "User already exists" });
  }
 
  users.push({
@@ -37,72 +37,69 @@ app.post("/register",(req,res)=>{
   email,
   age,
   gender,
-  role:"user"
- })
+  role: "user"
+ });
 
- res.json({success:true})
+ res.json({ success: true });
 
-})
+});
 
-/* ----- LOGIN ----- */
+/* ---------- LOGIN ---------- */
 
-app.post("/login",(req,res)=>{
+app.post("/login", (req, res) => {
 
- const {username,password}=req.body
+ const { username, password } = req.body;
 
- let user=users.find(
-  u=>u.username===username && u.password===password
- )
+ const user = users.find(
+  u => u.username === username && u.password === password
+ );
 
- if(!user){
-  return res.json({error:"Invalid login"})
+ if (!user) {
+  return res.json({ error: "Invalid login" });
  }
 
- res.json({
-  success:true,
-  role:user.role
- })
+ res.json({ success: true, role: user.role });
 
-})
+});
 
-/* ----- CHAT SOCKET ----- */
+/* ---------- SOCKET CHAT ---------- */
 
-let onlineUsers=[]
+let onlineUsers = [];
 
-io.on("connection",(socket)=>{
+io.on("connection", (socket) => {
 
- socket.on("join",(username)=>{
+ socket.on("join", (username) => {
 
-  socket.username=username
+  socket.username = username;
 
-  if(!onlineUsers.includes(username)){
-   onlineUsers.push(username)
+  if (!onlineUsers.includes(username)) {
+   onlineUsers.push(username);
   }
 
-  io.emit("onlineUsers",onlineUsers)
+  io.emit("onlineUsers", onlineUsers);
 
- })
+ });
 
- socket.on("chat",(msg)=>{
-  io.emit("chat",msg)
- })
+ socket.on("chat", (msg) => {
+  io.emit("chat", msg);
+ });
 
- socket.on("disconnect",()=>{
+ socket.on("disconnect", () => {
 
-  onlineUsers=onlineUsers.filter(
-   u=>u!==socket.username
-  )
+  onlineUsers = onlineUsers.filter(
+   u => u !== socket.username
+  );
 
-  io.emit("onlineUsers",onlineUsers)
+  io.emit("onlineUsers", onlineUsers);
 
- })
+ });
 
-})
+});
 
-/* ----- SERVER START ----- */
+/* ---------- SERVER START ---------- */
 
-const PORT=process.env.PORT || 3000
+const PORT = process.env.PORT || 3000;
 
-server.listen(PORT,()=>{
- console.log("Tulip Chat running on port "+PORT)
-})
+server.listen(PORT, () => {
+ console.log("Server running on port " + PORT);
+});
