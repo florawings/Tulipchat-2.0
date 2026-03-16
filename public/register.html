@@ -1,65 +1,109 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html>
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Register</title>
-</head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register - Tulip Chat</title><style>
 
-<body>
+body{
+margin:0;
+font-family:Arial, sans-serif;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:linear-gradient(135deg,#ff7aa2,#ff4d8b);
+}
 
-<h2>Register</h2>
+.card{
+background:white;
+padding:30px;
+border-radius:12px;
+width:320px;
+box-shadow:0 10px 25px rgba(0,0,0,0.2);
+text-align:center;
+}
 
-<input id="name" placeholder="Name">
+.card h2{
+margin-bottom:20px;
+color:#ff4d8b;
+}
 
-<input id="age" placeholder="Age">
+input,select{
+width:100%;
+padding:10px;
+margin:6px 0;
+border-radius:6px;
+border:1px solid #ddd;
+font-size:14px;
+}
 
-<select id="gender">
+button{
+width:100%;
+padding:10px;
+margin-top:10px;
+background:#ff4d8b;
+color:white;
+border:none;
+border-radius:6px;
+font-size:16px;
+cursor:pointer;
+}
+
+button:hover{
+background:#ff2e74;
+}
+
+.login{
+margin-top:10px;
+font-size:14px;
+}
+
+.login a{
+color:#ff2e74;
+text-decoration:none;
+font-weight:bold;
+}
+
+</style></head><body><div class="card"><h2>🌷 Tulip Chat Register</h2><input id="name" placeholder="Name"><input id="age" placeholder="Age"><select id="gender">
 <option value="">Gender</option>
 <option>Male</option>
 <option>Female</option>
-</select>
+<option>Other</option>
+</select><input id="email" placeholder="Email"><input id="password" type="password" placeholder="Password"><button onclick="register()">Register</button>
 
-<input id="email" placeholder="Email">
-
-<input id="password" type="password" placeholder="Password">
-
-<button onclick="register()">Register</button>
-
-<script>
+<div class="login">
+Already have account? <a href="/login.html">Login</a>
+</div></div><script>
 
 async function register(){
 
-let name=name.value
-let age=age.value
-let gender=gender.value
-let email=email.value
-let password=password.value
+const name=document.getElementById("name").value
+const age=document.getElementById("age").value
+const gender=document.getElementById("gender").value
+const email=document.getElementById("email").value
+const password=document.getElementById("password").value
 
-let res = await fetch("/register",{
-
+const res=await fetch("/auth/register",{
 method:"POST",
-
-headers:{"Content-Type":"application/json"},
-
+headers:{
+"Content-Type":"application/json"
+},
 body:JSON.stringify({
-
 username:name,
 age,
 gender,
 email,
 password
-
+})
 })
 
-})
+const data=await res.json()
 
-alert("Registered")
+alert(data.msg || "Registered!")
 
-location.href="/login.html"
+window.location="/login.html"
 
 }
 
-</script>
-
-</body>
+</script></body>
 </html>
