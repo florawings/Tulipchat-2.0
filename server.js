@@ -1,130 +1,50 @@
-const express=require("express")
-const http=require("http")
-const {Server}=require("socket.io")
+const express = require('express');
+const http = require('http');
+const mongoose = require('mongoose');
+const socketIo = require('socket.io');
+const path = require('path');
+const User = require('./models/User'); // Path check kar lena
 
-const app=express()
-const server=http.createServer(app)
-const io=new Server(server)
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
 
-app.use(express.json())
-app.use(express.static("public"))
+// Middleware
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-/* USERS */
+// Database Connection
+const MONGO_URI = 'Aapka_MongoDB_URL_Yahan'; // Apna URL daalein
 
-let users=[
-{username:"Lord_lucifer",password:"766521",role:"owner"}
-]
+mongoose.connect(MONGO_URI)
+  .then(async () => {
+    console.log('✅ Database Connected');
+    
+    // 👑 Auto-Owner Logic: Lord_lucifer ko Boss banana
+    const ownerName = "Lord_lucifer";
+    const user = await User.findOne({ username: ownerName });
+    if (user) {
+      await User.findOneAndUpdate({ username: ownerName }, { role: 'owner' });
+      console.log(`👑 Success: ${ownerName} is now the Owner.`);
+    } else {
+      console.log(`⚠️ Note: ${ownerName} account not found. Please register first.`);
+    }
+  })
+  .catch(err => console.error('❌ DB Connection Error:', err));
 
-/* STATE */
+// Routes (Jo aapki routes folder mein hain)
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
 
-let onlineUsers=[]
-let sockets={}
-let messages=[]
+// Socket Logic Connection
+const chatSocket = require('./sockets/chatSocket');
+io.on('connection', (socket) => {
+  // socket.userId set karne ka logic (Authentication ke baad)
+  chatSocket(io, socket);
+});
 
-/* REGISTER */
-
-app.post("/register",(req,res)=>{
-
-const {username,password}=req.body
-
-const exist=users.find(u=>u.username===username)
-
-if(exist){
-return res.json({error:"User exists"})
-}
-
-users.push({username,password,role:"user"})
-
-res.json({success:true})
-
-})
-
-/* LOGIN */
-
-app.post("/login",(req,res)=>{
-
-const {username,password}=req.body
-
-const user=users.find(
-u=>u.username===username && u.password===password
-)
-
-if(!user){
-return res.json({error:"Invalid login"})
-}
-
-res.json({
-success:true,
-username:user.username,
-role:user.role
-})
-
-})
-
-/* SOCKET */
-
-io.on("connection",(socket)=>{
-
-socket.on("join",(username)=>{
-
-socket.username=username
-
-sockets[username]=socket.id
-
-if(!onlineUsers.includes(username)){
-onlineUsers.push(username)
-}
-
-io.emit("onlineUsers",onlineUsers)
-
-socket.emit("chatHistory",messages)
-
-})
-
-/* CHAT */
-
-socket.on("chat",(msg)=>{
-
-if(msg.text==="/clear"){
-
-messages=[]
-
-io.emit("clearChat")
-
-return
-
-}
-
-messages.push(msg)
-
-io.emit("chat",msg)
-
-})
-
-/* DM */
-
-socket.on("dm",(data)=>{
-
-const target=sockets[data.to]
-
-if(target){
-io.to(target).emit("dm",data)
-}
-
-})
-
-socket.on("disconnect",()=>{
-
-onlineUsers=onlineUsers.filter(
-u=>u!==socket.username
-)
-
-delete sockets[socket.username]
-
-io.emit("onlineUsers",onlineUsers)
-
-})
-
-})
-
-server.listen(process.env.PORT||3000)
+// Server Start
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
