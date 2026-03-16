@@ -1,21 +1,25 @@
 const express=require("express")
 const http=require("http")
 const {Server}=require("socket.io")
-const path=require("path")
 
 const app=express()
 const server=http.createServer(app)
 const io=new Server(server)
 
 app.use(express.json())
-app.use(express.static(path.join(__dirname,"public")))
+app.use(express.static("public"))
+
+/* USERS */
 
 let users=[
  {username:"Lord_lucifer",password:"766521",role:"owner"}
 ]
 
+/* CHAT STATE */
+
 let onlineUsers=[]
-let dmUsers={}
+let messages=[]
+let sockets={}
 
 /* LOGIN */
 
@@ -46,7 +50,7 @@ io.on("connection",(socket)=>{
  socket.on("join",(username)=>{
 
   socket.username=username
-  dmUsers[username]=socket.id
+  sockets[username]=socket.id
 
   if(!onlineUsers.includes(username)){
    onlineUsers.push(username)
@@ -54,18 +58,36 @@ io.on("connection",(socket)=>{
 
   io.emit("onlineUsers",onlineUsers)
 
+  socket.emit("chatHistory",messages)
+
  })
 
- socket.on("chat",(data)=>{
-  io.emit("chat",data)
+ /* CHAT */
+
+ socket.on("chat",(msg)=>{
+
+  if(msg.text==="/clear"){
+
+   messages=[]
+   io.emit("clearChat")
+   return
+
+  }
+
+  messages.push(msg)
+
+  io.emit("chat",msg)
+
  })
+
+ /* DM */
 
  socket.on("dm",(data)=>{
 
-  const target=dmUsers[data.to]
+  const id=sockets[data.to]
 
-  if(target){
-   io.to(target).emit("dm",data)
+  if(id){
+   io.to(id).emit("dm",data)
   }
 
  })
@@ -76,7 +98,7 @@ io.on("connection",(socket)=>{
    u=>u!==socket.username
   )
 
-  delete dmUsers[socket.username]
+  delete sockets[socket.username]
 
   io.emit("onlineUsers",onlineUsers)
 
@@ -84,4 +106,8 @@ io.on("connection",(socket)=>{
 
 })
 
-server.listen(process.env.PORT||3000)
+server.listen(process.env.PORT||3000,()=>{
+
+ console.log("Server running")
+
+})
