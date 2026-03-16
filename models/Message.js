@@ -1,9 +1,11 @@
-const mongoose=require("mongoose")
+const mongoose = require('mongoose');
 
-const messageSchema=new mongoose.Schema({
-user:String,
-text:String,
-time:Date
-})
+const MessageSchema = new mongoose.Schema({
+    sender: { type: String, required: true },
+    text: { type: String, required: true },
+    type: { type: String, default: 'text' }, // text, image, gif
+    roomId: { type: String, default: 'global' }, // 'global' ya DM ID
+    timestamp: { type: Date, default: Date.now }
+});
 
-module.exports=mongoose.model("Message",messageSchema)
+module.exports = mongoose.model('Message', MessageSchema);
