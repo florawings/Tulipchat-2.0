@@ -1,12 +1,23 @@
 const mongoose=require("mongoose")
 
 const userSchema=new mongoose.Schema({
-username:String,
-password:String,
-email:String,
+
+username:{type:String,unique:true},
 age:Number,
 gender:String,
-photo:String
+email:String,
+password:String,
+
+photo:{
+type:String,
+default:"/uploads/default.png"
+},
+
+role:{
+type:String,
+default:"user"
+}
+
 })
 
 module.exports=mongoose.model("User",userSchema)
