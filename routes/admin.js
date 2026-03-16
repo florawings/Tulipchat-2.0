@@ -1,15 +1,13 @@
 const express=require("express")
 const router=express.Router()
+const User=require("../models/User")
 
-let banned=[]
+router.get("/users",async(req,res)=>{
 
-router.post("/ban",(req,res)=>{
-banned.push(req.body.username)
-res.json({msg:"user banned"})
-})
+const users=await User.find()
 
-router.get("/banned",(req,res)=>{
-res.json(banned)
+res.json(users)
+
 })
 
 module.exports=router
