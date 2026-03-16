@@ -3,28 +3,37 @@ const http = require('http');
 const mongoose = require('mongoose');
 const path = require('path');
 const { Server } = require('socket.io');
-require('dotenv').config(); // Connection string ko secure rakhne ke liye
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
+
+// Socket.io setup with 24/7 connection recovery
 const io = new Server(server, {
     cors: { origin: "*" },
-    connectionStateRecovery: {} // Ye line 24/7 connection recovery ke liye hai
+    connectionStateRecovery: {} 
 });
 
-// --- FOLDER CONNECTIONS ---
+// --- DATABASE CONNECTION ---
+// Yahan apna MongoDB link paste karein (Network Access mein 0.0.0.0/0 allow hona chahiye)
+const dbURI = process.env.MONGO_URI || "mongodb+srv://YOUR_USER:YOUR_PASSWORD@cluster0.abc.mongodb.net/tulipchat?retryWrites=true&w=majority";
 
-// 1. Database Connection (MongoDB)
-const dbURI = process.env.MONGO_URI || 'Aapka_Mongo_Atlas_Link_Yahan';
-mongoose.connect(dbURI)
-    .then(() => console.log("✅ MongoDB Connected: All Models are active."))
-    .catch(err => console.log("❌ DB Connection Error: ", err));
+mongoose.connect(dbURI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => console.log("✅ MongoDB Connected: All Systems Go!"))
+.catch(err => {
+    console.error("❌ MongoDB Connection Error: ", err.message);
+    // Server ko crash hone se bachane ke liye (502 error fix)
+});
 
-// 2. Middleware & Static Files (Public Folder Connect)
+// --- MIDDLEWARE ---
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 3. Routing Connections (Routes Folder Connect)
+// --- ROUTES CONNECTION ---
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const friendRoutes = require('./routes/friends');
@@ -35,15 +44,18 @@ app.use('/admin', adminRoutes);
 app.use('/friends', friendRoutes);
 app.use('/shop', shopRoutes);
 
-// 4. Socket.io Connection (Sockets Folder Connect)
+// --- SOCKET.IO LOGIC ---
 const chatSocket = require('./sockets/chatSocket');
-chatSocket(io); // Io instance pass kar rahe hain taaki connection bana rahe
+chatSocket(io);
 
-// 5. Global variable for Socket access in Routes
+// Setting socket instance for global access
 app.set('socketio', io);
+
+// --- SEO & SITE HEALTH ---
+app.get('/health', (req, res) => res.status(200).send('Server is alive!'));
 
 // --- START SERVER ---
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`🚀 Engine Live: tulip-hot.onrender.com`);
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Tulip Hot Live on Port ${PORT}`);
 });
