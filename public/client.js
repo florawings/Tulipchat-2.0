@@ -1,107 +1,37 @@
-const socket=io()
+const socket = io();
 
-let username=localStorage.getItem("username")
+// Message receive karne ka logic
+socket.on('newMessage', (data) => {
+  const chatBox = document.getElementById('messages');
+  const div = document.createElement('div');
+  
+  // Role based tags
+  let roleTag = '';
+  if (data.role === 'owner') roleTag = '<span class="tag owner">OWNER 👑</span>';
+  else if (data.role === 'admin') roleTag = '<span class="tag admin">ADMIN 🛡️</span>';
+  else if (data.role === 'mod') roleTag = '<span class="tag mod">MOD</span>';
 
-socket.emit("join",username)
+  div.className = `msg-container ${data.role}`;
+  div.innerHTML = `
+    <div class="msg-header">
+      ${roleTag} <span class="username">${data.user}</span>
+      <span class="time">${data.time}</span>
+    </div>
+    <div class="msg-text">${data.text}</div>
+  `;
+  
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+});
 
-/* SEND MESSAGE */
+// System/Error messages handle karna
+socket.on('sys_message', (msg) => {
+  const div = document.createElement('div');
+  div.className = 'system-msg';
+  div.innerText = msg;
+  document.getElementById('messages').appendChild(div);
+});
 
-function send(){
-
- const msg=document.getElementById("msg").value
-
- socket.emit("chat",{
-  user:username,
-  text:msg
- })
-
- document.getElementById("msg").value=""
-
-}
-
-/* RECEIVE MESSAGE */
-
-socket.on("chat",(msg)=>{
-
- const div=document.createElement("div")
-
- div.classList.add("msg")
-
- if(msg.user==="Lord_lucifer"){
- div.innerHTML="👑 "+msg.user+": "+msg.text
- }else{
- div.innerHTML=msg.user+": "+msg.text
- }
-
- document.getElementById("chat").appendChild(div)
-
-})
-
-/* ONLINE USERS */
-
-socket.on("onlineUsers",(users)=>{
-
- const box=document.getElementById("onlineUsers")
-
- box.innerHTML=""
-
- users.forEach(u=>{
-
-  const div=document.createElement("div")
-  div.innerText="🟢 "+u
-
-  div.onclick=()=>openDM(u)
-
-  box.appendChild(div)
-
- })
-
-})
-
-/* IMAGE / GIF */
-
-function sendImage(){
-
- const file=document.getElementById("imgFile").files[0]
-
- const reader=new FileReader()
-
- reader.onload=function(){
-
-  socket.emit("chat",{
-   user:username,
-   image:reader.result
-  })
-
- }
-
- reader.readAsDataURL(file)
-
-}
-
-/* DM */
-
-function sendDM(){
-
- const msg=document.getElementById("dmInput").value
- const to=document.getElementById("dmUser").value
-
- socket.emit("dm",{
-  from:username,
-  to:to,
-  text:msg
- })
-
-}
-
-socket.on("dm",(data)=>{
-
- document.getElementById("dmBell").innerText="🔔"
-
- const div=document.createElement("div")
-
- div.innerText=data.from+": "+data.text
-
- document.getElementById("dmMessages").appendChild(div)
-
-})
+socket.on('error_msg', (msg) => {
+  alert(msg);
+});
