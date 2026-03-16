@@ -1,119 +1,99 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const path = require("path");
+const express=require("express")
+const http=require("http")
+const {Server}=require("socket.io")
+const path=require("path")
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+const app=express()
+const server=http.createServer(app)
+const io=new Server(server)
 
-app.use(express.json());
+app.use(express.json())
+app.use(express.static(path.join(__dirname,"public")))
 
-/* PUBLIC FOLDER */
-app.use(express.static(path.join(__dirname, "public")));
+app.get("/",(req,res)=>{
+res.sendFile(path.join(__dirname,"public/login.html"))
+})
 
-/* ROOT PAGE */
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
-});
+let users=[]
+let messages=[]
+let onlineUsers=[]
 
-/* USERS */
-let users = [
-  { username: "Lord_lucifer", password: "766521", role: "owner" }
-];
+app.post("/register",(req,res)=>{
 
-let onlineUsers = [];
-let messages = [];
+const {username,password}=req.body
 
-/* REGISTER */
-app.post("/register", (req, res) => {
+const exist=users.find(u=>u.username===username)
 
-  const { username, password } = req.body;
+if(exist){
+return res.json({error:"user exists"})
+}
 
-  if (!username || !password) {
-    return res.json({ error: "Missing fields" });
-  }
+users.push({username,password})
 
-  const exist = users.find(u => u.username === username);
+res.json({success:true})
 
-  if (exist) {
-    return res.json({ error: "User already exists" });
-  }
+})
 
-  users.push({ username, password });
+app.post("/login",(req,res)=>{
 
-  res.json({ success: true });
+const {username,password}=req.body
 
-});
+const user=users.find(
+u=>u.username===username && u.password===password
+)
 
-/* LOGIN */
-app.post("/login", (req, res) => {
+if(!user){
+return res.json({error:"invalid"})
+}
 
-  const { username, password } = req.body;
+res.json({success:true})
 
-  const user = users.find(
-    u => u.username === username && u.password === password
-  );
+})
 
-  if (!user) {
-    return res.json({ error: "Invalid login" });
-  }
+io.on("connection",(socket)=>{
 
-  res.json({ success: true });
+socket.on("join",(username)=>{
 
-});
+socket.username=username
 
-/* SOCKET */
-io.on("connection", (socket) => {
+if(!onlineUsers.includes(username)){
+onlineUsers.push(username)
+}
 
-  socket.on("join", (username) => {
+io.emit("onlineUsers",onlineUsers)
 
-    socket.username = username;
+socket.emit("chatHistory",messages)
 
-    if (!onlineUsers.includes(username)) {
-      onlineUsers.push(username);
-    }
+})
 
-    io.emit("onlineUsers", onlineUsers);
+socket.on("chat",(msg)=>{
 
-    socket.emit("chatHistory", messages);
+if(msg.text==="/clear"){
+messages=[]
+io.emit("clearChat")
+return
+}
 
-  });
+messages.push(msg)
 
-  socket.on("chat", (msg) => {
+io.emit("chat",msg)
 
-    if (msg.text === "/clear") {
+})
 
-      messages = [];
+socket.on("disconnect",()=>{
 
-      io.emit("clearChat");
+onlineUsers=onlineUsers.filter(
+u=>u!==socket.username
+)
 
-      return;
+io.emit("onlineUsers",onlineUsers)
 
-    }
+})
 
-    messages.push(msg);
+})
 
-    io.emit("chat", msg);
+const PORT=process.env.PORT||3000
 
-  });
-
-  socket.on("disconnect", () => {
-
-    onlineUsers = onlineUsers.filter(
-      u => u !== socket.username
-    );
-
-    io.emit("onlineUsers", onlineUsers);
-
-  });
-
-});
-
-/* START SERVER */
-
-const PORT = process.env.PORT || 3000;
-
-server.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
-});
+server.listen(PORT,()=>{
+console.log("Server running")
+})
