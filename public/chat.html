@@ -3,350 +3,308 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tulip Pro | Ultimate Hookup Suite</title>
+    <title>Tulip Pro | Adult Elite</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
-            --primary: #f43f5e;
-            --secondary: #8b5cf6;
-            --dark: #0f172a;
-            --glass: rgba(15, 23, 42, 0.92);
-            --owner-gold: #fbbf24;
-            --text: #f8fafc;
-            --system-msg: #334155;
+            --hot-pink: #ff2d55;
+            --neon-red: #ff073a;
+            --dark-bg: #0a0a0c;
+            --glass: rgba(18, 18, 22, 0.96);
+            --gold: #ffcc00;
         }
 
-        /* Reset & Base Styles */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        /* Essential Reset for Mobile */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Lexend', sans-serif; -webkit-tap-highlight-color: transparent; }
         
         body, html {
-            height: 100%; width: 100%; overflow: hidden; position: fixed;
-            background: #000; color: var(--text);
+            height: 100dvh; width: 100vw; overflow: hidden; position: fixed;
+            background-color: var(--dark-bg); color: #fff;
         }
 
-        /* Full Screen Background */
-        .bg-overlay {
+        /* X-Rated Background Engine */
+        .sexy-bg {
             position: fixed; inset: 0;
-            background: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1600') center/cover no-repeat;
-            filter: brightness(0.4) blur(2px); z-index: -1;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+                        url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1470&auto=format&fit=crop') center/cover no-repeat;
+            z-index: -1; filter: saturate(1.5);
         }
 
         /* Layout Structure */
-        .app-wrapper {
-            display: flex; flex-direction: column; height: 100dvh; width: 100%;
-        }
+        .main-app { display: flex; flex-direction: column; height: 100%; width: 100%; }
 
-        /* Header Engine */
+        /* Neon Header */
         header {
-            height: 60px; background: var(--glass); display: flex; align-items: center;
-            justify-content: space-between; padding: 0 20px; z-index: 1000;
-            border-bottom: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(15px);
+            height: 65px; background: var(--glass); display: flex; align-items: center;
+            justify-content: space-between; padding: 0 18px; z-index: 1000;
+            border-bottom: 2px solid var(--neon-red); box-shadow: 0 0 20px rgba(255, 7, 58, 0.3);
         }
+        .brand { font-weight: 800; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; }
+        .brand span { color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red); }
 
-        .logo-box { display: flex; align-items: center; gap: 10px; }
-        .logo-text { font-weight: 800; font-size: 20px; letter-spacing: 1px; }
-        .logo-text span { color: var(--primary); }
-        .status-badge { font-size: 10px; background: var(--owner-gold); color: #000; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
-
-        /* Sidebar System */
-        #sidebar {
-            position: fixed; left: -300px; top: 0; width: 300px; height: 100%;
-            background: var(--dark); z-index: 2000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 25px; display: flex; flex-direction: column; box-shadow: 20px 0 50px rgba(0,0,0,0.5);
-        }
-        #sidebar.open { left: 0; }
-        .sidebar-header { margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
-        .user-item { 
-            padding: 15px; background: rgba(255,255,255,0.03); border-radius: 12px; margin-bottom: 10px;
-            display: flex; align-items: center; gap: 12px; transition: 0.2s; cursor: pointer;
-        }
-        .user-item:hover { background: rgba(244, 63, 94, 0.1); border: 1px solid var(--primary); }
-
-        /* Chat Core Engine */
+        /* Chat Scroller Fix: Messages won't hide anymore */
         #chat-scroller {
-            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column;
-            gap: 15px; scroll-behavior: smooth; padding-bottom: 180px;
+            flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column;
+            gap: 12px; padding-bottom: 220px; /* Space for input & panels */
+            scrollbar-width: none; -webkit-overflow-scrolling: touch;
         }
 
-        /* Message Bubble Engineering */
-        .message-row { display: flex; flex-direction: column; width: 100%; position: relative; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Sophisticated Message Bubbles */
+        .msg-container { display: flex; flex-direction: column; width: 100%; max-width: 85%; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .msg-me { align-self: flex-end; }
+        .msg-other { align-self: flex-start; }
+
+        .sender-tag { font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #aaa; text-transform: capitalize; }
+        .msg-me .sender-tag { text-align: right; color: var(--hot-pink); }
 
         .bubble {
-            max-width: 85%; padding: 12px 16px; border-radius: 20px; position: relative;
-            font-size: 14px; line-height: 1.5; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            padding: 12px 16px; border-radius: 22px; font-size: 15px; line-height: 1.4;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4); word-wrap: break-word;
         }
+        .msg-me .bubble { background: linear-gradient(135deg, var(--neon-red), #b00020); border-bottom-right-radius: 4px; color: #fff; }
+        .msg-other .bubble { background: #1e1e24; border-bottom-left-radius: 4px; border: 1px solid #333; color: #eee; }
 
-        .me { align-self: flex-end; }
-        .me .bubble {
-            background: linear-gradient(135deg, var(--primary), #e11d48);
-            border-bottom-right-radius: 4px;
-        }
+        .msg-img { max-width: 100%; border-radius: 12px; margin-top: 8px; border: 2px solid rgba(255,255,255,0.1); display: block; }
 
-        .other { align-self: flex-start; }
-        .other .bubble {
-            background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(10px);
-            border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .sender-name { font-size: 10px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .me .sender-name { text-align: right; color: rgba(255,255,255,0.7); }
-        .other .sender-name { color: var(--primary); }
-
-        .msg-img { max-width: 100%; border-radius: 12px; margin-top: 8px; display: block; border: 1px solid rgba(255,255,255,0.2); }
-
-        /* Input Control Station */
-        .control-station {
+        /* Input Control Station (Heavy Duty) */
+        .input-dock {
             position: fixed; bottom: 0; width: 100%; background: var(--glass);
-            backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1);
-            padding: 15px; z-index: 1500;
+            border-top: 1px solid rgba(255,255,255,0.1); padding: 12px; z-index: 2000;
         }
 
-        /* Progress Engine */
-        #upload-monitor { display: none; margin-bottom: 12px; }
-        .monitor-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
-        .monitor-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: 0.3s; }
+        /* Real-time Progress Monitor */
+        #progress-wrapper { display: none; margin-bottom: 10px; }
+        .bar-container { height: 8px; background: #222; border-radius: 10px; overflow: hidden; }
+        .bar-fill { height: 100%; width: 0%; background: var(--neon-red); transition: width 0.3s cubic-bezier(0.1, 0.7, 1.0, 0.1); }
 
-        /* Media Panel Engine */
-        #spicy-panel {
+        /* Spicy Sticker Grid */
+        #spicy-grid {
             display: none; grid-template-columns: repeat(4, 1fr); gap: 10px;
-            padding: 15px; background: rgba(0,0,0,0.4); border-radius: 15px;
-            margin-bottom: 15px; border: 1px solid var(--primary); max-height: 250px; overflow-y: auto;
+            background: #121216; padding: 15px; border-radius: 15px;
+            margin-bottom: 15px; border: 1px solid var(--neon-red);
+            max-height: 250px; overflow-y: auto;
         }
-        .spicy-item { width: 100%; border-radius: 8px; cursor: pointer; transition: 0.3s; border: 1px solid rgba(255,255,255,0.1); }
-        .spicy-item:hover { transform: scale(1.05); border-color: var(--primary); }
+        .sticker { width: 100%; border-radius: 10px; cursor: pointer; border: 1px solid #333; }
+        .sticker:active { transform: scale(0.9); }
 
-        .input-row { display: flex; align-items: center; gap: 12px; }
-        .action-btn { 
-            width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; 
-            justify-content: center; cursor: pointer; background: rgba(255,255,255,0.05); 
-            transition: 0.3s; font-size: 20px; color: white;
+        .input-row { display: flex; align-items: center; gap: 10px; }
+        .icon-btn { 
+            width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;
+            background: #1e1e24; border-radius: 50%; color: #fff; font-size: 20px; border: 1px solid #333;
         }
-        .action-btn:active { transform: scale(0.9); background: var(--primary); }
+        .icon-btn.active { color: var(--neon-red); border-color: var(--neon-red); box-shadow: 0 0 10px var(--neon-red); }
 
-        #main-input {
-            flex: 1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2);
-            padding: 12px 20px; border-radius: 30px; color: white; outline: none; font-size: 16px;
+        #text-input {
+            flex: 1; height: 48px; background: #1e1e24; border: 1px solid #333;
+            padding: 0 20px; border-radius: 25px; color: #fff; font-size: 16px; outline: none;
+        }
+        #text-input:focus { border-color: var(--neon-red); }
+
+        .send-pill {
+            background: var(--neon-red); border: none; padding: 0 20px; height: 48px;
+            border-radius: 25px; color: #fff; font-weight: 700; font-size: 14px;
         }
 
-        .send-btn {
-            background: var(--primary); border: none; padding: 10px 20px; border-radius: 25px;
-            color: white; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(244, 63, 94, 0.4);
+        /* User List Sidebar */
+        #sidebar {
+            position: fixed; right: -320px; top: 0; width: 300px; height: 100%;
+            background: var(--dark-bg); z-index: 3000; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding: 25px; border-left: 2px solid var(--neon-red);
         }
-
-        /* Overlay */
-        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1800; backdrop-filter: blur(4px); }
+        #sidebar.active { right: 0; }
+        .user-card { 
+            padding: 12px; background: #1e1e24; border-radius: 12px; margin-bottom: 10px;
+            display: flex; align-items: center; gap: 12px; border: 1px solid #333;
+        }
+        .online-dot { width: 10px; height: 10px; background: #4ade80; border-radius: 50%; box-shadow: 0 0 5px #4ade80; }
     </style>
 </head>
 <body>
 
-<div class="bg-overlay"></div>
-<div id="overlay" onclick="ui.toggleSidebar()"></div>
+<div class="sexy-bg"></div>
 
-<div class="app-wrapper">
+<div class="main-app">
     <header>
-        <div class="action-btn" onclick="ui.toggleSidebar()"><i class="fas fa-bars"></i></div>
-        <div class="logo-box">
-            <div class="logo-text">TULIP <span>PRO</span></div>
-            <div class="status-badge" id="room-name">GLOBAL</div>
+        <div class="brand">TULIP <span>HOT</span></div>
+        <div style="display:flex; gap:15px;">
+            <i class="fas fa-users" onclick="toggleMenu()" style="font-size:22px; color:var(--neon-red);"></i>
         </div>
-        <div class="action-btn" onclick="location.reload()"><i class="fas fa-sync-alt"></i></div>
     </header>
-
-    <div id="sidebar">
-        <div class="sidebar-header">
-            <h2 style="color:var(--primary)">Members Online</h2>
-            <p style="font-size: 12px; opacity: 0.6;">Select a user for Private Chat</p>
-        </div>
-        <div id="user-list-container" style="flex:1; overflow-y:auto;"></div>
-        <button onclick="chatEngine.setTarget('all')" style="width:100%; padding:15px; background:var(--primary); border:none; color:white; border-radius:12px; font-weight:700; margin-top:10px;">GLOBAL LOUNGE</button>
-    </div>
 
     <main id="chat-scroller"></main>
 
-    <div class="control-station">
-        <div id="upload-monitor">
-            <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;">
-                <span style="color:var(--primary); font-weight:600;"><i class="fas fa-cloud-upload-alt"></i> Uploading...</span>
-                <span id="pct-val" style="color:white;">0%</span>
+    <div class="input-dock">
+        <div id="progress-wrapper">
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
+                <span id="status-txt">Uploading...</span>
+                <span id="pct-txt">0%</span>
             </div>
-            <div class="monitor-bar"><div id="monitor-fill" class="monitor-fill"></div></div>
+            <div class="bar-container"><div id="bar-fill" class="bar-fill"></div></div>
         </div>
 
-        <div id="spicy-panel">
-            <img class="spicy-item" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6Z3R6Z3R6/3o7TKMGpxx87Z4I6T6/giphy.gif" onclick="chatEngine.sendMedia(this.src)">
-            <img class="spicy-item" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/l41lTfO3vD04A7088/giphy.gif" onclick="chatEngine.sendMedia(this.src)">
-            <img class="spicy-item" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/3o7TKVUn7iM8FMEU24/giphy.gif" onclick="chatEngine.sendMedia(this.src)">
-            <div class="spicy-item" style="background:linear-gradient(45deg, #f43f5e, #8b5cf6); height:60px; display:flex; align-items:center; justify-content:center; font-size:24px;" onclick="chatEngine.sendMedia('🎁 Premium Sex Gift 🎁')">🎁</div>
+        <div id="spicy-grid">
+            <img class="sticker" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6Z3R6Z3R6/3o7TKMGpxx87Z4I6T6/giphy.gif" onclick="sendSpicy(this.src)">
+            <img class="sticker" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/l41lTfO3vD04A7088/giphy.gif" onclick="sendSpicy(this.src)">
+            <img class="sticker" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/3o7TKVUn7iM8FMEU24/giphy.gif" onclick="sendSpicy(this.src)">
+            <div class="sticker" style="background:var(--neon-red); height:60px; display:flex; align-items:center; justify-content:center; font-size:24px;" onclick="sendSpicy('🎁 SEXY GIFT 🎁')">🎁</div>
         </div>
 
         <div class="input-row">
-            <label for="media-upload" class="action-btn"><i class="fas fa-camera"></i></label>
-            <input type="file" id="media-upload" hidden accept="image/*">
+            <label for="img-input" class="icon-btn"><i class="fas fa-plus"></i></label>
+            <input type="file" id="img-input" hidden accept="image/*">
             
-            <div class="action-btn" onclick="ui.toggleSpicy()"><i class="fas fa-fire" style="color:#ff4d4d"></i></div>
+            <div class="icon-btn" id="fire-toggle" onclick="toggleSpicy()"><i class="fas fa-fire"></i></div>
             
-            <input type="text" id="main-input" placeholder="Type a message..." autocomplete="off">
+            <input type="text" id="text-input" placeholder="Say something dirty..." autocomplete="off">
             
-            <button class="send-btn" onclick="chatEngine.sendText()">SEND</button>
+            <button class="send-pill" onclick="sendChat()">SEND</button>
         </div>
     </div>
 </div>
 
+<div id="sidebar">
+    <h2 style="color:var(--neon-red); margin-bottom:20px;">Hookup Room</h2>
+    <div id="user-container"></div>
+    <div onclick="setGlobal()" style="margin-top:20px; padding:15px; background:var(--neon-red); border-radius:10px; text-align:center; font-weight:700;">PUBLIC LOBBY</div>
+</div>
+
 <script src="/socket.io/socket.io.js"></script>
 <script>
-    // --- Configuration & State ---
-    const params = new URLSearchParams(window.location.search);
-    const STATE = {
-        username: params.get('username') || "Stranger",
-        role: params.get('role') || "user",
-        target: 'all',
-        isSidebarOpen: false,
-        isSpicyOpen: false
-    };
-
     const socket = io();
-
-    // --- UI Engine ---
-    const ui = {
-        toggleSidebar: () => {
-            STATE.isSidebarOpen = !STATE.isSidebarOpen;
-            document.getElementById('sidebar').classList.toggle('open', STATE.isSidebarOpen);
-            document.getElementById('overlay').style.display = STATE.isSidebarOpen ? 'block' : 'none';
-        },
-        toggleSpicy: () => {
-            STATE.isSpicyOpen = !STATE.isSpicyOpen;
-            document.getElementById('spicy-panel').style.display = STATE.isSpicyOpen ? 'grid' : 'none';
-        },
-        updateProgress: (pct) => {
-            const monitor = document.getElementById('upload-monitor');
-            const fill = document.getElementById('monitor-fill');
-            const val = document.getElementById('pct-val');
-            
-            monitor.style.display = 'block';
-            fill.style.width = pct + '%';
-            val.innerText = pct + '%';
-            
-            if(pct >= 100) {
-                setTimeout(() => { monitor.style.display = 'none'; fill.style.width = '0%'; }, 1000);
-            }
-        }
+    const query = new URLSearchParams(window.location.search);
+    const ME = {
+        name: query.get('username') || "Stranger",
+        role: query.get('role') || "user",
+        target: 'all'
     };
 
-    // --- Chat Logic Engine ---
-    const chatEngine = {
-        init: () => {
-            socket.emit('join', { username: STATE.username, role: STATE.role });
-            
-            // Listeners
-            socket.on('newMessage', (data) => chatEngine.renderMessage(data));
-            socket.on('updateUserList', (users) => chatEngine.renderUserList(users));
-            
-            // Input Listeners
-            document.getElementById('main-input').addEventListener('keypress', (e) => {
-                if(e.key === 'Enter') chatEngine.sendText();
-            });
-            
-            document.getElementById('media-upload').addEventListener('change', chatEngine.handleFileUpload);
-        },
+    // Join Server
+    socket.emit('join', { username: ME.name, role: ME.role });
 
-        setTarget: (user) => {
-            STATE.target = user;
-            document.getElementById('room-name').innerText = user === 'all' ? "GLOBAL" : "DM: " + user;
-            ui.toggleSidebar();
-        },
+    // --- MESSAGE RENDERING ENGINE (THE FIX) ---
+    socket.on('newMessage', (data) => {
+        const scroller = document.getElementById('chat-scroller');
+        
+        // Critical: Validate all data points
+        const senderName = data.user || "Unknown";
+        const contentBody = data.text || "";
+        const isMyMsg = data.user === ME.name;
 
-        sendText: () => {
-            const input = document.getElementById('main-input');
-            const val = input.value.trim();
-            if(!val) return;
+        const container = document.createElement('div');
+        container.className = `msg-container ${isMyMsg ? 'msg-me' : 'msg-other'}`;
 
-            socket.emit('sendMessage', {
-                type: 'text',
-                text: val,
-                to: STATE.target,
-                user: STATE.username,
-                role: STATE.role
-            });
-            input.value = '';
-        },
+        let contentHTML = `<span class="sender-tag">${senderName} ${data.role === 'owner' ? '👑' : ''}</span>`;
+        contentHTML += `<div class="bubble">`;
 
-        sendMedia: (url) => {
+        if(data.type === 'image') {
+            // Check if it's a URL or Base64
+            contentHTML += `<img src="${contentBody}" class="msg-img" onload="scrollToBottom()">`;
+        } else {
+            // Text Content
+            contentHTML += `<span>${contentBody}</span>`;
+        }
+
+        contentHTML += `</div>`;
+        container.innerHTML = contentHTML;
+        
+        scroller.appendChild(container);
+        scrollToBottom();
+    });
+
+    // --- CORE FUNCTIONS ---
+    function sendChat() {
+        const input = document.getElementById('text-input');
+        const val = input.value.trim();
+        if(!val) return;
+
+        socket.emit('sendMessage', {
+            type: 'text',
+            text: val,
+            to: ME.target,
+            user: ME.name,
+            role: ME.role
+        });
+        input.value = '';
+    }
+
+    function sendSpicy(url) {
+        socket.emit('sendMessage', {
+            type: 'image',
+            text: url,
+            to: ME.target,
+            user: ME.name,
+            role: ME.role
+        });
+        toggleSpicy();
+    }
+
+    // --- IMAGE UPLOAD + PROGRESS ENGINE ---
+    document.getElementById('img-input').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+
+        const reader = new FileReader();
+        const wrap = document.getElementById('progress-wrapper');
+        const fill = document.getElementById('bar-fill');
+        const txt = document.getElementById('pct-txt');
+
+        wrap.style.display = 'block';
+
+        reader.onprogress = (ev) => {
+            if(ev.lengthComputable) {
+                const pct = Math.round((ev.loaded / ev.total) * 100);
+                fill.style.width = pct + '%';
+                txt.innerText = pct + '%';
+            }
+        };
+
+        reader.onload = () => {
             socket.emit('sendMessage', {
                 type: 'image',
-                text: url,
-                to: STATE.target,
-                user: STATE.username,
-                role: STATE.role
+                text: reader.result,
+                to: ME.target,
+                user: ME.name,
+                role: ME.role
             });
-            if(STATE.isSpicyOpen) ui.toggleSpicy();
-        },
+            setTimeout(() => { wrap.style.display = 'none'; fill.style.width = '0%'; }, 1000);
+        };
+        reader.readAsDataURL(file);
+    });
 
-        handleFileUpload: (e) => {
-            const file = e.target.files[0];
-            if(!file) return;
+    // --- UI HELPERS ---
+    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
+    function toggleSpicy() { 
+        const grid = document.getElementById('spicy-grid');
+        const btn = document.getElementById('fire-toggle');
+        grid.style.display = (grid.style.display === 'grid') ? 'none' : 'grid';
+        btn.classList.toggle('active');
+    }
+    function scrollToBottom() {
+        const scroller = document.getElementById('chat-scroller');
+        scroller.scrollTop = scroller.scrollHeight;
+    }
+    function setGlobal() {
+        ME.target = 'all';
+        toggleMenu();
+    }
 
-            const reader = new FileReader();
-            reader.onprogress = (ev) => {
-                if(ev.lengthComputable) {
-                    const pct = Math.round((ev.loaded / ev.total) * 100);
-                    ui.updateProgress(pct);
-                }
-            };
+    socket.on('updateUserList', (users) => {
+        const container = document.getElementById('user-container');
+        container.innerHTML = users.map(u => `
+            <div class="user-card" onclick="ME.target='${u.username}'; toggleMenu()">
+                <div class="online-dot"></div>
+                <span style="font-weight:600;">${u.username}</span>
+            </div>
+        `).join('');
+    });
 
-            reader.onload = () => {
-                chatEngine.sendMedia(reader.result);
-            };
-            reader.readAsDataURL(file);
-        },
-
-        renderMessage: (data) => {
-            const scroller = document.getElementById('chat-scroller');
-            const isMe = data.user === STATE.username;
-            
-            // Critical: Proper Data Handling to avoid Undefined
-            const sender = data.user || "System";
-            const content = data.text || "";
-
-            const row = document.createElement('div');
-            row.className = `message-row ${isMe ? 'me' : 'other'}`;
-
-            let innerHTML = `<div class="sender-name">${sender} ${data.role === 'owner' ? '👑' : ''}</div>`;
-            innerHTML += `<div class="bubble">`;
-            
-            if(data.type === 'image') {
-                innerHTML += `<img src="${content}" class="msg-img" onload="document.getElementById('chat-scroller').scrollTop = document.getElementById('chat-scroller').scrollHeight">`;
-            } else {
-                innerHTML += `<span>${content}</span>`;
-            }
-            
-            innerHTML += `</div>`;
-            row.innerHTML = innerHTML;
-            
-            scroller.appendChild(row);
-            
-            // Smooth scroll to bottom
-            scroller.scrollTop = scroller.scrollHeight;
-        },
-
-        renderUserList: (users) => {
-            const container = document.getElementById('user-list-container');
-            container.innerHTML = users.map(u => `
-                <div class="user-item" onclick="chatEngine.setTarget('${u.username}')">
-                    <div style="width:10px; height:10px; border-radius:50%; background:#4ade80;"></div>
-                    <span style="color:white; font-weight:500;">${u.username}</span>
-                    ${u.role === 'owner' ? '<span style="color:var(--owner-gold); font-size:10px; margin-left:auto;">OWNER</span>' : ''}
-                </div>
-            `).join('');
-        }
-    };
-
-    // Launch Engine
-    chatEngine.init();
+    // Enter Key Fix
+    document.getElementById('text-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChat(); });
 </script>
-
 </body>
 </html>
