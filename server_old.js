@@ -1,158 +1,170 @@
-const express=require("express")
-const http=require("http")
-const {Server}=require("socket.io")
-const bcrypt=require("bcryptjs")
-const multer=require("multer")
+const express = require("express")
+const http = require("http")
+const { Server } = require("socket.io")
+const multer = require("multer")
+const path = require("path")
 
-const User=require("./models/User")
+const authRoutes = require("./routes/auth")
+const adminRoutes = require("./routes/admin")
+const friendRoutes = require("./routes/friends")
+const reportRoutes = require("./routes/report")
 
-const app=express()
-const server=http.createServer(app)
-const io=new Server(server)
+const chatSocket = require("./sockets/chatSocket")
+const dmSocket = require("./sockets/dmSocket")
+
+const app = express()
+const server = http.createServer(app)
+const io = new Server(server)
 
 app.use(express.json())
 app.use(express.static("public"))
+app.use("/uploads", express.static("uploads"))
 
-const OWNER="Lord_lucifer"
-const OWNER_PASS="766521"
-const SUPER_ADMIN="Garima"
+/* OWNER SETTINGS */
 
-let onlineUsers=[]
-let banned=[]
-let muted=[]
+const OWNER = "lord_lucifer"
+const OWNER_PASS = "766521"
+const SUPER_ADMIN = "Garima"
+
+/* DATA STORAGE */
+
+let onlineUsers = []
+let bannedUsers = []
+let mutedUsers = []
 
 /* FILE UPLOAD */
 
-const storage=multer.diskStorage({
-destination:"public/uploads",
-filename:(req,file,cb)=>{
-cb(null,Date.now()+"-"+file.originalname)
+const storage = multer.diskStorage({
+destination: "uploads/",
+filename: (req, file, cb) => {
+cb(null, Date.now() + "-" + file.originalname)
 }
 })
 
-const upload=multer({storage})
+const upload = multer({ storage })
 
-app.post("/upload",upload.single("file"),(req,res)=>{
-res.json({url:"/uploads/"+req.file.filename})
-})
-
-/* REGISTER */
-
-app.post("/register",async(req,res)=>{
-
-const {username,age,gender,email,password}=req.body
-
-const exist=await User.findOne({username})
-
-if(exist){
-return res.json({error:"username exists"})
-}
-
-const hash=await bcrypt.hash(password,10)
-
-await User.create({
-username,
-age,
-gender,
-email,
-password:hash
-})
-
-res.json({msg:"registered"})
-})
-
-/* LOGIN */
-
-app.post("/login",async(req,res)=>{
-
-const {username,password}=req.body
-
-let role="user"
-
-if(username===OWNER && password===OWNER_PASS){
-role="owner"
-}
-
-if(username===SUPER_ADMIN){
-role="superadmin"
-}
-
-const user=await User.findOne({username})
-
-if(!user && role!=="owner" && role!=="superadmin"){
-return res.json({error:"user not found"})
-}
-
-if(user){
-const ok=await bcrypt.compare(password,user.password)
-if(!ok){
-return res.json({error:"wrong password"})
-}
-}
+app.post("/upload", upload.single("file"), (req, res) => {
 
 res.json({
-username,
-role,
-gender:user?.gender
+url: "/uploads/" + req.file.filename
 })
 
 })
 
-/* SOCKET */
+/* ROUTES */
 
-io.on("connection",(socket)=>{
+app.use("/auth", authRoutes)
+app.use("/admin", adminRoutes)
+app.use("/friends", friendRoutes)
+app.use("/report", reportRoutes)
 
-socket.on("join",(data)=>{
+/* SOCKET CONNECTION */
 
-socket.username=data.username
-socket.role=data.role
+io.on("connection", (socket) => {
 
-onlineUsers.push({
-id:socket.id,
-username:data.username,
-role:data.role
-})
+console.log("User connected:", socket.id)
 
-io.emit("users",onlineUsers)
+/* JOIN CHAT */
 
-io.emit("msg",{
-system:true,
-text:data.username+" joined chat"
-})
+socket.on("join", (user) => {
 
-})
-
-socket.on("msg",(m)=>{
-
-if(muted.includes(socket.username)) return
-
-if(m==="/clear" && socket.role==="owner"){
-io.emit("clear")
+if (bannedUsers.includes(user.username)) {
+socket.emit("banned")
 return
 }
 
-io.emit("msg",{
-username:socket.username,
-role:socket.role,
-text:m
+onlineUsers.push({
+id: socket.id,
+username: user.username,
+ip: socket.handshake.address
 })
+
+io.emit("onlineUsers", onlineUsers)
+
+socket.broadcast.emit("system", user.username + " joined the chat")
 
 })
 
-socket.on("ban",(u)=>{
-if(socket.role==="owner"){
-banned.push(u)
+/* CHAT MESSAGE */
+
+socket.on("chat message", (data) => {
+
+if (mutedUsers.includes(data.username)) {
+return
 }
-})
 
-socket.on("disconnect",()=>{
-
-onlineUsers=onlineUsers.filter(u=>u.id!==socket.id)
-
-io.emit("users",onlineUsers)
+io.emit("chat message", data)
 
 })
 
+/* DM MESSAGE */
+
+socket.on("dm", (data) => {
+
+const target = onlineUsers.find(u => u.username === data.to)
+
+if (target) {
+
+io.to(target.id).emit("dm", data)
+
+}
+
 })
 
-server.listen(3000)
+/* OWNER COMMANDS */
+
+socket.on("ban", (username) => {
+
+bannedUsers.push(username)
+
+io.emit("system", username + " banned by owner")
+
+})
+
+socket.on("mute", (username) => {
+
+mutedUsers.push(username)
+
+io.emit("system", username + " muted")
+
+})
+
+socket.on("kick", (username) => {
+
+const user = onlineUsers.find(u => u.username === username)
+
+if (user) {
+
+io.to(user.id).emit("kick")
+
+}
+
+})
+
+socket.on("clearChat", () => {
+
+io.emit("clearChat")
+
+})
+
+/* DISCONNECT */
+
+socket.on("disconnect", () => {
+
+onlineUsers = onlineUsers.filter(u => u.id !== socket.id)
+
+io.emit("onlineUsers", onlineUsers)
+
+})
+
+})
+
+/* SERVER START */
+
+const PORT = process.env.PORT || 3000
+
+server.listen(PORT, () => {
+
+console.log("Tulip Chat Server running on port " + PORT)
+
+})
