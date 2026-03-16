@@ -3,200 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tulip Hot | Uncensored</title>
-    
+    <title>Tulip Hot | Ultra</title>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        :root { --hot: #ff0055; --bg: #0a0a0c; }
-        
+        :root { --hot: #ff0055; --dark: #0f0f12; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Lexend', sans-serif; }
         
-        body, html { 
-            height: 100%; width: 100%; background: var(--bg); color: #fff; 
-            overflow: hidden; position: fixed;
+        body { 
+            background: var(--dark); 
+            height: 100dvh; 
+            overflow: hidden; 
+            position: fixed; 
+            width: 100%;
         }
 
-        /* 18+ Background - Full Visual */
-        .main-wallpaper {
+        /* Full Background Image */
+        .bg-overlay {
             position: fixed; inset: 0;
-            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), 
-                        url('https://images.unsplash.com/photo-1534120247760-c44c3e4a62f1?q=80&w=1500') center/cover;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), 
+                        url('https://images.unsplash.com/photo-1514924013411-cbf25faa35bb?q=80&w=1500') center/cover;
             z-index: -1;
         }
 
-        .wrapper { display: flex; flex-direction: column; height: 100dvh; }
+        .main-container { display: flex; flex-direction: column; height: 100%; }
 
         header {
-            height: 60px; background: rgba(0,0,0,0.9); display: flex; 
-            align-items: center; justify-content: space-between; padding: 0 15px;
-            border-bottom: 2px solid var(--hot); box-shadow: 0 0 15px var(--hot);
-            z-index: 100;
+            height: 55px; background: #000; border-bottom: 2px solid var(--hot);
+            display: flex; align-items: center; justify-content: center; font-weight: 800;
+            box-shadow: 0 5px 15px rgba(255, 0, 85, 0.3);
         }
 
-        /* THE FIX: Simple Scrollable Message Area */
-        #messages {
-            flex: 1; overflow-y: scroll; padding: 15px;
-            display: flex; flex-direction: column; gap: 10px;
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: 150px; /* Space for input */
+        /* FIXED MESSAGE AREA: Ab yeh center mein dikhega */
+        #chat-flow {
+            flex: 1; overflow-y: auto; padding: 20px 15px;
+            display: flex; flex-direction: column; gap: 12px;
+            padding-bottom: 100px;
         }
 
-        .msg { max-width: 85%; padding: 10px 15px; border-radius: 18px; position: relative; word-wrap: break-word; }
-        .name { font-size: 10px; font-weight: 700; margin-bottom: 3px; display: block; opacity: 0.8; }
-        
-        .me { align-self: flex-end; background: var(--hot); color: white; border-bottom-right-radius: 2px; }
-        .other { align-self: flex-start; background: #222; border-bottom-left-radius: 2px; }
+        .bubble {
+            max-width: 80%; padding: 12px 16px; border-radius: 20px;
+            font-size: 15px; line-height: 1.4; position: relative;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .chat-img { max-width: 100%; border-radius: 10px; margin-top: 5px; display: block; }
+        .sender-name { font-size: 10px; font-weight: bold; color: var(--hot); margin-bottom: 4px; display: block; }
 
-        /* Floating Input Area */
-        .controls {
-            position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.95);
-            padding: 15px; border-top: 1px solid #333; z-index: 200;
+        .mine { align-self: flex-end; background: var(--hot); color: #fff; border-bottom-right-radius: 4px; }
+        .others { align-self: flex-start; background: rgba(255,255,255,0.1); backdrop-filter: blur(5px); color: #eee; border-bottom-left-radius: 4px; }
+
+        .chat-media { max-width: 100%; border-radius: 10px; margin-top: 8px; }
+
+        /* Floating Input */
+        .input-zone {
+            position: fixed; bottom: 0; width: 100%; padding: 15px;
+            background: rgba(0,0,0,0.9); border-top: 1px solid #333;
+            display: flex; gap: 10px; align-items: center;
         }
 
-        .input-row { display: flex; gap: 10px; align-items: center; }
-        
-        #text-box {
-            flex: 1; background: #1a1a1e; border: 1px solid #444; border-radius: 25px;
-            padding: 12px 20px; color: white; font-size: 16px; outline: none;
+        #msg-input {
+            flex: 1; background: #222; border: 1px solid #444; color: white;
+            padding: 12px 18px; border-radius: 25px; outline: none; font-size: 16px;
         }
 
-        .action-btn { font-size: 20px; color: #fff; cursor: pointer; padding: 5px; }
-        .send-btn { background: var(--hot); border: none; padding: 10px 20px; border-radius: 20px; color: #fff; font-weight: 700; }
-
-        /* Spicy Panel */
-        #spicy-tray {
-            display: none; grid-template-columns: repeat(4, 1fr); gap: 8px;
-            padding: 10px; background: #111; border-radius: 10px; margin-bottom: 10px;
-            border: 1px solid var(--hot); max-height: 180px; overflow-y: auto;
+        .send-pill {
+            background: var(--hot); border: none; padding: 12px 22px;
+            border-radius: 25px; color: #fff; font-weight: bold;
         }
-        .stk { width: 100%; border-radius: 5px; cursor: pointer; }
-
-        /* Progress Bar */
-        #up-bar { display: none; height: 4px; background: #222; border-radius: 2px; margin-bottom: 8px; overflow: hidden; }
-        #up-fill { height: 100%; width: 0%; background: var(--hot); transition: 0.3s; }
     </style>
 </head>
 <body>
 
-<div class="main-wallpaper"></div>
+<div class="bg-overlay"></div>
 
-<div class="wrapper">
-    <header>
-        <div style="font-weight:900; letter-spacing:1px;">TULIP <span style="color:var(--hot)">HOT</span></div>
-        <div id="target" style="font-size:10px; color:var(--hot)">GLOBAL LOBBY</div>
-    </header>
+<div class="main-container">
+    <header>TULIP <span style="color:var(--hot); margin-left:5px;">HOT</span></header>
 
-    <div id="messages"></div>
+    <div id="chat-flow"></div>
 
-    <div class="controls">
-        <div id="up-bar"><div id="up-fill"></div></div>
-        
-        <div id="spicy-tray">
-            <img class="stk" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6Z3R6Z3R6/3o7TKMGpxx87Z4I6T6/giphy.gif" onclick="sendMedia(this.src)">
-            <img class="stk" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/l41lTfO3vD04A7088/giphy.gif" onclick="sendMedia(this.src)">
-            <img class="stk" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHRreXJleG52Y2R4dzN5YmNnZ3R6Z3R6Z3R6Z3R6/3o7TKVUn7iM8FMEU24/giphy.gif" onclick="sendMedia(this.src)">
-            <div class="stk" style="background:var(--hot); height:50px; display:flex; align-items:center; justify-content:center;" onclick="sendMedia('🎁 SEXY BOX 🎁')">🎁</div>
-        </div>
-
-        <div class="input-row">
-            <label for="img-in"><i class="fas fa-camera action-btn"></i></label>
-            <input type="file" id="img-in" hidden accept="image/*">
-            
-            <i class="fas fa-fire action-btn" onclick="toggleTray()" id="fire-icon"></i>
-            
-            <input type="text" id="text-box" placeholder="Write message..." autocomplete="off">
-            
-            <button class="send-btn" onclick="sendMsg()">SEND</button>
-        </div>
+    <div class="input-zone">
+        <input type="text" id="msg-input" placeholder="Type a message..." autocomplete="off">
+        <button class="send-pill" onclick="send()">SEND</button>
     </div>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
     const socket = io();
-    const params = new URLSearchParams(window.location.search);
-    const USER = {
-        name: params.get('username') || "User_" + Math.floor(Math.random()*1000),
-        role: params.get('role') || "user",
-        target: 'all'
-    };
+    const myName = new URLSearchParams(window.location.search).get('username') || "Guest";
 
-    socket.emit('join', { username: USER.name, role: USER.role });
+    socket.emit('join', { username: myName });
 
-    // RE-ENGINEERED RECEIVE LOGIC
+    // THE MAGIC FIX: "Undefined" aur "Position" dono solve
     socket.on('newMessage', (data) => {
-        const box = document.getElementById('messages');
-        const isMe = data.user === USER.name;
+        const flow = document.getElementById('chat-flow');
         
-        // Creating the message element simply
+        // Logical Check: Text ko har jagah dhundega taaki "Undefined" na aaye
+        const messageText = data.text || data.msg || data.message || "Media Attached";
+        const sender = data.user || data.username || "System";
+        const isMe = sender === myName;
+
         const div = document.createElement('div');
-        div.className = `msg ${isMe ? 'me' : 'other'}`;
+        div.className = `bubble ${isMe ? 'mine' : 'others'}`;
         
-        let content = `<span class="name">${data.user} ${data.role==='owner'?'👑':''}</span>`;
+        let html = `<span class="sender-name">${sender}</span>`;
         
-        if(data.type === 'image') {
-            content += `<img src="${data.text}" class="chat-img" onload="scrollToEnd()">`;
+        if(data.type === 'image' || data.url) {
+            html += `<img src="${messageText}" class="chat-img" onload="scrollDown()">`;
         } else {
-            // Text Fix: Directly putting text without complex wrappers
-            content += `<span>${data.text}</span>`;
+            html += `<span>${messageText}</span>`;
         }
-        
-        div.innerHTML = content;
-        box.appendChild(div);
-        scrollToEnd();
+
+        div.innerHTML = html;
+        flow.appendChild(div);
+        scrollDown();
     });
 
-    function sendMsg() {
-        const input = document.getElementById('text-box');
+    function send() {
+        const input = document.getElementById('msg-input');
         if(!input.value.trim()) return;
-        
+
+        // Dono format mein bhej rahe hain taaki server confuse na ho
         socket.emit('sendMessage', {
-            type: 'text', text: input.value, to: USER.target, user: USER.name, role: USER.role
+            text: input.value,
+            msg: input.value, // backup
+            user: myName
         });
         input.value = '';
     }
 
-    function sendMedia(url) {
-        socket.emit('sendMessage', {
-            type: 'image', text: url, to: USER.target, user: USER.name, role: USER.role
-        });
-        document.getElementById('spicy-tray').style.display = 'none';
+    function scrollDown() {
+        const flow = document.getElementById('chat-flow');
+        flow.scrollTop = flow.scrollHeight;
     }
 
-    // File Upload Logic
-    document.getElementById('img-in').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        const bar = document.getElementById('up-bar');
-        const fill = document.getElementById('up-fill');
-        
-        bar.style.display = 'block';
-        reader.onprogress = (ev) => {
-            fill.style.width = Math.round((ev.loaded / ev.total) * 100) + '%';
-        };
-        reader.onload = () => {
-            sendMedia(reader.result);
-            setTimeout(() => { bar.style.display = 'none'; fill.style.width = '0%'; }, 1000);
-        };
-        reader.readAsDataURL(file);
+    document.getElementById('msg-input').addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') send();
     });
-
-    function scrollToEnd() {
-        const box = document.getElementById('messages');
-        box.scrollTop = box.scrollHeight;
-    }
-
-    function toggleTray() {
-        const tray = document.getElementById('spicy-tray');
-        tray.style.display = (tray.style.display === 'grid') ? 'none' : 'grid';
-    }
-
-    document.getElementById('text-box').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMsg(); });
 </script>
 </body>
 </html>
