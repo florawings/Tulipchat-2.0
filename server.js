@@ -15,104 +15,84 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- MULTER CONFIG (For Photos/GIFs) ---
-const storage = multer.diskStorage({
-    destination: 'public/uploads/',
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
-});
-const upload = multer({ storage: storage });
-
-// --- MONGODB CONNECTION ---
+// --- DATABASE CONNECTION ---
 const MONGO_URI = "mongodb+srv://epffoportal_db_user:wAaE19Wqq3XFMbJH@cluster0.mighbsf.mongodb.net/tulipchat";
-mongoose.connect(MONGO_URI)
-    .then(() => console.log("✅ MongoDB Connected Successfully"))
-    .catch(err => console.log("❌ DB Connection Error:", err));
+mongoose.connect(MONGO_URI).then(() => console.log("✅ DB Connected"));
 
-// --- MESSAGE SCHEMA ---
+// --- SCHEMAS ---
+const userSchema = new mongoose.Schema({
+    username: { type: String, unique: true },
+    password: { type: String },
+    gender: String
+});
+const User = mongoose.model('User', userSchema);
+
 const messageSchema = new mongoose.Schema({
-    user: String,
-    text: String,
-    type: String, // 'text' or 'file'
-    gender: String,
-    role: String,
-    timestamp: { type: Date, default: Date.now }
+    user: String, text: String, type: String, gender: String, timestamp: { type: Date, default: Date.now }
 });
 const Message = mongoose.model('Message', messageSchema);
 
 // --- ROUTES ---
-app.post('/auth/login', (req, res) => {
-    const { username } = req.body;
-    res.redirect(`/chat.html?username=${username}&gender=Male`);
+// Registration Fix
+app.post('/auth/register', async (req, res) => {
+    try {
+        const { username, password, gender } = req.body;
+        const newUser = new User({ username, password, gender });
+        await newUser.save();
+        res.redirect(`/chat.html?username=${username}&gender=${gender}`);
+    } catch (err) {
+        res.status(500).send("User already exists or DB error");
+    }
 });
 
-app.get('/auth/guest', (req, res) => {
-    const guestName = "Guest_" + Math.floor(Math.random() * 9999);
-    res.redirect(`/chat.html?username=${guestName}&gender=Male&role=guest`);
+app.post('/auth/login', async (req, res) => {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username, password });
+    if (user) res.redirect(`/chat.html?username=${user.username}&gender=${user.gender}`);
+    else res.send("Invalid Login");
 });
 
+// File Upload Logic
+const upload = multer({ dest: 'public/uploads/' });
 app.post('/upload', upload.single('chatFile'), (req, res) => {
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     res.json({ url: `/uploads/${req.file.filename}` });
 });
 
-// --- SOCKET.IO LOGIC ---
+// --- SOCKET LOGIC ---
 let onlineUsers = [];
 
 io.on('connection', (socket) => {
-    console.log('New connection:', socket.id);
-
     socket.on('join', async (data) => {
-        socket.username = data.username || 'Guest';
-        socket.gender = data.gender || 'Male';
-        socket.role = data.role || 'user';
+        socket.username = data.username;
+        socket.gender = data.gender;
 
-        // Online List Update
-        const userExists = onlineUsers.find(u => u.username === socket.username);
-        if (!userExists) {
-            onlineUsers.push({ 
-                username: socket.username, 
-                gender: socket.gender, 
-                id: socket.id 
-            });
+        // Update Online List
+        if (!onlineUsers.find(u => u.username === socket.username)) {
+            onlineUsers.push({ username: socket.username, gender: socket.gender, id: socket.id });
         }
         io.emit('updateUserList', onlineUsers);
 
-        // Load Last 100 Messages from DB
-        try {
-            const history = await Message.find().sort({ timestamp: 1 }).limit(100);
-            socket.emit('loadHistory', history);
-        } catch (err) {
-            console.log("Error loading history:", err);
-        }
-
-        console.log(`${socket.username} joined the room`);
+        // Load History
+        const history = await Message.find().sort({ timestamp: 1 }).limit(50);
+        socket.emit('loadHistory', history);
     });
 
     socket.on('sendMessage', async (data) => {
-        const msgData = {
+        const msg = new Message({
             user: socket.username,
             text: data.message,
             type: data.type || 'text',
-            gender: socket.gender,
-            role: socket.role
-        };
-
-        try {
-            // Save to Database
-            const newMessage = new Message(msgData);
-            await newMessage.save();
-            
-            // Broadcast to Everyone
-            io.emit('newMessage', msgData);
-        } catch (err) {
-            console.log("Error saving message:", err);
-        }
+            gender: socket.gender
+        });
+        await msg.save();
+        io.emit('newMessage', msg);
     });
 
     socket.on('disconnect', () => {
         onlineUsers = onlineUsers.filter(u => u.id !== socket.id);
         io.emit('updateUserList', onlineUsers);
-        console
-        
+    });
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));
