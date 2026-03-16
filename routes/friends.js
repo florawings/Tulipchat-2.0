@@ -1,35 +1,22 @@
-const express=require("express")
-const router=express.Router()
+const express = require("express")
+const router = express.Router()
 
-let requests=[]
-let friends={}
+let requests = []
 
 router.post("/send",(req,res)=>{
-const {from,to}=req.body
+
+const {from,to} = req.body
 
 requests.push({from,to})
 
 res.json({msg:"friend request sent"})
+
 })
 
-router.post("/accept",(req,res)=>{
-const {from,to}=req.body
+router.get("/list",(req,res)=>{
 
-if(!friends[from]) friends[from]=[]
-if(!friends[to]) friends[to]=[]
+res.json(requests)
 
-friends[from].push(to)
-friends[to].push(from)
-
-requests=requests.filter(r=>!(r.from===from && r.to===to))
-
-res.json({msg:"friend request accepted"})
 })
 
-router.get("/list/:user",(req,res)=>{
-const user=req.params.user
-
-res.json(friends[user]||[])
-})
-
-module.exports=router
+module.exports = router
