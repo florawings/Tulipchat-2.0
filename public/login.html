@@ -1,60 +1,96 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Login</title>
+<meta charset="UTF-8">
+<title>Tulip Chat Login</title>
+
+<style>
+body{
+font-family:Arial;
+background:linear-gradient(135deg,#ff4d6d,#ff8fab);
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+margin:0;
+}
+
+.card{
+background:white;
+padding:30px;
+border-radius:10px;
+width:280px;
+text-align:center;
+box-shadow:0 5px 20px rgba(0,0,0,0.2);
+}
+
+input{
+width:100%;
+padding:10px;
+margin:8px 0;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+button{
+width:100%;
+padding:10px;
+background:#ff2e63;
+border:none;
+color:white;
+border-radius:6px;
+cursor:pointer;
+}
+
+button:hover{
+background:#ff1744;
+}
+</style>
 </head>
 
 <body>
 
-<h2>Login</h2>
+<div class="card">
 
-<input id="name" placeholder="Name">
+<h3>🌷 Tulip Chat</h3>
 
+<input id="username" placeholder="Username">
 <input id="password" type="password" placeholder="Password">
 
 <button onclick="login()">Login</button>
 
-<br><br>
+<p>Don't have account?
+<a href="register.html">Register</a>
+</p>
 
-<a href="/register.html">Register</a>
+</div>
 
 <script>
 
 async function login(){
 
-let username=document.getElementById("name").value
+let username=document.getElementById("username").value
 let password=document.getElementById("password").value
 
-let res = await fetch("/login",{
-
+let res=await fetch("/login",{
 method:"POST",
-
-headers:{"Content-Type":"application/json"},
-
-body:JSON.stringify({
-
-username,
-password
-
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({username,password})
 })
 
-})
+let data=await res.json()
 
-let data = await res.json()
-
-if(data.msg!=="login success"){
-
-alert(data.msg)
+if(data.error){
+alert(data.error)
 return
-
 }
 
-localStorage.setItem("username",data.username)
+localStorage.setItem("username",username)
 localStorage.setItem("role",data.role)
-localStorage.setItem("gender",data.gender)
 
-location.href="/chat.html"
+window.location="chat.html"
 
 }
 
