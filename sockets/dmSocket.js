@@ -1,25 +1,20 @@
-let unread={}
+module.exports = (io)=>{
 
-module.exports=(io,socket)=>{
+io.on("connection",(socket)=>{
+
+socket.on("joinDM",(username)=>{
+socket.username = username
+})
 
 socket.on("dm",(data)=>{
 
-const {to,message}=data
-
-if(!unread[to]){
-unread[to]=0
-}
-
-unread[to]++
-
-io.emit("dmMessage",data)
-io.emit("dmBadge",{user:to,count:unread[to]})
-
+io.emit("dm",{
+from: data.from,
+to: data.to,
+text: data.text
 })
 
-socket.on("readDM",(user)=>{
-
-unread[user]=0
+})
 
 })
 
