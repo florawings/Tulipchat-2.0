@@ -1,103 +1,76 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>Tulip Chat</title>
 
 <style>
 
-*{
-box-sizing:border-box;
-}
-
 body{
 margin:0;
-font-family:system-ui;
-background:linear-gradient(180deg,#ff6a8b,#ff8fab);
+font-family:sans-serif;
 height:100vh;
 display:flex;
 flex-direction:column;
-overflow:hidden;
+background:linear-gradient(#ff6a8b,#ff8fab);
 }
 
 /* HEADER */
 
 #header{
-height:55px;
 background:#ff2d5a;
 color:white;
+padding:10px;
 display:flex;
-align-items:center;
 justify-content:space-between;
-padding:0 15px;
-font-size:18px;
-flex-shrink:0;
+align-items:center;
 }
 
 /* SIDEBAR */
 
 #sidebar{
 position:fixed;
-left:-220px;
+left:-200px;
 top:0;
-width:220px;
+width:200px;
 height:100%;
 background:white;
-box-shadow:2px 0 10px rgba(0,0,0,0.2);
-padding:15px;
 transition:0.3s;
-overflow:auto;
-z-index:10;
+padding:10px;
 }
 
 #sidebar.open{
 left:0;
 }
 
-#onlineUsers div{
-padding:6px;
-border-bottom:1px solid #eee;
-cursor:pointer;
-}
-
-/* CHAT AREA */
+/* CHAT */
 
 #chat{
 flex:1;
 overflow:auto;
 padding:10px;
-display:flex;
-flex-direction:column;
-gap:5px;
 }
 
-/* MESSAGE BUBBLE */
+/* MESSAGE */
 
 .msg{
 background:white;
-padding:8px 12px;
-border-radius:15px;
+padding:8px;
+border-radius:10px;
+margin-bottom:5px;
 max-width:70%;
-box-shadow:0 2px 5px rgba(0,0,0,0.1);
-word-break:break-word;
 }
 
-/* OWNER */
-
-.owner{
-background:#ffd6e0;
-}
-
-/* INPUT AREA */
+/* INPUT */
 
 #sendBox{
 display:flex;
 gap:5px;
 padding:8px;
 background:white;
-flex-shrink:0;
 }
 
 #msg{
@@ -111,38 +84,20 @@ button{
 background:#ff2d5a;
 color:white;
 border:none;
+padding:10px;
 border-radius:20px;
-padding:10px 14px;
-cursor:pointer;
 }
 
-/* DM POPUP */
+/* DM */
 
 #dmPopup{
 position:fixed;
 bottom:70px;
 right:10px;
-width:260px;
 background:white;
-border-radius:10px;
-box-shadow:0 5px 15px rgba(0,0,0,0.2);
-display:none;
 padding:10px;
-z-index:20;
-}
-
-#dmMessages{
-height:120px;
-overflow:auto;
-border:1px solid #eee;
-margin:5px 0;
-padding:5px;
-}
-
-img{
-max-width:200px;
 border-radius:10px;
-margin-top:5px;
+display:none;
 }
 
 </style>
@@ -151,19 +106,15 @@ margin-top:5px;
 
 <body>
 
-<!-- HEADER -->
-
 <div id="header">
 
 <span onclick="toggleMenu()">☰</span>
 
-<span>🌷 Tulip Chat</span>
+<span>Tulip Chat</span>
 
 <span id="dmBell" onclick="openDM()">🔔</span>
 
 </div>
-
-<!-- SIDEBAR -->
 
 <div id="sidebar">
 
@@ -173,15 +124,11 @@ margin-top:5px;
 
 </div>
 
-<!-- CHAT -->
-
 <div id="chat"></div>
-
-<!-- SEND BOX -->
 
 <div id="sendBox">
 
-<input id="msg" placeholder="Type message">
+<input id="msg">
 
 <button onclick="send()">Send</button>
 
@@ -191,11 +138,9 @@ margin-top:5px;
 
 </div>
 
-<!-- DM POPUP -->
-
 <div id="dmPopup">
 
-<input id="dmUser" placeholder="User">
+<input id="dmUser">
 
 <div id="dmMessages"></div>
 
@@ -210,16 +155,9 @@ margin-top:5px;
 
 <script>
 
-/* SIDEBAR */
-
 function toggleMenu(){
-
-const bar=document.getElementById("sidebar")
-bar.classList.toggle("open")
-
+document.getElementById("sidebar").classList.toggle("open")
 }
-
-/* DM */
 
 function openDM(){
 
@@ -236,4 +174,5 @@ box.style.display="block"
 </script>
 
 </body>
+
 </html>
