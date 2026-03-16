@@ -35,3 +35,18 @@ socket.on('sys_message', (msg) => {
 socket.on('error_msg', (msg) => {
   alert(msg);
 });
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+}
+
+// Online users update
+socket.on('updateUserList', (users) => {
+    const list = document.getElementById('online-list');
+    list.innerHTML = '';
+    users.forEach(user => {
+        const avatar = user.gender === 'Female' ? '👩‍🦰' : '👨‍🦱';
+        list.innerHTML += `<div class="user-item" onclick="openDM('${user.username}')">
+            ${avatar} ${user.username}
+        </div>`;
+    });
+});
