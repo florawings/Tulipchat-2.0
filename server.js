@@ -1,8 +1,6 @@
 const express = require("express")
 const http = require("http")
 const { Server } = require("socket.io")
-const multer = require("multer")
-const path = require("path")
 
 const app = express()
 const server = http.createServer(app)
@@ -10,31 +8,24 @@ const io = new Server(server)
 
 app.use(express.json())
 app.use(express.static("public"))
-app.use("/uploads", express.static("uploads"))
 
-/* ---------------- USERS MEMORY ---------------- */
+/* ----- MEMORY DATABASE ----- */
 
-let users = []
+let users = [
+ { username: "Lord_lucifer", password: "766521", role: "owner" }
+]
 
-/* OWNER AUTO CREATE */
-
-users.push({
- username:"Lord_lucifer",
- password:"766521",
- role:"owner"
-})
-
-/* ---------------- REGISTER ---------------- */
+/* ----- REGISTER ----- */
 
 app.post("/register",(req,res)=>{
 
- const {username,password,email,age,gender} = req.body
+ const {username,password,email,age,gender}=req.body
 
  if(!username || !password){
   return res.json({error:"Missing fields"})
  }
 
- let exist = users.find(u=>u.username===username)
+ let exist=users.find(u=>u.username===username)
 
  if(exist){
   return res.json({error:"User already exists"})
@@ -53,13 +44,13 @@ app.post("/register",(req,res)=>{
 
 })
 
-/* ---------------- LOGIN ---------------- */
+/* ----- LOGIN ----- */
 
 app.post("/login",(req,res)=>{
 
- const {username,password} = req.body
+ const {username,password}=req.body
 
- let user = users.find(
+ let user=users.find(
   u=>u.username===username && u.password===password
  )
 
@@ -74,36 +65,11 @@ app.post("/login",(req,res)=>{
 
 })
 
-/* ---------------- FILE UPLOAD ---------------- */
-
-const storage = multer.diskStorage({
- destination:"uploads",
- filename:(req,file,cb)=>{
-  cb(null,Date.now()+"_"+file.originalname)
- }
-})
-
-const upload = multer({storage})
-
-app.post("/upload",upload.single("photo"),(req,res)=>{
-
- if(!req.file){
-  return res.json({error:"no file"})
- }
-
- res.json({
-  url:"/uploads/"+req.file.filename
- })
-
-})
-
-/* ---------------- SOCKET CHAT ---------------- */
+/* ----- CHAT SOCKET ----- */
 
 let onlineUsers=[]
 
 io.on("connection",(socket)=>{
-
- console.log("user connected")
 
  socket.on("join",(username)=>{
 
@@ -118,9 +84,7 @@ io.on("connection",(socket)=>{
  })
 
  socket.on("chat",(msg)=>{
-
   io.emit("chat",msg)
-
  })
 
  socket.on("disconnect",()=>{
@@ -135,4 +99,10 @@ io.on("connection",(socket)=>{
 
 })
 
-/* ---------------- START SERVER ----------------
+/* ----- SERVER START ----- */
+
+const PORT=process.env.PORT || 3000
+
+server.listen(PORT,()=>{
+ console.log("Tulip Chat running on port "+PORT)
+})
