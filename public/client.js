@@ -1,134 +1,118 @@
-const socket = io()
+const socket=io()
 
-let username = localStorage.getItem("username") || "guest"
+let username=localStorage.getItem("username")
 
-/* ---------- JOIN ---------- */
+if(!username){
 
-socket.emit("join", username)
+ username=prompt("Enter username")
 
-/* ---------- SIDEBAR ---------- */
+ localStorage.setItem("username",username)
 
-function toggleSidebar(){
- const sidebar = document.getElementById("sidebar")
- sidebar.classList.toggle("open")
 }
 
-/* ---------- SEND MESSAGE ---------- */
+socket.emit("join",username)
+
+/* SEND MESSAGE */
 
 function send(){
 
- const input = document.getElementById("msg")
- const msg = input.value.trim()
+ const msg=document.getElementById("msg").value
 
- if(!msg) return
+ if(msg==="") return
 
- socket.emit("chat", username + ": " + msg)
+ socket.emit("chat",{
+  user:username,
+  text:msg
+ })
 
- input.value=""
+ document.getElementById("msg").value=""
+
 }
 
-/* ---------- IMAGE SEND ---------- */
-
-function sendImage(){
-
- const file = document.getElementById("imgFile").files[0]
-
- if(!file) return
-
- const form = new FormData()
- form.append("image", file)
-
- fetch("/upload",{
-  method:"POST",
-  body:form
- })
- .then(res=>res.json())
- .then(data=>{
-  socket.emit("chat", username + ": " + data.url)
- })
-}
-
-/* ---------- RECEIVE CHAT ---------- */
+/* RECEIVE MESSAGE */
 
 socket.on("chat",(msg)=>{
 
  const div=document.createElement("div")
 
- /* GIF */
+ if(msg.image){
 
- if(msg.includes(".gif")){
-  div.innerHTML=`<img src="${msg.split(" ").pop()}" width="200">`
- }
+  const img=document.createElement("img")
+  img.src=msg.image
+  img.style.maxWidth="200px"
 
- /* IMAGE */
+  div.appendChild(img)
 
- else if(msg.includes(".png")||msg.includes(".jpg")||msg.includes(".jpeg")){
-  div.innerHTML=`<img src="${msg.split(" ").pop()}" width="200">`
- }
+ }else{
 
- else{
-  div.innerText=msg
+  if(msg.user==="Lord_lucifer"){
+   div.innerHTML="👑 "+msg.user+": "+msg.text
+  }else{
+   div.innerHTML=msg.user+": "+msg.text
+  }
+
  }
 
  document.getElementById("chat").appendChild(div)
 
 })
 
-/* ---------- ONLINE USERS ---------- */
+/* ONLINE USERS */
 
 socket.on("onlineUsers",(users)=>{
 
- const list=document.getElementById("onlineUsers")
+ const box=document.getElementById("onlineUsers")
 
- if(!list) return
-
- list.innerHTML=""
+ box.innerHTML=""
 
  users.forEach(u=>{
 
   const div=document.createElement("div")
-  div.className="user"
+
   div.innerText="🟢 "+u
 
   div.onclick=()=>openDM(u)
 
-  list.appendChild(div)
+  box.appendChild(div)
 
  })
 
 })
 
-/* ---------- DM SYSTEM ---------- */
+/* IMAGE / GIF */
 
-let currentDM=null
+function sendImage(){
 
-function openDM(user){
+ const file=document.getElementById("imgFile").files[0]
 
- currentDM=user
+ const reader=new FileReader()
 
- document.getElementById("dmPopup").style.display="block"
+ reader.onload=function(){
+
+  socket.emit("chat",{
+   user:username,
+   image:reader.result
+  })
+
+ }
+
+ reader.readAsDataURL(file)
 
 }
 
-function closeDM(){
-
- document.getElementById("dmPopup").style.display="none"
-
-}
+/* DM */
 
 function sendDM(){
 
  const msg=document.getElementById("dmInput").value
 
- if(!msg) return
+ const to=document.getElementById("dmUser").value
 
  socket.emit("dm",{
-  to:currentDM,
   from:username,
-  msg:msg
+  to:to,
+  text:msg
  })
-
- document.getElementById("dmInput").value=""
 
 }
 
@@ -136,32 +120,40 @@ function sendDM(){
 
 socket.on("dm",(data)=>{
 
- const bell=document.getElementById("dmBell")
-
- if(bell){
-  bell.innerText="🔔"
- }
+ document.getElementById("dmBell").innerText="🔔"
 
  const div=document.createElement("div")
 
- div.innerText=data.from + ": " + data.msg
+ div.innerText=data.from+": "+data.text
 
- const box=document.getElementById("dmMessages")
-
- if(box){
-  box.appendChild(div)
- }
+ document.getElementById("dmMessages").appendChild(div)
 
 })
 
-/* ---------- OWNER PANEL ---------- */
+/* CLEAR CHAT */
 
-if(username==="Lord_lucifer"){
+socket.on("clearChat",()=>{
+ document.getElementById("chat").innerHTML=""
+})
 
- const ownerBtn=document.getElementById("ownerPanel")
+/* SIDEBAR */
 
- if(ownerBtn){
-  ownerBtn.style.display="block"
+function toggleMenu(){
+
+ const bar=document.getElementById("sidebar")
+
+ if(bar.style.display==="none"){
+  bar.style.display="block"
+ }else{
+  bar.style.display="none"
  }
+
+}
+
+function openDM(user){
+
+ document.getElementById("dmPopup").style.display="block"
+
+ document.getElementById("dmUser").value=user
 
 }
