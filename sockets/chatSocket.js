@@ -1,32 +1,39 @@
-const User = require('../models/User');
+module.exports = (io) => {
+    io.on('connection', (socket) => {
+        console.log('User Connected:', socket.id);
 
-module.exports = (io, socket) => {
-  socket.on('sendMessage', async (data) => {
-    try {
-      const user = await User.findById(socket.userId);
-      if (!user || user.isBanned) return;
-      if (user.isMuted) return socket.emit('error_msg', 'You are muted!');
+        socket.on('join', (data) => {
+            // Data check taaki undefined na aaye
+            socket.username = data.username || "Guest";
+            socket.role = data.role || "user";
+            console.log(`${socket.username} joined as ${socket.role}`);
+        });
 
-      const msg = data.message;
-      if (msg.startsWith('/') && (user.role === 'owner' || user.role === 'admin')) {
-        const [cmd, target] = msg.split(' ');
-        
-        if (cmd === '/ban') await User.findOneAndUpdate({username: target}, {isBanned: true});
-        if (cmd === '/mute') await User.findOneAndUpdate({username: target}, {isMuted: true});
-        if (cmd === '/clear') io.emit('clear_chat');
-        if (cmd === '/promote') await User.findOneAndUpdate({username: target}, {role: 'admin'});
-        if (cmd === '/kick') io.emit('sys_message', `${target} kicked.`); // Kick logic
+        socket.on('sendMessage', (payload) => {
+            // "undefined" fix: payload se message nikalne ka pakka tarika
+            const messageText = payload.text || payload.msg || "";
+            
+            if (messageText.trim() !== "" || payload.type === 'image') {
+                io.emit('newMessage', {
+                    user: socket.username,
+                    text: messageText,
+                    type: payload.type || 'text',
+                    role: socket.role,
+                    time: new Date().toLocaleTimeString()
+                });
+            }
+        });
 
-        io.emit('sys_message', `Action ${cmd} performed on ${target}`);
-        return;
-      }
-
-      io.emit('newMessage', {
-        text: msg,
-        user: user.username,
-        role: user.role,
-        time: new Date().toLocaleTimeString()
-      });
-    } catch (e) { console.log(e); }
-  });
+        // Admin Action: Ban ya Alert ke liye
+        socket.on('adminAction', (data) => {
+            if (data.type === 'broadcast') {
+                io.emit('newMessage', {
+                    user: 'SYSTEM-ALERT',
+                    text: data.message,
+                    type: 'system'
+                });
+            }
+            // Yahan ban logic bhi add kar sakte hain
+        });
+    });
 };
