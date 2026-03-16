@@ -14,9 +14,17 @@ io.emit("onlineUsers",onlineUsers)
 
 })
 
+socket.on("chat",(msg)=>{
+
+io.emit("chat",msg)
+
+})
+
 socket.on("disconnect",()=>{
 
-onlineUsers=onlineUsers.filter(u=>u!==socket.username)
+onlineUsers=onlineUsers.filter(
+u=>u!==socket.username
+)
 
 io.emit("onlineUsers",onlineUsers)
 
