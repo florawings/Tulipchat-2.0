@@ -3,31 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tulip Chat - Login</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Tulip Chat | Welcome</title>
+    <style>
+        body { background: #f43f5e; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 320px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #f43f5e; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .guest-link { display: block; margin-top: 15px; color: #666; text-decoration: none; font-size: 14px; }
+        .register-link { color: #f43f5e; text-decoration: none; font-weight: bold; }
+    </style>
 </head>
-<body class="auth-page">
-    <div class="auth-card">
-        <div class="brand">
-            <span class="logo">🌷</span>
-            <h1>Tulip Chat</h1>
-            <p>Connect with the world</p>
-        </div>
-
+<body>
+    <div class="card">
+        <h1>🌷 Tulip Chat</h1>
         <form action="/auth/login" method="POST">
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
-            <button type="submit" class="btn btn-primary">Login</button>
+            <button type="submit">Login</button>
         </form>
-
-        <div class="divider"><span>OR</span></div>
-
-        <button onclick="location.href='/auth/guest'" class="btn btn-guest">Login as a Guest</button>
-        
-        <div class="auth-footer">
-            <p>New here? <a href="register.html">Create Account</a></p>
-        </div>
+        <a href="/auth/guest" class="guest-link">👤 Login as a Guest</a>
+        <p style="margin-top: 20px; font-size: 14px;">Don't have an account? <a href="register.html" class="register-link">Register</a></p>
     </div>
 </body>
 </html>
