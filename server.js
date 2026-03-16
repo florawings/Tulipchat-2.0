@@ -1,14 +1,13 @@
 const express=require("express")
 const http=require("http")
 const {Server}=require("socket.io")
-const multer=require("multer")
-
-require("./database")
+const mongoose=require("mongoose")
+const path=require("path")
 
 const authRoutes=require("./routes/auth")
-const adminRoutes=require("./routes/admin")
 const friendRoutes=require("./routes/friends")
 const reportRoutes=require("./routes/report")
+const adminRoutes=require("./routes/admin")
 
 const chatSocket=require("./sockets/chatSocket")
 const dmSocket=require("./sockets/dmSocket")
@@ -19,31 +18,30 @@ const io=new Server(server)
 
 app.use(express.json())
 app.use(express.static("public"))
-app.use("/uploads",express.static("uploads"))
 
-const storage=multer.diskStorage({
-destination:"uploads/",
-filename:(req,file,cb)=>{
-cb(null,Date.now()+"-"+file.originalname)
-}
-})
+mongoose.connect(process.env.MONGO_URL || "mongodb://127.0.0.1:27017/tulipchat")
 
-const upload=multer({storage})
-
-app.post("/upload",upload.single("file"),(req,res)=>{
-res.json({url:"/uploads/"+req.file.filename})
-})
-
-app.use("/auth",authRoutes)
-app.use("/admin",adminRoutes)
+// ROUTES
+app.use("/",authRoutes)
 app.use("/friends",friendRoutes)
 app.use("/report",reportRoutes)
+app.use("/admin",adminRoutes)
 
+// SOCKETS
 io.on("connection",(socket)=>{
+console.log("user connected")
+
 chatSocket(io,socket)
 dmSocket(io,socket)
+
+socket.on("disconnect",()=>{
+console.log("user disconnected")
 })
 
-server.listen(3000,()=>{
-console.log("Tulip Chat running")
+})
+
+const PORT=process.env.PORT || 3000
+
+server.listen(PORT,()=>{
+console.log("server running on "+PORT)
 })
