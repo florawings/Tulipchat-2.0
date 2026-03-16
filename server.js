@@ -8,11 +8,27 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 app.use(express.json());
+
+/* static files */
 app.use(express.static(path.join(__dirname, "public")));
 
-/* ROOT */
+/* ROUTES IMPORT */
+const authRoutes = require("./routes/auth");
+const adminRoutes = require("./routes/admin");
+const friendsRoutes = require("./routes/friends");
+const reportRoutes = require("./routes/report");
+const shopRoutes = require("./routes/shop");
+
+/* ROUTES USE */
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/friends", friendsRoutes);
+app.use("/api/report", reportRoutes);
+app.use("/api/shop", shopRoutes);
+
+/* HOME PAGE */
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/login.html"));
+  res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
 /* LOGIN PAGE */
@@ -25,38 +41,16 @@ app.get("/register", (req, res) => {
   res.sendFile(path.join(__dirname, "public/register.html"));
 });
 
-/* USERS */
-let users = [{ username: "Lord_lucifer", password: "766521" }];
-
-/* LOGIN API */
-app.post("/login", (req, res) => {
-  const { username, password } = req.body;
-
-  const user = users.find(
-    u => u.username === username && u.password === password
-  );
-
-  if (!user) {
-    return res.json({ success: false });
-  }
-
-  res.json({ success: true });
+/* CHAT PAGE */
+app.get("/chat", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/chat.html"));
 });
 
-/* REGISTER API */
-app.post("/register", (req, res) => {
-  const { username, password } = req.body;
+/* SOCKETS */
+require("./sockets/chatSocket")(io);
+require("./sockets/dmSocket")(io);
 
-  const exist = users.find(u => u.username === username);
-
-  if (exist) {
-    return res.json({ success: false });
-  }
-
-  users.push({ username, password });
-
-  res.json({ success: true });
-});
+/* START SERVER */
 
 const PORT = process.env.PORT || 3000;
 
