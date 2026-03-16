@@ -1,13 +1,41 @@
-const express=require("express")
-const router=express.Router()
-const User=require("../models/User")
+const express = require("express")
+const router = express.Router()
 
-router.get("/users",async(req,res)=>{
+let users = []
+let banned = []
 
-const users=await User.find()
-
+router.get("/users",(req,res)=>{
 res.json(users)
+})
+
+router.post("/kick/:name",(req,res)=>{
+
+const name=req.params.name
+
+users = users.filter(u=>u.username!==name)
+
+res.send("kicked")
 
 })
 
-module.exports=router
+router.post("/ban/:name",(req,res)=>{
+
+const name=req.params.name
+
+banned.push(name)
+
+users = users.filter(u=>u.username!==name)
+
+res.send("banned")
+
+})
+
+router.post("/clear",(req,res)=>{
+
+global.chatMessages=[]
+
+res.send("chat cleared")
+
+})
+
+module.exports = router
