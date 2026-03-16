@@ -1,97 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register | Tulip Pro</title>
-    <style>
-        :root { --main: #f43f5e; --bg: #0f172a; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        
-        body { 
-            margin: 0; 
-            height: 100vh; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            background: linear-gradient(135deg, #f43f5e 0%, #fb7185 100%);
-        }
-
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            text-align: center;
-        }
-
-        h2 { color: var(--bg); margin-bottom: 10px; }
-        p { color: #64748b; font-size: 14px; margin-bottom: 25px; }
-
-        .input-group { text-align: left; margin-bottom: 15px; }
-        label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 5px; }
-        
-        input, select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        input:focus, select:focus { border-color: var(--main); box-shadow: 0 0 0 3px rgba(244,63,94,0.1); }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            background: var(--main);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: 0.3s;
-        }
-
-        button:hover { background: #e11d48; transform: translateY(-2px); }
-        
-        .footer-link { margin-top: 20px; font-size: 13px; color: #64748b; }
-        .footer-link a { color: var(--main); text-decoration: none; font-weight: bold; }
-    </style>
+<title>Register</title>
+<link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<div class="card">
-    <h2>🌷 Tulip <span style="color:var(--main)">Pro</span></h2>
-    <p>Create an account to start chatting</p>
+<div class="box">
 
-    <form action="/auth/register" method="POST">
-        <div class="input-group">
-            <label>Username</label>
-            <input type="text" name="username" placeholder="Choose a name" required>
-        </div>
+<h2>Register</h2>
 
-        <div class="input-group">
-            <label>Gender</label>
-            <select name="gender" required>
-                <option value="Male">Male 👨</option>
-                <option value="Female">Female 👩</option>
-            </select>
-        </div>
+<input id="username" placeholder="username">
+<input id="password" type="password" placeholder="password">
 
-        <div class="input-group">
-            <label>Password</label>
-            <input type="password" name="password" placeholder="••••••••" required>
-        </div>
+<button onclick="register()">Register</button>
 
-        <button type="submit">Create Account</button>
-    </form>
+</div>
 
-    <div class="footer-link">
-        Already have an account? <a href="index.html">Login</a>
-        
+<script>
+
+async function register(){
+
+const username=document.getElementById("username").value
+const password=document.getElementById("password").value
+
+const res=await fetch("/register",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({username,password})
+})
+
+const data=await res.json()
+
+if(data.success){
+
+alert("Registered")
+
+window.location="login.html"
+
+}else{
+
+alert(data.error)
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
