@@ -1,99 +1,65 @@
-const express=require("express")
-const http=require("http")
-const {Server}=require("socket.io")
-const path=require("path")
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+const path = require("path");
 
-const app=express()
-const server=http.createServer(app)
-const io=new Server(server)
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-app.use(express.json())
-app.use(express.static(path.join(__dirname,"public")))
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
-app.get("/",(req,res)=>{
-res.sendFile(path.join(__dirname,"public/login.html"))
-})
+/* ROOT */
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/login.html"));
+});
 
-let users=[]
-let messages=[]
-let onlineUsers=[]
+/* LOGIN PAGE */
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/login.html"));
+});
 
-app.post("/register",(req,res)=>{
+/* REGISTER PAGE */
+app.get("/register", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/register.html"));
+});
 
-const {username,password}=req.body
+/* USERS */
+let users = [{ username: "Lord_lucifer", password: "766521" }];
 
-const exist=users.find(u=>u.username===username)
+/* LOGIN API */
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
 
-if(exist){
-return res.json({error:"user exists"})
-}
+  const user = users.find(
+    u => u.username === username && u.password === password
+  );
 
-users.push({username,password})
+  if (!user) {
+    return res.json({ success: false });
+  }
 
-res.json({success:true})
+  res.json({ success: true });
+});
 
-})
+/* REGISTER API */
+app.post("/register", (req, res) => {
+  const { username, password } = req.body;
 
-app.post("/login",(req,res)=>{
+  const exist = users.find(u => u.username === username);
 
-const {username,password}=req.body
+  if (exist) {
+    return res.json({ success: false });
+  }
 
-const user=users.find(
-u=>u.username===username && u.password===password
-)
+  users.push({ username, password });
 
-if(!user){
-return res.json({error:"invalid"})
-}
+  res.json({ success: true });
+});
 
-res.json({success:true})
+const PORT = process.env.PORT || 3000;
 
-})
-
-io.on("connection",(socket)=>{
-
-socket.on("join",(username)=>{
-
-socket.username=username
-
-if(!onlineUsers.includes(username)){
-onlineUsers.push(username)
-}
-
-io.emit("onlineUsers",onlineUsers)
-
-socket.emit("chatHistory",messages)
-
-})
-
-socket.on("chat",(msg)=>{
-
-if(msg.text==="/clear"){
-messages=[]
-io.emit("clearChat")
-return
-}
-
-messages.push(msg)
-
-io.emit("chat",msg)
-
-})
-
-socket.on("disconnect",()=>{
-
-onlineUsers=onlineUsers.filter(
-u=>u!==socket.username
-)
-
-io.emit("onlineUsers",onlineUsers)
-
-})
-
-})
-
-const PORT=process.env.PORT||3000
-
-server.listen(PORT,()=>{
-console.log("Server running")
-})
+server.listen(PORT, () => {
+  console.log("Server running on port " + PORT);
+});
