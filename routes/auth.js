@@ -1,79 +1,52 @@
-const express=require("express")
-const router=express.Router()
-const bcrypt=require("bcryptjs")
+const express = require('express');
+const router = express.Router();
+const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 
-const User=require("../models/User")
+// REGISTER Logic
+router.post('/register', async (req, res) => {
+    try {
+        const { username, password, email, age, gender } = req.body;
+        let userExists = await User.findOne({ username });
+        if (userExists) return res.status(400).send("Username already taken!");
 
-// REGISTER
-router.post("/register",async(req,res)=>{
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({
+            username,
+            password: hashedPassword,
+            email,
+            age,
+            gender,
+            role: 'user'
+        });
 
-try{
+        await newUser.save();
+        res.redirect('/login.html?msg=Registered successfully');
+    } catch (err) {
+        res.status(500).send("Error: " + err.message);
+    }
+});
 
-const {username,age,gender,email,password}=req.body
+// LOGIN Logic
+router.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const user = await User.findOne({ username });
+        if (!user) return res.status(400).send("User not found!");
 
-const exist=await User.findOne({username})
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).send("Wrong password!");
 
-if(exist){
-return res.json({error:"Username already exists"})
-}
+        res.redirect(`/chat.html?username=${user.username}&role=${user.role}`);
+    } catch (err) {
+        res.status(500).send("Login failed");
+    }
+});
 
-const hash=await bcrypt.hash(password,10)
+// GUEST LOGIN (No password required)
+router.get('/guest', (req, res) => {
+    const guestNick = "Guest_" + Math.floor(Math.random() * 9000 + 1000);
+    res.redirect(`/chat.html?username=${guestNick}&role=guest`);
+});
 
-await User.create({
-username,
-age,
-gender,
-email,
-password:hash
-})
-
-res.json({msg:"registered"})
-
-}catch(err){
-res.json({error:"register error"})
-}
-
-})
-
-
-// LOGIN
-router.post("/login",async(req,res)=>{
-
-try{
-
-const {username,password}=req.body
-
-// OWNER LOGIN
-if(username==="Lord_lucifer" && password==="766521"){
-
-return res.json({
-username:"Lord_lucifer",
-role:"owner"
-})
-
-}
-
-const user=await User.findOne({username})
-
-if(!user){
-return res.json({error:"user not found"})
-}
-
-const ok=await bcrypt.compare(password,user.password)
-
-if(!ok){
-return res.json({error:"wrong password"})
-}
-
-res.json({
-username:user.username,
-role:"user"
-})
-
-}catch(err){
-res.json({error:"login error"})
-}
-
-})
-
-module.exports=router
+module.exports = router;
