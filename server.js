@@ -6,63 +6,48 @@ const app=express()
 const server=http.createServer(app)
 const io=new Server(server)
 
+app.use(express.json())
 app.use(express.static("public"))
 
-let onlineUsers=[]
-let sockets={}
-let messages=[]
+let users=[
+{username:"Lord_lucifer",password:"766521"}
+]
 
-io.on("connection",(socket)=>{
+/* REGISTER */
 
-socket.on("join",(username)=>{
+app.post("/register",(req,res)=>{
 
-socket.username=username
-sockets[username]=socket.id
+const {username,password}=req.body
 
-if(!onlineUsers.includes(username)){
-onlineUsers.push(username)
+const exist=users.find(u=>u.username===username)
+
+if(exist){
+return res.json({error:"User already exists"})
 }
 
-io.emit("onlineUsers",onlineUsers)
+users.push({username,password})
 
-socket.emit("chatHistory",messages)
+res.json({success:true})
 
 })
 
-socket.on("chat",(msg)=>{
+/* LOGIN */
 
-if(msg.text==="/clear"){
-messages=[]
-io.emit("clearChat")
-return
-}
+app.post("/login",(req,res)=>{
 
-messages.push(msg)
+const {username,password}=req.body
 
-io.emit("chat",msg)
-
-})
-
-socket.on("dm",(data)=>{
-
-const target=sockets[data.to]
-
-if(target){
-io.to(target).emit("dm",data)
-}
-
-})
-
-socket.on("disconnect",()=>{
-
-onlineUsers=onlineUsers.filter(
-u=>u!==socket.username
+const user=users.find(
+u=>u.username===username && u.password===password
 )
 
-delete sockets[socket.username]
+if(!user){
+return res.json({error:"Invalid login"})
+}
 
-io.emit("onlineUsers",onlineUsers)
-
+res.json({
+success:true,
+username:user.username
 })
 
 })
