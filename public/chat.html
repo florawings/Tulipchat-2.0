@@ -3,68 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tulip Pro | Master Fix</title>
+    <title>Tulip Pro | Lord Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #f43f5e; --owner: #fbbf24; --glass: rgba(15, 23, 42, 0.95); }
-        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
+        
+        /* Screen Size Fix: Height lock */
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; touch-action: manipulation; }
         
         body { 
-            height: 100dvh; display: flex; flex-direction: column; 
-            background: #000 url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200') center/cover no-repeat;
-            overflow: hidden; 
+            height: 100dvh; width: 100vw; display: flex; flex-direction: column; 
+            background: #000 url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200') center/cover no-repeat fixed;
+            overflow: hidden; position: fixed; /* Prevents unwanted scrolling/zooming */
         }
 
         /* --- HEADER --- */
         header { 
             height: 50px; background: var(--glass); display: flex; 
             align-items: center; justify-content: space-between; padding: 0 15px; 
-            border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 1001; 
+            z-index: 1001; border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         /* --- CHAT SECTION --- */
         #chat-container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        
         #chat-scroller { 
             flex: 1; overflow-y: auto; padding: 15px; 
             display: flex; flex-direction: column; gap: 12px;
-            padding-bottom: 100px; /* Space for input bar */
+            padding-bottom: 110px; /* Space for input bar */
+            -webkit-overflow-scrolling: touch;
         }
 
-        .msg { padding: 10px 14px; border-radius: 15px; color: white; max-width: 80%; line-height: 1.4; position: relative; }
+        .msg { padding: 10px 14px; border-radius: 15px; color: white; max-width: 85%; font-size: 14px; word-wrap: break-word; }
         .msg.me { align-self: flex-end; background: var(--primary); border-bottom-right-radius: 2px; }
-        .msg.other { align-self: flex-start; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-bottom-left-radius: 2px; }
+        .msg.other { align-self: flex-start; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-bottom-left-radius: 2px; }
         .msg img { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; }
 
         /* --- INPUT BAR --- */
         .input-wrapper { 
-            position: fixed; bottom: 0; width: 100%; background: var(--glass); 
+            position: absolute; bottom: 0; width: 100%; background: var(--glass); 
             padding: 12px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1);
         }
-        .input-row { display: flex; align-items: center; gap: 10px; max-width: 100%; }
+        .input-row { display: flex; align-items: center; gap: 10px; }
         
         #msgIn { 
-            flex: 1; padding: 10px 15px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.05); color: white; outline: none; font-size: 14px;
+            flex: 1; padding: 12px 18px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1); color: white; outline: none; font-size: 16px; /* 16px prevents iOS auto-zoom */
         }
 
-        /* --- PROGRESS BAR --- */
-        #upload-progress { 
-            display: none; height: 3px; background: rgba(255,255,255,0.1); 
-            margin-bottom: 8px; border-radius: 2px; overflow: hidden;
-        }
-        #progress-fill { height: 100%; width: 0%; background: var(--primary); transition: width 0.2s; }
-        #progress-text { font-size: 10px; color: var(--primary); text-align: center; display: block; margin-bottom: 4px; }
+        /* --- UPLOAD PROGRESS --- */
+        #upload-status { display: none; margin-bottom: 8px; }
+        .prog-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+        .prog-fill { height: 100%; width: 0%; background: var(--primary); transition: width 0.2s; }
 
         /* --- SIDEBAR --- */
-        #sidebar { 
-            position: fixed; left: -280px; top: 0; width: 280px; height: 100%; 
-            background: #0f172a; transition: 0.3s ease; z-index: 2000; padding: 20px; 
-        }
-        #sidebar.open { left: 0; box-shadow: 10px 0 50px rgba(0,0,0,0.8); }
+        #sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: #0f172a; transition: 0.3s ease; z-index: 2000; padding: 20px; }
+        #sidebar.open { left: 0; }
         #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1500; }
-        
-        .u-info { font-size: 10px; font-weight: 600; margin-bottom: 2px; display: block; }
-        .u-info.owner { color: var(--owner); }
     </style>
 </head>
 <body>
@@ -72,31 +67,33 @@
 <div id="overlay" onclick="toggleSidebar()"></div>
 
 <header>
-    <div onclick="toggleSidebar()" style="cursor:pointer; font-size:20px; color:white;">☰</div>
-    <div style="color:white; font-weight:600;">TULIP <span style="color:var(--primary)">PRO</span></div>
-    <div id="active-chat" style="font-size:10px; color:var(--owner)">GLOBAL</div>
+    <div onclick="toggleSidebar()" style="cursor:pointer; font-size:22px; color:white;">☰</div>
+    <div style="color:white; font-weight:600; font-size:18px;">TULIP <span style="color:var(--primary)">PRO</span></div>
+    <div id="active-target" style="font-size:10px; color:var(--owner)">GLOBAL</div>
 </header>
 
 <div id="sidebar">
     <h3 style="color:white; margin-bottom:20px;">Online Users</h3>
     <div id="user-list"></div>
+    <button onclick="location.href='index.html'" style="margin-top:30px; width:100%; padding:10px; background:none; border:1px solid var(--primary); color:white; border-radius:10px;">Logout</button>
 </div>
 
 <div id="chat-container">
     <div id="chat-scroller"></div>
     
     <div class="input-wrapper">
-        <div id="upload-status" style="display:none;">
-            <span id="progress-text">Uploading: 0%</span>
-            <div id="upload-progress"><div id="progress-fill"></div></div>
+        <div id="upload-status">
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--primary); margin-bottom:4px;">
+                <span>Uploading...</span><span id="prog-val">0%</span>
+            </div>
+            <div class="prog-bar"><div id="prog-fill" class="prog-fill"></div></div>
         </div>
         
         <div class="input-row">
-            <label for="file-upload" style="cursor:pointer; font-size:22px;">🖼️</label>
-            <input type="file" id="file-upload" hidden accept="image/*">
-            
+            <label for="f-up" style="cursor:pointer; font-size:24px;">🖼️</label>
+            <input type="file" id="f-up" hidden accept="image/*">
             <input type="text" id="msgIn" placeholder="Type message..." autocomplete="off">
-            <button onclick="sendMsg()" style="background:var(--primary); border:none; color:white; padding:10px 20px; border-radius:20px; font-weight:600; cursor:pointer;">Send</button>
+            <button onclick="sendMsg()" style="background:var(--primary); border:none; color:white; padding:10px 18px; border-radius:20px; font-weight:600;">Send</button>
         </div>
     </div>
 </div>
@@ -105,13 +102,11 @@
 <script>
     const socket = io();
     const params = new URLSearchParams(window.location.search);
-    const myUser = params.get('username') || "Guest_" + Math.floor(Math.random()*1000);
+    const myName = params.get('username') || "Guest";
     const myRole = params.get('role') || "user";
-    const myGender = params.get('gender') || "Male";
-    
-    let currentReceiver = 'all';
+    let target = 'all';
 
-    socket.emit('join', { username: myUser, role: myRole, gender: myGender });
+    socket.emit('join', { username: myName, role: myRole, gender: params.get('gender') });
 
     function toggleSidebar() {
         const sb = document.getElementById('sidebar');
@@ -120,89 +115,78 @@
         ov.style.display = sb.classList.contains('open') ? 'block' : 'none';
     }
 
-    // --- UPLOAD LOGIC WITH % ---
-    document.getElementById('file-upload').addEventListener('change', function(e) {
+    // --- MESSAGE FIX: Sahi se data display karna ---
+    socket.on('newMessage', (data) => {
+        const div = document.createElement('div');
+        div.className = `msg ${data.user === myName ? 'me' : 'other'}`;
+        
+        // Data Fallback to prevent undefined
+        const sender = data.user || "Unknown";
+        const messageText = data.text || ""; 
+        const isOwner = data.role === 'owner';
+
+        let html = `<small style="display:block; font-size:10px; color:${isOwner ? 'var(--owner)' : 'rgba(255,255,255,0.7)'}; font-weight:bold; margin-bottom:2px;">${sender}</small>`;
+        
+        if(data.type === 'image') {
+            html += `<img src="${messageText}">`;
+        } else {
+            html += `<span>${messageText}</span>`; // Text rendering fix
+        }
+        
+        div.innerHTML = html;
+        const sc = document.getElementById('chat-scroller');
+        sc.appendChild(div);
+        sc.scrollTop = sc.scrollHeight;
+    });
+
+    // --- FILE UPLOAD % FIX ---
+    document.getElementById('f-up').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if(!file) return;
 
         const reader = new FileReader();
-        const statusDiv = document.getElementById('upload-status');
-        const fill = document.getElementById('progress-fill');
-        const txt = document.getElementById('progress-text');
+        document.getElementById('upload-status').style.display = 'block';
 
         reader.onprogress = (ev) => {
-            if (ev.lengthComputable) {
-                const percent = Math.round((ev.loaded / ev.total) * 100);
-                statusDiv.style.display = 'block';
-                fill.style.width = percent + '%';
-                txt.innerText = `Uploading: ${percent}%`;
-            }
+            const pct = Math.round((ev.loaded / ev.total) * 100);
+            document.getElementById('prog-fill').style.width = pct + '%';
+            document.getElementById('prog-val').innerText = pct + '%';
         };
 
         reader.onload = () => {
             socket.emit('sendMessage', { 
-                type: 'image', 
-                text: reader.result, 
-                to: currentReceiver,
-                user: myUser, 
-                role: myRole 
+                type: 'image', text: reader.result, to: target, user: myName, role: myRole 
             });
-            setTimeout(() => { statusDiv.style.display = 'none'; fill.style.width = '0%'; }, 1000);
+            setTimeout(() => { document.getElementById('upload-status').style.display = 'none'; }, 800);
         };
         reader.readAsDataURL(file);
     });
 
-    socket.on('newMessage', (data) => {
-        // FIX: Agar data undefined hai toh default values use karein
-        const sender = data.user || "System";
-        const content = data.text || "";
-        const role = data.role || "user";
-        
-        const div = document.createElement('div');
-        div.className = `msg ${sender === myUser ? 'me' : 'other'}`;
-        
-        let html = `<span class="u-info ${role === 'owner' ? 'owner' : ''}">${sender}</span>`;
-        if(data.type === 'image') {
-            html += `<img src="${content}">`;
-        } else {
-            html += `<span>${content}</span>`;
-        }
-        
-        div.innerHTML = html;
-        const scroller = document.getElementById('chat-scroller');
-        scroller.appendChild(div);
-        scroller.scrollTop = scroller.scrollHeight;
-    });
-
     socket.on('updateUserList', (users) => {
         document.getElementById('user-list').innerHTML = users.map(u => `
-            <div onclick="setDM('${u.username}')" style="padding:10px; color:white; border-bottom:1px solid #222; cursor:pointer">
-                ${u.gender === 'Female' ? '👩' : '👨'} ${u.username}
+            <div onclick="setTarget('${u.username}')" style="padding:12px; border-bottom:1px solid #222; color:white; cursor:pointer;">
+                ${u.username} ${u.role==='owner'?'👑':''}
             </div>
-        `).join('') + `<div onclick="setDM('all')" style="color:var(--primary); margin-top:15px; cursor:pointer; font-weight:600;">🌍 Public Room</div>`;
+        `).join('') + `<div onclick="setTarget('all')" style="padding:12px; color:var(--primary); font-weight:bold; cursor:pointer;">🌍 Back to Global</div>`;
     });
 
-    function setDM(user) {
-        currentReceiver = user;
-        document.getElementById('active-chat').innerText = user === 'all' ? "GLOBAL" : "DM: " + user;
+    function setTarget(u) {
+        target = u;
+        document.getElementById('active-target').innerText = u === 'all' ? "GLOBAL" : "DM: " + u;
         toggleSidebar();
     }
 
     function sendMsg() {
-        const input = document.getElementById('msgIn');
-        if(input.value.trim()) {
+        const inp = document.getElementById('msgIn');
+        if(inp.value.trim()) {
             socket.emit('sendMessage', { 
-                type: 'text', 
-                text: input.value, 
-                to: currentReceiver,
-                user: myUser,
-                role: myRole
+                type: 'text', text: inp.value, to: target, user: myName, role: myRole 
             });
-            input.value = '';
+            inp.value = '';
         }
     }
 
-    document.getElementById('msgIn').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMsg(); });
+    document.getElementById('msgIn').addEventListener('keypress', (e) => { if(e.key==='Enter') sendMsg(); });
 </script>
 </body>
 </html>
