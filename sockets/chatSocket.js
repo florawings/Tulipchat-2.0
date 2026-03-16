@@ -4,40 +4,25 @@ module.exports = (io, socket) => {
   socket.on('sendMessage', async (data) => {
     try {
       const user = await User.findById(socket.userId);
-      if (!user) return;
+      if (!user || user.isBanned) return;
+      if (user.isMuted) return socket.emit('error_msg', 'You are muted!');
 
-      if (user.isBanned) return socket.emit('error_msg', 'Banned!');
-      if (user.isMuted) return socket.emit('error_msg', 'Muted!');
+      const msg = data.message;
+      if (msg.startsWith('/') && (user.role === 'owner' || user.role === 'admin')) {
+        const [cmd, target] = msg.split(' ');
+        
+        if (cmd === '/ban') await User.findOneAndUpdate({username: target}, {isBanned: true});
+        if (cmd === '/mute') await User.findOneAndUpdate({username: target}, {isMuted: true});
+        if (cmd === '/clear') io.emit('clear_chat');
+        if (cmd === '/promote') await User.findOneAndUpdate({username: target}, {role: 'admin'});
+        if (cmd === '/kick') io.emit('sys_message', `${target} kicked.`); // Kick logic
 
-      // Command Processor
-      if (data.message.startsWith('/') && (user.role === 'owner' || user.role === 'admin')) {
-        const [cmd, targetName] = data.message.split(' ');
-        const command = cmd.toLowerCase();
-
-        switch(command) {
-          case '/ban':
-            await User.findOneAndUpdate({ username: targetName }, { isBanned: true });
-            io.emit('sys_message', `🛑 ${targetName} has been BANNED.`);
-            break;
-          case '/kick':
-            // Logic to find socket by username and disconnect
-            io.emit('sys_message', `👢 ${targetName} was kicked out.`);
-            break;
-          case '/clear':
-            io.emit('clear_chat');
-            io.emit('sys_message', `🧹 Chat cleared by ${user.username}`);
-            break;
-          case '/promote':
-            await User.findOneAndUpdate({ username: targetName }, { role: 'admin' });
-            io.emit('sys_message', `🛡️ ${targetName} is now an Admin.`);
-            break;
-        }
+        io.emit('sys_message', `Action ${cmd} performed on ${target}`);
         return;
       }
 
-      // Send Message to all
       io.emit('newMessage', {
-        text: data.message,
+        text: msg,
         user: user.username,
         role: user.role,
         time: new Date().toLocaleTimeString()
