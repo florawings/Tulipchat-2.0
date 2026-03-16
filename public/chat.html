@@ -1,74 +1,45 @@
-<!DOCTYPE html><html>
-<head><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tulip Chat</title><style>
+<!DOCTYPE html>
+<html>
 
-/* GLOBAL */
+<head>
+
+<title>Tulip Chat</title>
+
+<style>
 
 body{
+font-family:sans-serif;
 margin:0;
-font-family:Arial;
-background:#f2f2f2;
-}
-
-/* HEADER */
-
-.header{
-background:#ff4f7b;
-color:white;
-padding:12px;
 display:flex;
-align-items:center;
-justify-content:space-between;
-}
-
-.menu{
-font-size:22px;
-cursor:pointer;
+height:100vh;
 }
 
 /* SIDEBAR */
 
 #sidebar{
-position:fixed;
-left:-260px;
-top:0;
-width:260px;
-height:100%;
-background:white;
-border-right:1px solid #ddd;
+width:200px;
+background:#f1f1f1;
 padding:10px;
-transition:0.3s;
-overflow:auto;
+display:none;
 }
 
-#sidebar.open{
-left:0;
-}
+/* CHAT AREA */
 
-.user{
-padding:10px;
-border-bottom:1px solid #eee;
-cursor:pointer;
+#main{
+flex:1;
+display:flex;
+flex-direction:column;
 }
-
-/* CHAT WINDOW */
 
 #chat{
-height:70vh;
+flex:1;
 overflow:auto;
-background:white;
 padding:10px;
 }
 
-.msg{
-padding:6px;
-margin-bottom:8px;
-border-bottom:1px solid #eee;
-}
+/* MESSAGE BOX */
 
-/* INPUT AREA */
-
-#inputArea{
+#sendBox{
 display:flex;
 padding:10px;
 background:#eee;
@@ -79,71 +50,75 @@ flex:1;
 padding:8px;
 }
 
-button{
-padding:8px;
-margin-left:5px;
-}
-
 /* DM POPUP */
 
 #dmPopup{
 position:fixed;
 right:10px;
 bottom:10px;
-width:260px;
 background:white;
 border:1px solid #ccc;
+padding:10px;
 display:none;
 }
 
-#dmMessages{
-height:160px;
-overflow:auto;
-padding:8px;
-}
+</style>
 
-</style></head><body><!-- HEADER --><div class="header"><span class="menu" onclick="toggleSidebar()">☰</span>
+</head>
 
-<span>Tulip Chat</span>
+<body>
 
-<div><span id="dmBell">🔔</span>
+<div id="sidebar">
 
-<a id="ownerPanel"
-href="/admin.html"
-style="display:none;color:white;margin-left:10px">
-Owner Panel
-</a>
+<h3>Online Users</h3>
 
-</div></div><!-- SIDEBAR --><div id="sidebar"><h3>Online Users</h3><div id="onlineUsers"></div></div><!-- CHAT --><div id="chat"></div><!-- MESSAGE INPUT --><div id="inputArea"><input id="msg" placeholder="Type message"><button onclick="send()">Send</button>
+<div id="onlineUsers"></div>
 
-<input type="file" id="imgFile"><button onclick="sendImage()">Image</button>
+</div>
 
-</div><!-- DM POPUP --><div id="dmPopup"><div id="dmMessages"></div><input id="dmInput" placeholder="DM message"><button onclick="sendDM()">Send</button>
+<div id="main">
 
-<button onclick="closeDM()">Close</button>
+<div style="background:#ff4f7a;color:white;padding:10px">
 
-</div><!-- SOCKET --><script src="/socket.io/socket.io.js"></script><!-- CLIENT LOGIC --><script src="client.js"></script><!-- UI SCRIPT --><script>
+<button onclick="toggleMenu()">☰</button>
 
-function toggleSidebar(){
+Tulip Chat
 
-document.getElementById("sidebar")
-.classList.toggle("open")
+<span id="dmBell">🔔</span>
 
-}
+</div>
 
-function openDM(){
+<div id="chat"></div>
 
-document.getElementById("dmPopup")
-.style.display="block"
+<div id="sendBox">
 
-}
+<input id="msg" placeholder="Type message">
 
-function closeDM(){
+<button onclick="send()">Send</button>
 
-document.getElementById("dmPopup")
-.style.display="none"
+<input type="file" id="imgFile">
 
-}
+<button onclick="sendImage()">Image/GIF</button>
 
-</script></body>
+</div>
+
+</div>
+
+<div id="dmPopup">
+
+<input id="dmUser" placeholder="User">
+
+<div id="dmMessages"></div>
+
+<input id="dmInput">
+
+<button onclick="sendDM()">Send DM</button>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="client.js"></script>
+
+</body>
+
 </html>
