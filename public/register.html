@@ -1,95 +1,97 @@
-<!DOCTYPE html><html>
+<!DOCTYPE html>
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Register - Tulip Chat</title><style>
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Tulip Chat Register</title>
+
+<style>
 
 body{
-margin:0;
-font-family:Arial, sans-serif;
 height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-background:linear-gradient(135deg,#ff7aa2,#ff4d8b);
+background:linear-gradient(135deg,#ff6b81,#ff8fab);
+font-family:Arial;
 }
 
 .card{
 background:white;
 padding:30px;
-border-radius:12px;
-width:320px;
-box-shadow:0 10px 25px rgba(0,0,0,0.2);
+border-radius:10px;
+width:280px;
 text-align:center;
-}
-
-.card h2{
-margin-bottom:20px;
-color:#ff4d8b;
+box-shadow:0 5px 20px rgba(0,0,0,0.2);
 }
 
 input,select{
 width:100%;
 padding:10px;
 margin:6px 0;
-border-radius:6px;
 border:1px solid #ddd;
-font-size:14px;
+border-radius:5px;
 }
 
 button{
 width:100%;
 padding:10px;
-margin-top:10px;
-background:#ff4d8b;
+background:#ff2e63;
 color:white;
 border:none;
-border-radius:6px;
-font-size:16px;
-cursor:pointer;
+border-radius:5px;
 }
 
-button:hover{
-background:#ff2e74;
-}
+</style>
 
-.login{
-margin-top:10px;
-font-size:14px;
-}
+</head>
 
-.login a{
-color:#ff2e74;
-text-decoration:none;
-font-weight:bold;
-}
+<body>
 
-</style></head><body><div class="card"><h2>🌷 Tulip Chat Register</h2><input id="name" placeholder="Name"><input id="age" placeholder="Age"><select id="gender">
-<option value="">Gender</option>
+<div class="card">
+
+<h3>🌷 Tulip Chat Register</h3>
+
+<input id="username" placeholder="Name">
+
+<input id="age" placeholder="Age">
+
+<select id="gender">
 <option>Male</option>
 <option>Female</option>
-<option>Other</option>
-</select><input id="email" placeholder="Email"><input id="password" type="password" placeholder="Password"><button onclick="register()">Register</button>
+</select>
 
-<div class="login">
-Already have account? <a href="/login.html">Login</a>
-</div></div><script>
+<input id="email" placeholder="Email">
+
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="register()">Register</button>
+
+<p>
+Already have account?
+<a href="login.html">Login</a>
+</p>
+
+</div>
+
+<script>
 
 async function register(){
 
-const name=document.getElementById("name").value
-const age=document.getElementById("age").value
-const gender=document.getElementById("gender").value
-const email=document.getElementById("email").value
-const password=document.getElementById("password").value
+let username=document.getElementById("username").value
+let age=document.getElementById("age").value
+let gender=document.getElementById("gender").value
+let email=document.getElementById("email").value
+let password=document.getElementById("password").value
 
-const res=await fetch("/auth/register",{
+let res=await fetch("/register",{
 method:"POST",
 headers:{
 "Content-Type":"application/json"
 },
 body:JSON.stringify({
-username:name,
+username,
 age,
 gender,
 email,
@@ -97,13 +99,20 @@ password
 })
 })
 
-const data=await res.json()
+let data=await res.json()
 
-alert(data.msg || "Registered!")
+if(data.error){
+alert(data.error)
+return
+}
 
-window.location="/login.html"
+alert("Registered successfully")
+
+window.location="login.html"
 
 }
 
-</script></body>
+</script>
+
+</body>
 </html>
