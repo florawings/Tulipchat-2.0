@@ -21,3 +21,16 @@
     <script src="client.js"></script>
 </body>
 </html>
+<div id="app-header">
+    <div class="menu-icon" onclick="toggleSidebar()">☰</div>
+    <h1 id="app-title">Tulip Chat</h1>
+    <div class="notif-icon">🔔</div>
+</div>
+
+<div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+        <h3>Online Users</h3>
+        <span onclick="toggleSidebar()" class="close-btn">×</span>
+    </div>
+    <div id="online-list"></div>
+</div>
