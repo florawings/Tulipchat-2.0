@@ -1,32 +1,48 @@
-const { getAIResponse } = require('../utils/devilAI');
+module.exports = (io)=>{
 
-module.exports = (io) => {
-    io.on('connection', (socket) => {
-        
-        socket.on('sendMessage', (data) => {
-            const userMsg = data.text.toLowerCase();
+let users = []
+let messages = []
 
-            // 1. Pehle normal message sabko bhej do
-            io.emit('newMessage', {
-                user: socket.username,
-                text: data.text,
-                role: socket.role,
-                type: 'text'
-            });
+io.on("connection",(socket)=>{
 
-            // 2. AI Bot Trigger Check
-            if (userMsg.includes('hey devil') || userMsg.includes('devil')) {
-                // Halka sa delay taaki real lage (2 seconds)
-                setTimeout(() => {
-                    const aiMsg = getAIResponse(userMsg);
-                    io.emit('newMessage', {
-                        user: 'DEVIL AI 😈',
-                        text: aiMsg,
-                        role: 'bot', // Bot ka alag role
-                        type: 'ai-response'
-                    });
-                }, 1500);
-            }
-        });
-    });
-};
+socket.on("join",(username)=>{
+
+socket.username = username
+
+if(!users.includes(username)){
+users.push(username)
+}
+
+io.emit("onlineUsers",users)
+
+socket.emit("chatHistory",messages)
+
+})
+
+socket.on("chat",(msg)=>{
+
+if(msg.text === "/clear"){
+messages = []
+io.emit("clearChat")
+return
+}
+
+messages.push(msg)
+
+io.emit("chat",msg)
+
+})
+
+socket.on("disconnect",()=>{
+
+users = users.filter(
+u => u !== socket.username
+)
+
+io.emit("onlineUsers",users)
+
+})
+
+})
+
+}
