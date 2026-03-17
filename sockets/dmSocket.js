@@ -1,21 +1,33 @@
-module.exports = (io)=>{
+module.exports = (io) => {
 
-io.on("connection",(socket)=>{
+  const users = {};
 
-socket.on("joinDM",(username)=>{
-socket.username = username
-})
+  io.on("connection", (socket) => {
+    console.log("User connected:", socket.id);
 
-socket.on("dm",(data)=>{
+    // Join with username
+    socket.on("join", (username) => {
+      users[username] = socket.id;
+      socket.username = username;
+      io.emit("onlineUsers", Object.keys(users));
+    });
 
-io.emit("dm",{
-from: data.from,
-to: data.to,
-text: data.text
-})
+    // DM message
+    socket.on("dm", ({ to, message }) => {
+      const targetSocket = users[to];
+      if (targetSocket) {
+        io.to(targetSocket).emit("dm", {
+          from: socket.username,
+          message
+        });
+      }
+    });
 
-})
+    // Disconnect
+    socket.on("disconnect", () => {
+      delete users[socket.username];
+      io.emit("onlineUsers", Object.keys(users));
+    });
+  });
 
-})
-
-}
+};
