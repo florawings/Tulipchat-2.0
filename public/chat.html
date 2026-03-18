@@ -43,9 +43,16 @@ socket.emit("join", user);
 
 let dmTo = null;
 
-// MESSAGE SEND
+// SEND MESSAGE (FIXED)
 function send(){
-  socket.emit("message", user+": "+msg.value);
+  const text = msg.value.trim();
+
+  if(text === "/clear"){
+    socket.emit("message", "/clear");
+  } else {
+    socket.emit("message", user + ": " + text);
+  }
+
   msg.value="";
 }
 
@@ -83,11 +90,22 @@ socket.on("message", data=>{
   chat.scrollTop = chat.scrollHeight;
 });
 
-// OLD MESSAGES
+// OLD MESSAGES FIX
 socket.on("oldMessages", msgs=>{
   msgs.forEach(m=>{
-    socket.emit("message", m.text || m.img);
+    const d=document.createElement("div");
+    d.className="msg";
+
+    if(m.text){
+      d.innerText=m.text;
+    }else if(m.img){
+      d.innerHTML=`<img src="${m.img}">`;
+    }
+
+    chat.appendChild(d);
   });
+
+  chat.scrollTop = chat.scrollHeight;
 });
 
 // USERS
