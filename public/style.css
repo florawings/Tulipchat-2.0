@@ -1,27 +1,36 @@
-*{
-box-sizing:border-box;
-margin:0;
-padding:0;
-font-family:sans-serif;
-}
-
 body{
-height:100vh;
+margin:0;
+font-family:sans-serif;
+background:#ece5dd;
 display:flex;
 flex-direction:column;
-background:linear-gradient(#ff4b7d,#ff758c);
+height:100vh;
 }
 
-/* HEADER */
+/* TOP */
 .top{
-height:50px;
-display:flex;
-align-items:center;
-justify-content:space-between;
-padding:0 12px;
-background:#ff2e63;
+background:#075e54;
 color:white;
-font-weight:bold;
+padding:12px;
+display:flex;
+justify-content:space-between;
+}
+
+/* USERS */
+#users{
+display:flex;
+gap:10px;
+padding:5px;
+overflow-x:auto;
+background:#fff;
+}
+
+.user{
+background:#25d366;
+color:white;
+padding:5px 10px;
+border-radius:15px;
+cursor:pointer;
 }
 
 /* CHAT */
@@ -29,74 +38,71 @@ font-weight:bold;
 flex:1;
 overflow-y:auto;
 padding:10px;
-padding-bottom:80px;
 display:flex;
 flex-direction:column;
-gap:8px;
+gap:6px;
 }
 
-/* MESSAGE */
+/* MSG */
 .msg{
-padding:10px 14px;
-border-radius:18px;
-max-width:75%;
-word-wrap:break-word;
-font-size:14px;
+max-width:70%;
+padding:8px;
+border-radius:10px;
 }
 
-/* OWN */
+/* ME */
 .me{
 align-self:flex-end;
-background:#ff2e63;
-color:white;
+background:#dcf8c6;
 }
 
 /* OTHER */
 .other{
 align-self:flex-start;
 background:white;
-color:black;
 }
 
 /* INPUT */
 .input{
+display:flex;
+padding:8px;
+background:#f0f0f0;
 position:fixed;
 bottom:0;
-left:0;
 width:100%;
-display:flex;
-gap:5px;
-padding:8px;
-background:white;
-z-index:5;
 }
 
-/* INPUT FIELD */
-.input input[type="text"]{
+.input input{
 flex:1;
 padding:10px;
 border-radius:20px;
 border:1px solid #ccc;
-outline:none;
 }
 
-/* FILE */
-.input input[type="file"]{
-width:90px;
-}
-
-/* BUTTON */
 .input button{
-background:#ff2e63;
+background:#075e54;
 color:white;
 border:none;
 padding:10px;
-border-radius:20px;
+border-radius:50%;
 }
 
-/* IMAGE */
-img{
-max-width:150px;
+/* DM */
+#dmBox{
+position:fixed;
+right:10px;
+bottom:70px;
+width:250px;
+height:300px;
+background:white;
+display:none;
+flex-direction:column;
 border-radius:10px;
-margin-top:5px;
+box-shadow:0 0 10px rgba(0,0,0,0.3);
+}
+
+#dmMsgs{
+flex:1;
+overflow:auto;
+padding:5px;
 }
