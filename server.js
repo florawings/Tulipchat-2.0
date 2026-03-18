@@ -16,7 +16,7 @@ app.get("/", (req, res) => {
 let users = {};
 let messages = [];
 
-// 10 hour auto delete
+// 10 hours auto delete
 setInterval(() => {
   const now = Date.now();
   messages = messages.filter(m => now - m.time < 10*60*60*1000);
