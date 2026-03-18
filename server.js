@@ -13,29 +13,57 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
-let users = [];
+let users = {};
+let messages = [];
+
+setInterval(() => {
+  const now = Date.now();
+  messages = messages.filter(m => now - m.time < 10 * 60 * 60 * 1000);
+}, 60000);
 
 io.on("connection", (socket) => {
 
   socket.on("join", (username) => {
     socket.username = username;
-    users.push(username);
-    io.emit("onlineUsers", users);
+    users[username] = socket.id;
+
+    socket.emit("oldMessages", messages);
+    io.emit("onlineUsers", Object.keys(users));
   });
 
   socket.on("message", (msg) => {
+    if(msg === "/clear"){
+      messages = [];
+      io.emit("clearChat");
+      return;
+    }
+
+    const data = { text: msg, time: Date.now() };
+    messages.push(data);
+    io.emit("message", data);
+  });
+
+  socket.on("image", (data) => {
+    const msg = { img: data, time: Date.now() };
+    messages.push(msg);
     io.emit("message", msg);
   });
 
+  socket.on("dm", ({to, msg}) => {
+    const id = users[to];
+    if(id){
+      io.to(id).emit("dm", {
+        from: socket.username,
+        msg
+      });
+    }
+  });
+
   socket.on("disconnect", () => {
-    users = users.filter(u => u !== socket.username);
-    io.emit("onlineUsers", users);
+    delete users[socket.username];
+    io.emit("onlineUsers", Object.keys(users));
   });
 
 });
 
-const PORT = process.env.PORT || 3000;
-
-server.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
-});
+server.listen(process.env.PORT || 3000);
