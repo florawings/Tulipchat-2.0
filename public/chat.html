@@ -1,64 +1,107 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Chat</title>
-  <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="topbar">
-  <span onclick="toggleMenu()">☰</span>
-  Tulip Chat
-  <button onclick="logout()">Logout</button>
+<div class="top">
+<span onclick="toggle()">☰</span>
+Tulip Chat
+<button onclick="logout()">Logout</button>
 </div>
 
 <div id="sidebar">
-  <h3>Online Users</h3>
-  <div id="onlineUsers"></div>
+<h3>Users</h3>
+<div id="users"></div>
 </div>
 
 <div id="chat"></div>
 
-<div class="input-box">
-  <input id="msg" placeholder="Type message">
-  <button onclick="send()">Send</button>
+<div class="input">
+<input id="msg" placeholder="Type...">
+<input type="file" id="file">
+<button onclick="send()">Send</button>
+</div>
+
+<div id="dmBox">
+<div id="dmMsgs"></div>
+<input id="dmInput">
+<button onclick="sendDM()">Send</button>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const socket = io();
-
 const user = localStorage.getItem("user");
-if(!user) location.href = "/";
-
 socket.emit("join", user);
 
-function send() {
-  const msg = document.getElementById("msg").value;
-  socket.emit("message", user + ": " + msg);
-  document.getElementById("msg").value = "";
+let dmTo = null;
+
+function send(){
+  const m = msg.value;
+  socket.emit("message", user+": "+m);
+  msg.value="";
 }
 
-socket.on("message", (msg) => {
-  const div = document.createElement("div");
-  div.className = "msg";
-  div.innerText = msg;
-  document.getElementById("chat").appendChild(div);
+file.onchange = ()=>{
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    socket.emit("image", reader.result);
+  };
+  reader.readAsDataURL(file.files[0]);
+};
+
+socket.on("message", data=>{
+  const d=document.createElement("div");
+  if(data.text){
+    d.innerText=data.text;
+  }else if(data.img){
+    d.innerHTML=`<img src="${data.img}" width="150">`;
+  }
+  chat.appendChild(d);
 });
 
-socket.on("onlineUsers", (users) => {
-  document.getElementById("onlineUsers").innerHTML =
-    users.map(u => "<div>"+u+"</div>").join("");
+socket.on("oldMessages", msgs=>{
+  msgs.forEach(m=>socket.emit("message",m));
 });
 
-function toggleMenu() {
-  document.getElementById("sidebar").classList.toggle("show");
+socket.on("onlineUsers", list=>{
+  users.innerHTML="";
+  list.forEach(u=>{
+    const d=document.createElement("div");
+    d.innerText=u;
+    d.onclick=()=>{
+      dmTo=u;
+      dmBox.style.display="block";
+    };
+    users.appendChild(d);
+  });
+});
+
+function toggle(){
+  sidebar.classList.toggle("show");
 }
 
-function logout() {
-  localStorage.removeItem("user");
-  location.href = "/";
+function logout(){
+  localStorage.clear();
+  location="/";
 }
+
+function sendDM(){
+  socket.emit("dm",{to:dmTo,msg:dmInput.value});
+  dmInput.value="";
+}
+
+socket.on("dm", data=>{
+  const d=document.createElement("div");
+  d.innerText=data.from+": "+data.msg;
+  dmMsgs.appendChild(d);
+});
+
+socket.on("clearChat", ()=>{
+  chat.innerHTML="";
+});
 </script>
 
 </body>
