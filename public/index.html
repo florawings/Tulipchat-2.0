@@ -13,6 +13,7 @@
 
 <script>
 function go(){
+  if(!user.value) return alert("Enter name");
   localStorage.setItem("user", user.value);
   location="chat.html";
 }
