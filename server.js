@@ -1,47 +1,44 @@
-const express = require("express")
-const http = require("http")
-const { Server } = require("socket.io")
-const path = require("path")
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+const path = require("path");
 
-const app = express()
-const server = http.createServer(app)
-const io = new Server(server)
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-app.use(express.json())
+// IMPORTANT: static folder
+app.use(express.static(path.join(__dirname, "public")));
 
-/* PUBLIC FILES */
+// FIX: default route (warna "Cannot GET /" aata hai)
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/index.html"));
+});
 
-app.use(express.static(path.join(__dirname,"public")))
+// SIMPLE SOCKET (no crash)
+let users = [];
 
-/* ROOT */
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
 
-app.get("/",(req,res)=>{
-res.sendFile(path.join(__dirname,"public/login.html"))
-})
+  socket.on("join", (username) => {
+    socket.username = username;
+    users.push(username);
+    io.emit("onlineUsers", users);
+  });
 
-/* PAGES */
+  socket.on("message", (msg) => {
+    io.emit("message", msg);
+  });
 
-app.get("/login",(req,res)=>{
-res.sendFile(path.join(__dirname,"public/login.html"))
-})
+  socket.on("disconnect", () => {
+    users = users.filter(u => u !== socket.username);
+    io.emit("onlineUsers", users);
+  });
+});
 
-app.get("/register",(req,res)=>{
-res.sendFile(path.join(__dirname,"public/register.html"))
-})
+const PORT = process.env.PORT || 3000;
 
-app.get("/chat",(req,res)=>{
-res.sendFile(path.join(__dirname,"public/chat.html"))
-})
-
-/* SOCKETS */
-
-require("./sockets/chatSocket")(io)
-require("./sockets/dmSocket")(io)
-
-/* START SERVER */
-
-const PORT = process.env.PORT || 3000
-
-server.listen(PORT,()=>{
-console.log("Server running on "+PORT)
-})
+server.listen(PORT, () => {
+  console.log("Server running on port", PORT);
+});
