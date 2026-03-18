@@ -16,9 +16,10 @@ app.get("/", (req, res) => {
 let users = {};
 let messages = [];
 
+// 10 hour auto delete
 setInterval(() => {
   const now = Date.now();
-  messages = messages.filter(m => now - m.time < 10 * 60 * 60 * 1000);
+  messages = messages.filter(m => now - m.time < 10*60*60*1000);
 }, 60000);
 
 io.on("connection", (socket) => {
@@ -32,6 +33,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("message", (msg) => {
+
     if(msg === "/clear"){
       messages = [];
       io.emit("clearChat");
@@ -43,10 +45,10 @@ io.on("connection", (socket) => {
     io.emit("message", data);
   });
 
-  socket.on("image", (data) => {
-    const msg = { img: data, time: Date.now() };
-    messages.push(msg);
-    io.emit("message", msg);
+  socket.on("image", (img) => {
+    const data = { img, time: Date.now() };
+    messages.push(data);
+    io.emit("message", data);
   });
 
   socket.on("dm", ({to, msg}) => {
