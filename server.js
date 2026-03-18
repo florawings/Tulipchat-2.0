@@ -9,63 +9,81 @@ const io = new Server(server);
 
 app.use(express.static(path.join(__dirname, "public")));
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
-});
-
-let users = {};
+/* STORAGE */
+let users = [];
 let messages = [];
 
-// 10 hours auto delete
-setInterval(() => {
-  const now = Date.now();
-  messages = messages.filter(m => now - m.time < 10*60*60*1000);
-}, 60000);
+/* AUTO DELETE AFTER 10 HOURS */
+function addMessage(msg){
+messages.push(msg);
 
+setTimeout(()=>{
+messages.shift();
+}, 36000000); // 10 hours
+}
+
+/* SOCKET */
 io.on("connection", (socket) => {
 
-  socket.on("join", (username) => {
-    socket.username = username;
-    users[username] = socket.id;
+console.log("User connected");
 
-    socket.emit("oldMessages", messages);
-    io.emit("onlineUsers", Object.keys(users));
-  });
+/* JOIN */
+socket.on("join", (username) => {
+socket.username = username;
 
-  socket.on("message", (msg) => {
+if(!users.includes(username)){
+users.push(username);
+}
 
-    if(msg === "/clear"){
-      messages = [];
-      io.emit("clearChat");
-      return;
-    }
+io.emit("users", users);
 
-    const data = { text: msg, time: Date.now() };
-    messages.push(data);
-    io.emit("message", data);
-  });
+/* SEND OLD MSG */
+socket.emit("oldMessages", messages);
+});
 
-  socket.on("image", (img) => {
-    const data = { img, time: Date.now() };
-    messages.push(data);
-    io.emit("message", data);
-  });
+/* MESSAGE */
+socket.on("msg", (data) => {
 
-  socket.on("dm", ({to, msg}) => {
-    const id = users[to];
-    if(id){
-      io.to(id).emit("dm", {
-        from: socket.username,
-        msg
-      });
-    }
-  });
+if(data.text === "/clear"){
+messages = [];
+io.emit("clear");
+return;
+}
 
-  socket.on("disconnect", () => {
-    delete users[socket.username];
-    io.emit("onlineUsers", Object.keys(users));
-  });
+addMessage(data);
+
+io.emit("msg", data);
+});
+
+/* DM */
+socket.on("dm", (data) => {
+io.emit("dm", data);
+});
+
+/* DISCONNECT */
+socket.on("disconnect", () => {
+users = users.filter(u => u !== socket.username);
+io.emit("users", users);
+});
 
 });
 
-server.listen(process.env.PORT || 3000);
+/* ROUTES FIX */
+app.get("/", (req, res) => {
+res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/login", (req, res) => {
+res.sendFile(path.join(__dirname, "public", "login.html"));
+});
+
+app.get("/chat", (req, res) => {
+res.sendFile(path.join(__dirname, "public", "chat.html"));
+});
+
+/* START */
+const PORT = process.env.PORT || 3000;
+
+server.listen(PORT, () => {
+console.log("Server running on port " + PORT);
+});
