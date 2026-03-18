@@ -6,7 +6,7 @@
 <body>
 
 <div class="top">
-<span onclick="toggle()">☰</span>
+<span id="menuBtn">☰</span>
 Tulip Chat
 <button onclick="logout()">Logout</button>
 </div>
@@ -21,6 +21,7 @@ Tulip Chat
 <div class="input">
 <input id="msg" placeholder="Type...">
 <input type="file" id="file">
+<span id="progress"></span>
 <button onclick="send()">Send</button>
 </div>
 
@@ -32,62 +33,80 @@ Tulip Chat
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
+
 const socket = io();
 const user = localStorage.getItem("user");
+
+if(!user) location="/";
+
 socket.emit("join", user);
 
 let dmTo = null;
 
+// MESSAGE SEND
 function send(){
-  const m = msg.value;
-  socket.emit("message", user+": "+m);
+  socket.emit("message", user+": "+msg.value);
   msg.value="";
 }
 
-file.onchange = ()=>{
+// IMAGE + PROGRESS
+file.onchange = () => {
+  const f = file.files[0];
   const reader = new FileReader();
+
+  reader.onprogress = (e)=>{
+    if(e.lengthComputable){
+      progress.innerText = Math.round((e.loaded/e.total)*100)+"%";
+    }
+  };
+
   reader.onload = ()=>{
     socket.emit("image", reader.result);
+    progress.innerText="Done ✅";
   };
-  reader.readAsDataURL(file.files[0]);
+
+  reader.readAsDataURL(f);
 };
 
+// RECEIVE MESSAGE
 socket.on("message", data=>{
   const d=document.createElement("div");
+  d.className="msg";
+
   if(data.text){
     d.innerText=data.text;
-  }else if(data.img){
-    d.innerHTML=`<img src="${data.img}" width="150">`;
+  }else{
+    d.innerHTML=`<img src="${data.img}">`;
   }
+
   chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
 });
 
+// OLD MESSAGES
 socket.on("oldMessages", msgs=>{
-  msgs.forEach(m=>socket.emit("message",m));
+  msgs.forEach(m=>{
+    socket.emit("message", m.text || m.img);
+  });
 });
 
+// USERS
 socket.on("onlineUsers", list=>{
   users.innerHTML="";
   list.forEach(u=>{
     const d=document.createElement("div");
     d.innerText=u;
+
     d.onclick=()=>{
       dmTo=u;
-      dmBox.style.display="block";
+      dmBox.style.display="flex";
     };
+
     users.appendChild(d);
   });
 });
 
-function toggle(){
-  sidebar.classList.toggle("show");
-}
-
-function logout(){
-  localStorage.clear();
-  location="/";
-}
-
+// DM
 function sendDM(){
   socket.emit("dm",{to:dmTo,msg:dmInput.value});
   dmInput.value="";
@@ -99,9 +118,33 @@ socket.on("dm", data=>{
   dmMsgs.appendChild(d);
 });
 
+// CLEAR
 socket.on("clearChat", ()=>{
   chat.innerHTML="";
 });
+
+// SIDEBAR FIX
+const sidebar = document.getElementById("sidebar");
+const menuBtn = document.getElementById("menuBtn");
+
+menuBtn.onclick = (e)=>{
+  e.stopPropagation();
+  sidebar.classList.toggle("show");
+};
+
+document.addEventListener("click",(e)=>{
+  if(sidebar.classList.contains("show")){
+    if(!sidebar.contains(e.target)){
+      sidebar.classList.remove("show");
+    }
+  }
+});
+
+function logout(){
+  localStorage.clear();
+  location="/";
+}
+
 </script>
 
 </body>
