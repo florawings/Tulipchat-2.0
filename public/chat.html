@@ -1,169 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tulip Chat</title>
 <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
+<!-- TOP BAR -->
 <div class="top">
-<span id="menuBtn">☰</span>
-Tulip Chat
-<button onclick="logout()">Logout</button>
+  <span>☰</span>
+  <span>Tulip Chat</span>
+  <span onclick="logout()">Logout</span>
 </div>
 
-<div id="sidebar">
-<h3>Users</h3>
-<div id="users"></div>
-</div>
-
+<!-- CHAT -->
 <div id="chat"></div>
 
+<!-- INPUT -->
 <div class="input">
-<input id="msg" placeholder="Type...">
-<input type="file" id="file">
-<span id="progress"></span>
-<button onclick="send()">Send</button>
-</div>
-
-<div id="dmBox">
-<div id="dmMsgs"></div>
-<input id="dmInput">
-<button onclick="sendDM()">Send</button>
+  <input type="text" id="msg" placeholder="Type...">
+  <input type="file" id="file">
+  <button onclick="send()">Send</button>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
-<script>
-
-const socket = io();
-const user = localStorage.getItem("user");
-
-if(!user) location="/";
-
-socket.emit("join", user);
-
-let dmTo = null;
-
-// SEND MESSAGE (FIXED)
-function send(){
-  const text = msg.value.trim();
-
-  if(text === "/clear"){
-    socket.emit("message", "/clear");
-  } else {
-    socket.emit("message", user + ": " + text);
-  }
-
-  msg.value="";
-}
-
-// IMAGE + PROGRESS
-file.onchange = () => {
-  const f = file.files[0];
-  const reader = new FileReader();
-
-  reader.onprogress = (e)=>{
-    if(e.lengthComputable){
-      progress.innerText = Math.round((e.loaded/e.total)*100)+"%";
-    }
-  };
-
-  reader.onload = ()=>{
-    socket.emit("image", reader.result);
-    progress.innerText="Done ✅";
-  };
-
-  reader.readAsDataURL(f);
-};
-
-// RECEIVE MESSAGE
-socket.on("message", data=>{
-  const d=document.createElement("div");
-  d.className="msg";
-
-  if(data.text){
-    d.innerText=data.text;
-  }else{
-    d.innerHTML=`<img src="${data.img}">`;
-  }
-
-  chat.appendChild(d);
-  chat.scrollTop = chat.scrollHeight;
-});
-
-// OLD MESSAGES FIX
-socket.on("oldMessages", msgs=>{
-  msgs.forEach(m=>{
-    const d=document.createElement("div");
-    d.className="msg";
-
-    if(m.text){
-      d.innerText=m.text;
-    }else if(m.img){
-      d.innerHTML=`<img src="${m.img}">`;
-    }
-
-    chat.appendChild(d);
-  });
-
-  chat.scrollTop = chat.scrollHeight;
-});
-
-// USERS
-socket.on("onlineUsers", list=>{
-  users.innerHTML="";
-  list.forEach(u=>{
-    const d=document.createElement("div");
-    d.innerText=u;
-
-    d.onclick=()=>{
-      dmTo=u;
-      dmBox.style.display="flex";
-    };
-
-    users.appendChild(d);
-  });
-});
-
-// DM
-function sendDM(){
-  socket.emit("dm",{to:dmTo,msg:dmInput.value});
-  dmInput.value="";
-}
-
-socket.on("dm", data=>{
-  const d=document.createElement("div");
-  d.innerText=data.from+": "+data.msg;
-  dmMsgs.appendChild(d);
-});
-
-// CLEAR
-socket.on("clearChat", ()=>{
-  chat.innerHTML="";
-});
-
-// SIDEBAR FIX
-const sidebar = document.getElementById("sidebar");
-const menuBtn = document.getElementById("menuBtn");
-
-menuBtn.onclick = (e)=>{
-  e.stopPropagation();
-  sidebar.classList.toggle("show");
-};
-
-document.addEventListener("click",(e)=>{
-  if(sidebar.classList.contains("show")){
-    if(!sidebar.contains(e.target)){
-      sidebar.classList.remove("show");
-    }
-  }
-});
-
-function logout(){
-  localStorage.clear();
-  location="/";
-}
-
-</script>
+<script src="client.js"></script>
 
 </body>
 </html>
