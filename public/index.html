@@ -1,40 +1,51 @@
-<style>
-    /* Side Menu (3 line wala) Styling */
-    #side-menu {
-        position: fixed; left: -250px; top: 0; width: 250px; height: 100%;
-        background: #151515; color: white; transition: 0.3s; z-index: 1000;
-        padding: 20px; box-shadow: 2px 0 10px rgba(0,0,0,0.5);
-    }
-    #side-menu.active { left: 0; }
-    .overlay {
-        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5); z-index: 999;
-    }
-    /* Messages styling fix */
-    .system-msg { text-align: center; color: #ff0055; font-size: 12px; margin: 5px 0; font-weight: bold; }
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tulips.chat</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: sans-serif; margin: 0; background: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* Header */
+        header { padding: 10px 15px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
+        .head-title { color: #ff0055; font-weight: bold; font-size: 18px; }
+        
+        /* Side Menu */
+        #side-menu { position: fixed; left: -250px; top: 0; width: 250px; height: 100%; background: #1a1a1a; color: white; transition: 0.3s; z-index: 1000; padding: 20px; }
+        #side-menu.active { left: 0; }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; }
 
+        /* Chat */
+        #chat-display { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { display: flex; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0; }
+        .avatar { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; flex-shrink: 0; }
+        .user-sig { font-weight: bold; font-size: 14px; }
+        .msg-text { font-size: 15px; margin-top: 2px; }
+        .msg-img { max-width: 250px; border-radius: 8px; margin-top: 5px; border: 1px solid #ddd; }
+
+        /* Input Bar */
+        .input-bar { padding: 10px; display: flex; gap: 10px; align-items: center; border-top: 1px solid #ddd; }
+        #message-input { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #ccc; background: #f9f9f9; outline: none; }
+        .icon-btn { font-size: 24px; cursor: pointer; background: none; border: none; color: #666; }
+        #send-btn { color: #ff0055; font-size: 26px; border: none; background: none; cursor: pointer; }
+    </style>
+</head>
 <body>
-    <div id="side-menu">
-        <h3>Menu</h3>
-        <hr>
-        <p>Profile</p>
-        <p>Settings</p>
-        <p onclick="location.reload()">Refresh Chat</p>
-    </div>
+    <div id="side-menu"><h3>Tulips Menu</h3><hr><p>Profile</p><p onclick="location.reload()">Refresh</p></div>
     <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
     <header>
-        <div class="head-left">
-            <span onclick="toggleMenu()">☰</span> 
-            <span class="head-title">Tulips.chat</span>
-        </div>
-        </header>
+        <span onclick="toggleMenu()" style="cursor:pointer; font-size:20px;">☰</span>
+        <span class="head-title">Tulips.chat</span>
+        <span>🔔</span>
+    </header>
 
     <div id="chat-display"></div>
 
     <div class="input-bar">
-        <input type="file" id="file-input" style="display:none" accept="image/*" onchange="uploadFile()">
+        <input type="file" id="file-input" style="display:none" accept="image/*, image/gif" onchange="uploadFile()">
         <button class="icon-btn" onclick="document.getElementById('file-input').click()">➕</button>
         <input type="text" id="message-input" placeholder="Type here..." onkeypress="if(event.key==='Enter') sendMessage()">
         <button id="send-btn" onclick="sendMessage()">➤</button>
@@ -46,38 +57,32 @@
         const display = document.getElementById('chat-display');
         const input = document.getElementById('message-input');
 
-        // Toggle Menu Function
         function toggleMenu() {
             document.getElementById('side-menu').classList.toggle('active');
-            const overlay = document.getElementById('overlay');
-            overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
+            document.getElementById('overlay').style.display = document.getElementById('overlay').style.display === 'block' ? 'none' : 'block';
         }
 
-        // Message Receive
-        socket.on('chatMessage', (data) => {
-            if(data.system) {
-                display.innerHTML += `<div class="system-msg">${data.text}</div>`;
-            } else {
-                const msgHtml = `
-                    <div class="msg">
-                        <div class="msg-avatar" style="background:${data.avatarColor}">${data.username[0]}</div>
-                        <div class="msg-info">
-                            <div class="user-sig" style="color:${data.userColor}">${data.username}</div>
-                            <div class="msg-text">
-                                ${data.text ? `<div>${data.text}</div>` : ''}
-                                ${data.image ? `<img src="${data.image}" class="msg-img">` : ''}
-                            </div>
-                        </div>
-                    </div>`;
-                display.innerHTML += msgHtml;
-            }
+        function appendMsg(data) {
+            const div = document.createElement('div');
+            div.className = 'msg';
+            div.innerHTML = `
+                <div class="avatar" style="background:${data.avatarColor || '#ff0055'}">${data.username[0].toUpperCase()}</div>
+                <div>
+                    <div class="user-sig" style="color:${data.userColor || '#5c2d91'}">${data.username}</div>
+                    <div class="msg-text">${data.text || ''}</div>
+                    ${data.image ? `<img src="${data.image}" class="msg-img">` : ''}
+                </div>`;
+            display.appendChild(div);
             display.scrollTop = display.scrollHeight;
-        });
+        }
+
+        socket.on('loadHistory', (msgs) => msgs.forEach(appendMsg));
+        socket.on('chatMessage', appendMsg);
 
         function sendMessage() {
             if(!input.value.trim()) return;
             socket.emit('chatMessage', {
-                username: localStorage.getItem('tulipUsername') || 'Guest',
+                username: localStorage.getItem('user') || 'Guest',
                 text: input.value,
                 userColor: '#5c2d91',
                 avatarColor: '#9c27b0'
@@ -88,14 +93,11 @@
         function uploadFile() {
             const file = document.getElementById('file-input').files[0];
             const reader = new FileReader();
-            reader.onload = () => {
-                socket.emit('chatMessage', {
-                    username: localStorage.getItem('tulipUsername') || 'Guest',
-                    image: reader.result,
-                    avatarColor: '#9c27b0'
-                });
-            };
+            reader.onload = () => socket.emit('chatMessage', { username: localStorage.getItem('user') || 'Guest', image: reader.result, avatarColor: '#ff0055' });
             if(file) reader.readAsDataURL(file);
         }
+
+        if(!localStorage.getItem('user')) localStorage.setItem('user', prompt("Enter Username:") || "Guest");
     </script>
 </body>
+</html>
