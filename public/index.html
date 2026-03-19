@@ -3,47 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tulipchat 2.0</title>
+    <title>Tulips Chat - Classic</title>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: sans-serif; background-color: #0b0b0b; color: white; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: white; color: black; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* Header */
-        header { padding: 15px; background: #151515; border-bottom: 2px solid #ff0055; text-align: center; font-weight: bold; color: #ff0055; font-size: 20px; }
+        /* Top Header - White Background like screenshot */
+        header { padding: 10px 15px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; z-index: 100; }
+        .head-left { display: flex; align-items: center; gap: 15px; font-size: 22px; cursor: pointer; }
+        .head-title { font-weight: bold; font-size: 18px; color: #ff0055; }
+        .head-right { display: flex; align-items: center; gap: 15px; font-size: 20px; color: #555; cursor: pointer; }
+        #online-users { font-size: 12px; color: #ff0055; margin-right: 5px; }
+
+        /* Banner Ad Area (Optional, placeholder) */
+        #banner { padding: 10px; background: #fdf2f5; text-align: center; font-size: 13px; border-bottom: 1px solid #ddd; font-weight: bold; }
 
         /* Chat Display Area */
-        #chat-display { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #000; }
+        #chat-display { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; background: white; }
 
-        /* Message Box Styling */
-        .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 15px; word-wrap: break-word; }
-        .sent { align-self: flex-end; background: #ff0055; color: white; border-bottom-right-radius: 2px; }
-        .received { align-self: flex-start; background: #222; color: #eee; border-bottom-left-radius: 2px; }
-        .msg img { max-width: 100%; border-radius: 10px; margin-top: 5px; display: block; }
+        /* Message Box Styling - Plain like screenshot, not bubbly */
+        .msg { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; color: #111; line-height: 1.4; border-bottom: 1px solid #eee; padding-bottom: 8px;}
+        .msg-avatar { width: 35px; height: 35px; border-radius: 50%; background: #ccc; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 16px; }
+        
+        .msg-info { display: flex; flex-direction: column; flex: 1; }
+        .user-sig { font-size: 14px; font-weight: bold; margin-bottom: 2px; }
+        .user-sig span { font-size: 11px; color: #888; font-weight: normal; margin-left: 8px; }
+        .msg-text { word-wrap: break-word; }
+        .msg-img { max-width: 200px; max-height: 200px; border-radius: 8px; margin-top: 5px; display: block; border: 1px solid #ddd;}
+        .join-msg { text-align: center; font-size: 13px; color: #ff0055; margin: 8px 0; font-weight: bold;}
 
-        /* Bottom Input Bar */
-        .input-bar { padding: 10px; background: #151515; display: flex; align-items: center; gap: 10px; border-top: 1px solid #333; }
+        /* Bottom Topic Banner */
+        #topic-banner { padding: 12px; background: #e0fdfd; color: #008888; font-size: 13px; border-top: 1px solid #ccc; display: flex; gap: 10px; align-items: center; justify-content: space-between; font-weight: bold; }
+        #close-topic { background: none; border: none; font-weight: bold; cursor: pointer; font-size: 16px; color: #ff4444; }
+
+        /* Bottom Rich Input Bar */
+        .input-bar { padding: 10px; background: white; display: flex; align-items: center; gap: 10px; border-top: 1px solid #ddd; z-index: 100; }
         
-        #message-input { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #444; background: #222; color: white; outline: none; }
+        #message-input { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #ccc; background: #fafafa; color: black; outline: none; margin: 0; }
+        #message-input:focus { border-color: #ff0055; }
         
-        .icon-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ff0055; padding: 5px; }
+        .icon-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #555; padding: 5px; }
+        .icon-btn:hover { color: #ff0055; }
         
-        #send-btn { background: #ff0055; color: white; border: none; border-radius: 50%; width: 45px; height: 45px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        #send-btn { background: none; color: #ff0055; border: none; font-weight: bold; cursor: pointer; font-size: 24px; padding: 0 10px;}
 
         #file-input { display: none; }
+        
     </style>
 </head>
 <body>
 
-    <header>TULIPCHAT 2.0</header>
+    <header>
+        <div class="head-left">
+            <span>☰</span> <span class="head-title">Tulips.chat</span>
+        </div>
+        <div class="head-right">
+            <span><i id="online-users">12</i></span> <span>👤</span> <span>🔔</span> </div>
+    </header>
+
+    <div id="banner">
+        Welcome to Tulips.chat — Where Conversations Bloom!
+    </div>
 
     <div id="chat-display">
-        <div class="msg received">Welcome to Tulipchat! Start sharing pics and GIFs 🔥</div>
+        <div class="join-msg">Shreya_hot has joined the room</div>
+        
+        <div class="msg">
+            <div class="msg-avatar" style="background:#5c2d91">A</div>
+            <div class="msg-info">
+                <div class="user-sig" style="color:#5c2d91">ANSH 007 <span>13/03 20:23</span></div>
+                <div class="msg-text">Mat karo aesi bate</div>
+            </div>
+        </div>
+
+        <div class="join-msg">Lord_lucifer has joined the room</div>
+    </div>
+
+    <div id="topic-banner">
+        <span><img src="data:image/png;base64,..." width="15px">Express yourself freely in the Adult Chat Lounge. Have fun! Rules | Contact Us</span>
+        <button id="close-topic" onclick="document.getElementById('topic-banner').style.display='none'">×</button>
     </div>
 
     <div class="input-bar">
         <input type="file" id="file-input" accept="image/*, image/gif" onchange="previewAndSend()">
-        <button class="icon-btn" onclick="document.getElementById('file-input').click()">📷</button>
-        <input type="text" id="message-input" placeholder="Type a message...">
+        <button class="icon-btn" onclick="document.getElementById('file-input').click()">➕</button>
+        <button class="icon-btn">😊</button>
+        <input type="text" id="message-input" placeholder="Type here...">
+        <button class="icon-btn">🎤</button>
         <button id="send-btn" onclick="sendMessage()">➤</button>
     </div>
 
@@ -53,31 +99,98 @@
         const display = document.getElementById('chat-display');
         const input = document.getElementById('message-input');
 
+        // Simple login system simulation for username and color like screenshot
+        let myUsername = localStorage.getItem('tulipUsername');
+        let myColor = localStorage.getItem('tulipColor');
+        let myAvatarColor = localStorage.getItem('tulipAvatarColor');
+
+        if(!myUsername) {
+            myUsername = prompt("Enter your username for Tulips.chat:");
+            if(!myUsername) myUsername = "Guest" + Math.floor(Math.random()*100);
+            localStorage.setItem('tulipUsername', myUsername);
+            
+            // Random colors like screenshot
+            const colors = ['#5c2d91', '#ff0055', '#0078d7', '#228b22', '#ff8c00'];
+            const avatarColors = ['#9c27b0', '#ff1744', '#2196f3', '#4caf50', '#ff9800'];
+            myColor = colors[Math.floor(Math.random()*colors.length)];
+            myAvatarColor = avatarColors[Math.floor(Math.random()*avatarColors.length)];
+            localStorage.setItem('tulipColor', myColor);
+            localStorage.setItem('tulipAvatarColor', myAvatarColor);
+        }
+
         socket.on('chatMessage', (data) => {
             const div = document.createElement('div');
-            div.className = `msg ${data.self ? 'sent' : 'received'}`;
+            div.className = 'msg';
             
-            if(data.text) div.innerHTML = `<div>${data.text}</div>`;
-            if(data.image) div.innerHTML += `<img src="${data.image}">`;
-            
+            // Avatar
+            const avatar = document.createElement('div');
+            avatar.className = 'msg-avatar';
+            avatar.style.background = data.avatarColor || '#ccc';
+            avatar.innerText = data.username.charAt(0).toUpperCase();
+            div.appendChild(avatar);
+
+            const info = document.createElement('div');
+            info.className = 'msg-info';
+
+            // User Sig & Time
+            const userSig = document.createElement('div');
+            userSig.className = 'user-sig';
+            userSig.style.color = data.userColor || 'black';
+            userSig.innerText = data.username;
+            const time = document.createElement('span');
+            const now = new Date();
+            time.innerText = now.getDate() + "/" + (now.getMonth()+1) + " " + now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0');
+            userSig.appendChild(time);
+            info.appendChild(userSig);
+
+            // Text and/or Image
+            const msgContent = document.createElement('div');
+            msgContent.className = 'msg-text';
+            if(data.text) msgContent.innerHTML = `<div>${data.text}</div>`;
+            if(data.image) msgContent.innerHTML += `<img class="msg-img" src="${data.image}">`;
+            info.appendChild(msgContent);
+
+            div.appendChild(info);
             display.appendChild(div);
             display.scrollTop = display.scrollHeight;
         });
 
         function sendMessage() {
             if(!input.value.trim()) return;
-            socket.emit('chatMessage', { text: input.value, self: true });
-            input.value = "";
+            const text = input.value;
+            input.value = ""; // Clear input immediately
+            socket.emit('chatMessage', { 
+                username: myUsername, 
+                text: text, 
+                userColor: myColor,
+                avatarColor: myAvatarColor
+            });
         }
 
         function previewAndSend() {
             const file = document.getElementById('file-input').files[0];
             const reader = new FileReader();
             reader.onload = () => {
-                socket.emit('chatMessage', { image: reader.result, self: true });
+                socket.emit('chatMessage', { 
+                    username: myUsername, 
+                    image: reader.result, 
+                    userColor: myColor,
+                    avatarColor: myAvatarColor
+                });
             };
             if(file) reader.readAsDataURL(file);
         }
+
+        // Simulating other users joining
+        setTimeout(() => {
+            const display = document.getElementById('chat-display');
+            const div = document.createElement('div');
+            div.className = 'join-msg';
+            div.innerText = 'Lord_lucifer has joined the room';
+            display.appendChild(div);
+            display.scrollTop = display.scrollHeight;
+        }, 1000);
+
     </script>
 </body>
 </html>
