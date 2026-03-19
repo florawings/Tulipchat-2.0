@@ -1,89 +1,40 @@
-const express = require("express");
-const http = require("http");
+const express = require('express');
+const http = require('http');
 const { Server } = require("socket.io");
-const path = require("path");
+const cors = require('cors');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
-
-app.use(express.static(path.join(__dirname, "public")));
-
-/* STORAGE */
-let users = [];
-let messages = [];
-
-/* AUTO DELETE AFTER 10 HOURS */
-function addMessage(msg){
-messages.push(msg);
-
-setTimeout(()=>{
-messages.shift();
-}, 36000000); // 10 hours
-}
-
-/* SOCKET */
-io.on("connection", (socket) => {
-
-console.log("User connected");
-
-/* JOIN */
-socket.on("join", (username) => {
-socket.username = username;
-
-if(!users.includes(username)){
-users.push(username);
-}
-
-io.emit("users", users);
-
-/* SEND OLD MSG */
-socket.emit("oldMessages", messages);
+const io = new Server(server, {
+    cors: { origin: "*", methods: ["GET", "POST"] }
 });
 
-/* MESSAGE */
-socket.on("msg", (data) => {
+// Middleware
+app.use(cors());
+app.use(express.static(path.join(__dirname, 'public'))); // HTML file isme honi chahiye
 
-if(data.text === "/clear"){
-messages = [];
-io.emit("clear");
-return;
-}
+// Default Database Connect (Optional, messages save karne ke liye bad mein use karenge)
+// const mongoose = require('mongoose');
+// mongoose.connect(process.env.MONGO_URI);
 
-addMessage(data);
+// Socket Logic
+io.on('connection', (socket) => {
+    console.log('⚡ A user connected');
 
-io.emit("msg", data);
+    // Message/Image Receive karo aur sabko bhejo
+    socket.on('chatMessage', (data) => {
+        // data mein username, text, image, signature hota hai
+        io.emit('chatMessage', data); 
+    });
+
+    socket.on('disconnect', () => {
+        console.log('👤 User disconnected');
+    });
 });
 
-/* DM */
-socket.on("dm", (data) => {
-io.emit("dm", data);
-});
-
-/* DISCONNECT */
-socket.on("disconnect", () => {
-users = users.filter(u => u !== socket.username);
-io.emit("users", users);
-});
-
-});
-
-/* ROUTES FIX */
-app.get("/", (req, res) => {
-res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-app.get("/login", (req, res) => {
-res.sendFile(path.join(__dirname, "public", "login.html"));
-});
-
-app.get("/chat", (req, res) => {
-res.sendFile(path.join(__dirname, "public", "chat.html"));
-});
-
-/* START */
-const PORT = process.env.PORT || 3000;
-
+// Start Server
+const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
-console.log("Server running on port " + PORT);
+    console.log(`🚀 Tulip Hot Engine running on port ${PORT}`);
 });
