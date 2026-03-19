@@ -7,17 +7,27 @@ const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { maxHttpBufferSize: 1e7 });
+const io = new Server(server, { 
+    maxHttpBufferSize: 1e7,
+    cors: { origin: "*" }
+});
 
 app.use(cors());
-app.use(express.static(path.join(__dirname)));
+
+// Sabse zaroori fix: static files ka rasta
+app.use(express.static(__dirname));
+
+// Agar koi "/" par aaye toh index.html bhejo
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('✅ MongoDB Connected Successfully'))
     .catch(err => console.error('❌ MongoDB Error:', err));
 
-// Message Schema
+// Schema
 const Message = mongoose.model('Message', new mongoose.Schema({
     username: String,
     text: String,
@@ -28,7 +38,7 @@ const Message = mongoose.model('Message', new mongoose.Schema({
 }));
 
 io.on('connection', async (socket) => {
-    // Purani chat load karein
+    console.log('⚡ User joined');
     const history = await Message.find().sort({ timestamp: 1 }).limit(50);
     socket.emit('loadHistory', history);
 
@@ -40,4 +50,4 @@ io.on('connection', async (socket) => {
 });
 
 const PORT = process.env.PORT || 10000;
-server.listen(PORT, () => console.log(`🚀 Server running on ${PORT}`));
+server.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));
