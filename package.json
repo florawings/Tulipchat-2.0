@@ -1,7 +1,6 @@
 {
   "name": "tulipchat-2-0",
   "version": "1.0.0",
-  "description": "Tulips Chat Project",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
