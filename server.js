@@ -1,40 +1,25 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require("socket.io");
-const cors = require('cors');
 const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: { origin: "*", methods: ["GET", "POST"] }
-});
+const io = new Server(server);
 
-// Middleware
-app.use(cors());
-app.use(express.static(path.join(__dirname, 'public'))); // HTML file isme honi chahiye
+app.use(express.static(path.join(__dirname)));
 
-// Default Database Connect (Optional, messages save karne ke liye bad mein use karenge)
-// const mongoose = require('mongoose');
-// mongoose.connect(process.env.MONGO_URI);
-
-// Socket Logic
 io.on('connection', (socket) => {
-    console.log('⚡ A user connected');
+    // Jab koi join kare
+    socket.broadcast.emit('chatMessage', { system: true, text: "Someone joined the room" });
 
-    // Message/Image Receive karo aur sabko bhejo
+    // Message receive karna
     socket.on('chatMessage', (data) => {
-        // data mein username, text, image, signature hota hai
-        io.emit('chatMessage', data); 
-    });
-
-    socket.on('disconnect', () => {
-        console.log('👤 User disconnected');
+        io.emit('chatMessage', data); // Sabko bhejo (sender ko bhi)
     });
 });
 
-// Start Server
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
-    console.log(`🚀 Tulip Hot Engine running on port ${PORT}`);
+    console.log(`🚀 Server on ${PORT}`);
 });
