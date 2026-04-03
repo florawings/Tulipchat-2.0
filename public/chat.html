@@ -1,29 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="style.css">
+  <title>Tulip Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
 </head>
-
 <body>
 
-<div class="top">
-<span>☰ Tulip Chat</span>
-<span>Logout</span>
-</div>
+<div class="app">
 
-<div id="users"></div>
+  <!-- HEADER -->
+  <div class="header">
+    <button onclick="toggleSidebar()">☰</button>
+    <h2>Tulip Chat</h2>
+  </div>
 
-<div id="chat"></div>
+  <!-- SIDEBAR -->
+  <div id="sidebar" class="sidebar">
+    <h3>Users</h3>
+    <ul id="users"></ul>
+  </div>
 
-<div class="input">
-<input id="msg" placeholder="Type...">
-<input type="file" id="file">
-<button onclick="send()">Send</button>
+  <!-- CHAT AREA -->
+  <div class="chat-area">
+
+    <div id="messages" class="messages"></div>
+
+    <!-- INPUT -->
+    <div class="input-box">
+      <input id="msg" placeholder="Type..." />
+      <input type="file" id="file" />
+      <button onclick="sendMsg()">Send</button>
+    </div>
+
+    <!-- PROGRESS -->
+    <div id="progress"></div>
+
+  </div>
+
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
-<script src="client.js"></script>
+<script src="/client.js"></script>
 
 </body>
 </html>
