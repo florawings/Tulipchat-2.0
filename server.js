@@ -1,39 +1,29 @@
-const express = require("express");
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const path = require('path');
+
 const app = express();
-const http = require("http").createServer(app);
-const io = require("socket.io")(http);
+const server = http.createServer(app);
+const io = new Server(server);
 
-const path = require("path");
+// Public folder ko serve karne ke liye
+app.use(express.static(path.join(__dirname, 'public')));
+
+io.on('connection', (socket) => {
+    console.log('A user connected');
+
+    // Jab koi message bheje
+    socket.on('chat message', (data) => {
+        io.emit('chat message', data); // Sabko message dikhao
+    });
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+    });
+});
+
 const PORT = process.env.PORT || 3000;
-
-// STATIC (MOST IMPORTANT)
-app.use(express.static(path.join(__dirname, "public")));
-
-// ROOT ROUTE
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "chat.html"));
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
-
-// SOCKET
-let users = [];
-
-io.on("connection", (socket) => {
-
-  socket.on("join", (username) => {
-    socket.username = username;
-    users.push(username);
-    io.emit("users", users);
-  });
-
-  socket.on("message", (data) => {
-    io.emit("message", data);
-  });
-
-  socket.on("disconnect", () => {
-    users = users.filter(u => u !== socket.username);
-    io.emit("users", users);
-  });
-
-});
-
-http.listen(PORT, () => console.log("Server running on", PORT));
