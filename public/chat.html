@@ -8,30 +8,17 @@
 
 <body>
 
-<div class="top">
-  <span>☰</span>
-  <span>Tulip Chat</span>
-  <span onclick="logout()">Logout</span>
+<div class="topbar">
+☰ Tulip Chat
 </div>
 
-<!-- ONLINE USERS -->
 <div id="users"></div>
 
-<!-- CHAT -->
 <div id="chat"></div>
 
-<!-- DM BOX -->
-<div id="dmBox">
-  <div id="dmTop"></div>
-  <div id="dmMsgs"></div>
-  <input id="dmInput" placeholder="Type DM...">
-</div>
-
-<!-- INPUT -->
-<div class="input">
-  <input type="text" id="msg" placeholder="Type...">
-  <input type="file" id="file">
-  <button id="sendBtn" onclick="send()">Send</button>
+<div class="inputBox">
+<input id="msg" placeholder="Type message">
+<button onclick="send()">Send</button>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
