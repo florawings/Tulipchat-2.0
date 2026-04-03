@@ -1,53 +1,27 @@
-const express = require('express');
-const http = require('http');
+const express = require("express");
+const http = require("http");
 const { Server } = require("socket.io");
-const mongoose = require('mongoose');
-const path = require('path');
-const cors = require('cors');
+const path = require("path");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { 
-    maxHttpBufferSize: 1e7,
-    cors: { origin: "*" }
-});
+const io = new Server(server);
 
-app.use(cors());
+app.use(express.static(path.join(__dirname, "public")));
 
-// Sabse zaroori fix: static files ka rasta
-app.use(express.static(__dirname));
+let users = {};
+let messages = [];
 
-// Agar koi "/" par aaye toh index.html bhejo
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('✅ MongoDB Connected Successfully'))
-    .catch(err => console.error('❌ MongoDB Error:', err));
+  socket.on("join", (username) => {
+    users[socket.id] = username;
 
-// Schema
-const Message = mongoose.model('Message', new mongoose.Schema({
-    username: String,
-    text: String,
-    image: String,
-    userColor: String,
-    avatarColor: String,
-    timestamp: { type: Date, default: Date.now }
-}));
+    io.emit("users", Object.values(users));
+    socket.emit("oldMessages", messages);
+  });
 
-io.on('connection', async (socket) => {
-    console.log('⚡ User joined');
-    const history = await Message.find().sort({ timestamp: 1 }).limit(50);
-    socket.emit('loadHistory', history);
-
-    socket.on('chatMessage', async (data) => {
-        const newMessage = new Message(data);
-        await newMessage.save();
-        io.emit('chatMessage', data); 
-    });
-});
-
-const PORT = process.env.PORT || 10000;
-server.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));
+  socket.on("msg", (data) => {
+    messages.push(data);
+    io.emit("msg",
