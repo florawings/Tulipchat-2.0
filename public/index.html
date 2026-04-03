@@ -8,24 +8,35 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="app">
+    <div class="app-wrapper">
         <div id="sidebar" class="sidebar">
             <div class="sidebar-header">
-                <h3>Main Room</h3>
-                <button id="close-sidebar">&times;</button>
+                <img src="https://via.placeholder.com/40" alt="Room">
+                <div class="room-info">
+                    <span class="room-label">Current room</span>
+                    <span class="room-name">Main room</span>
+                </div>
             </div>
-            <ul>
-                <li onclick="location.reload()"><i class="fas fa-home"></i> Home</li>
-                <li><i class="fas fa-list"></i> Room List</li>
-                <li><i class="fas fa-user-friends"></i> Friends Wall</li>
+            <ul class="sidebar-menu">
+                <li><i class="fas fa-home"></i> Room list</li>
+                <li><i class="fas fa-rss"></i> Friends wall <span class="dot"></span></li>
+                <li><i class="fas fa-newspaper"></i> News</li>
+                <li><i class="fas fa-gavel"></i> Rules</li>
+                <li><i class="fas fa-id-badge"></i> Rank Applications</li>
+                <li><i class="fas fa-user-tag"></i> Profile Guide</li>
             </ul>
         </div>
 
         <div class="main-content">
             <header class="header">
-                <button id="menu-btn"><i class="fas fa-bars"></i></button>
+                <div class="left-head">
+                    <button id="menu-btn"><i class="fas fa-bars"></i></button>
+                </div>
                 <div class="logo">Tulips.chat</div>
-                <div class="online-status"><i class="fas fa-circle" style="color: #22c55e;"></i> <span id="online-count">1</span></div>
+                <div class="right-head">
+                    <i class="fas fa-bell"></i>
+                    <span class="online-dot">1</span>
+                </div>
             </header>
 
             <div id="chat-messages" class="chat-display">
@@ -33,11 +44,10 @@
             </div>
 
             <div class="input-area">
-                <div class="input-container">
-                    <button class="action-btn"><i class="fas fa-plus"></i></button>
-                    <input type="text" id="msg-input" placeholder="Type here..." autocomplete="off">
-                    <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
-                </div>
+                <button class="add-btn"><i class="fas fa-plus"></i></button>
+                <button class="emoji-btn"><i class="far fa-smile"></i></button>
+                <input type="text" id="msg-input" placeholder="Type here..." autocomplete="off">
+                <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
     </div>
