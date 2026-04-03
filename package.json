@@ -1,5 +1,5 @@
 {
-  "name": "tulipchat-2-0",
+  "name": "tulipchat",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
@@ -7,8 +7,6 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "mongoose": "^7.0.0",
-    "socket.io": "^4.6.1",
-    "cors": "^2.8.5"
+    "socket.io": "^4.7.2"
   }
 }
