@@ -1,33 +1,26 @@
 const socket = io();
-
 const menuBtn = document.getElementById('menu-btn');
+const closeSidebar = document.getElementById('close-sidebar');
 const sidebar = document.getElementById('sidebar');
 const msgInput = document.getElementById('msg-input');
 const sendBtn = document.getElementById('send-btn');
 const chatDisplay = document.getElementById('chat-messages');
 
-// Sidebar toggle (Open/Close on Click)
-menuBtn.addEventListener('click', (e) => {
-    sidebar.classList.toggle('active');
-    e.stopPropagation();
-});
+// Sidebar toggle
+menuBtn.onclick = () => sidebar.classList.add('active');
+closeSidebar.onclick = () => sidebar.classList.remove('active');
 
-// Close sidebar when clicking outside
-document.addEventListener('click', () => {
-    sidebar.classList.remove('active');
-});
-
-// Send Message
+// Send Logic
 sendBtn.onclick = () => {
-    if (msgInput.value.trim() !== "") {
-        const data = { text: msgInput.value, user: 'Me' };
-        socket.emit('chat message', data);
-        renderMessage(data);
-        msgInput.value = "";
+    const text = msgInput.value.trim();
+    if (text) {
+        socket.emit('chat message', { text: text, user: 'Me' });
+        appendMsg({ text: text, user: 'Me' });
+        msgInput.value = '';
     }
 };
 
-function renderMessage(data) {
+function appendMsg(data) {
     const div = document.createElement('div');
     div.className = `msg ${data.user === 'Me' ? 'sent' : 'received'}`;
     div.innerText = data.text;
@@ -36,5 +29,5 @@ function renderMessage(data) {
 }
 
 socket.on('chat message', (data) => {
-    if(data.user !== 'Me') renderMessage(data);
+    if (data.user !== 'Me') appendMsg(data);
 });
