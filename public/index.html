@@ -2,24 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Tulips Chat</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="app-wrapper">
+    <div class="app-container">
         <div id="sidebar" class="sidebar">
             <div class="sidebar-header">
-                <img src="https://via.placeholder.com/40" alt="Room">
                 <div class="room-info">
-                    <span class="room-label">Current room</span>
-                    <span class="room-name">Main room</span>
+                    <p>Current room</p>
+                    <strong>Main room</strong>
                 </div>
+                <button id="close-sidebar">&times;</button>
             </div>
             <ul class="sidebar-menu">
                 <li><i class="fas fa-home"></i> Room list</li>
-                <li><i class="fas fa-rss"></i> Friends wall <span class="dot"></span></li>
+                <li><i class="fas fa-rss"></i> Friends wall</li>
                 <li><i class="fas fa-newspaper"></i> News</li>
                 <li><i class="fas fa-gavel"></i> Rules</li>
                 <li><i class="fas fa-id-badge"></i> Rank Applications</li>
@@ -27,29 +27,27 @@
             </ul>
         </div>
 
-        <div class="main-content">
-            <header class="header">
-                <div class="left-head">
-                    <button id="menu-btn"><i class="fas fa-bars"></i></button>
-                </div>
-                <div class="logo">Tulips.chat</div>
-                <div class="right-head">
-                    <i class="fas fa-bell"></i>
-                    <span class="online-dot">1</span>
-                </div>
-            </header>
-
-            <div id="chat-messages" class="chat-display">
-                <div class="msg received">Welcome to Tulips Chat! Start typing below.</div>
+        <header class="header">
+            <button id="menu-btn"><i class="fas fa-bars"></i></button>
+            <span class="brand">Tulips.chat</span>
+            <div class="header-icons">
+                <i class="fas fa-bell"></i>
+                <span class="status-dot">1</span>
             </div>
+        </header>
 
-            <div class="input-area">
-                <button class="add-btn"><i class="fas fa-plus"></i></button>
-                <button class="emoji-btn"><i class="far fa-smile"></i></button>
+        <main id="chat-messages" class="chat-main">
+            <div class="msg received">Welcome to Tulips Chat! Start typing below.</div>
+        </main>
+
+        <footer class="input-footer">
+            <div class="input-row">
+                <button class="icon-btn"><i class="fas fa-plus"></i></button>
+                <button class="icon-btn"><i class="far fa-smile"></i></button>
                 <input type="text" id="msg-input" placeholder="Type here..." autocomplete="off">
                 <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
             </div>
-        </div>
+        </footer>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
