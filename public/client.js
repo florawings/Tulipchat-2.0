@@ -1,81 +1,132 @@
 const socket = io();
-const username = "User" + Math.floor(Math.random()*1000);
 
+let username = localStorage.getItem("username") || prompt("Enter username");
+localStorage.setItem("username", username);
+
+const msgInput = document.getElementById("msg");
+const messages = document.getElementById("messages");
+const fileInput = document.getElementById("file");
+const progressDiv = document.getElementById("progress");
+const usersList = document.getElementById("users");
+
+// JOIN
 socket.emit("join", username);
 
-const chat = document.getElementById("chat");
-const usersDiv = document.getElementById("users");
-
-function send(){
-  const text = msg.value;
-  const file = document.getElementById("file").files[0];
-
-  if(file){
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST","/upload");
-
-    xhr.upload.onprogress = (e)=>{
-      if(e.lengthComputable){
-        console.log("Upload:", Math.round((e.loaded/e.total)*100)+"%");
-      }
-    };
-
-    xhr.onload = ()=>{
-      const res = JSON.parse(xhr.response);
-      socket.emit("msg",{user:username,file:res.url});
-    };
-
-    xhr.send(formData);
-  }
-
-  if(text){
-    socket.emit("msg",{user:username,text});
-    msg.value="";
-  }
-}
-
-/* 🔥 MESSAGE */
-socket.on("msg",(d)=>{
-  const div = document.createElement("div");
-  div.className="msg"+(d.user===username?" me":"");
-
-  if(d.text) div.innerText = d.user+": "+d.text;
-  if(d.file){
-    const img = document.createElement("img");
-    img.src=d.file;
-    img.style.width="150px";
-    div.appendChild(img);
-  }
-
-  chat.appendChild(div);
+// RECEIVE MESSAGES
+socket.on("message", (data) => {
+  addMessage(data);
 });
 
-/* 🔥 USERS */
-socket.on("users",(users)=>{
-  usersDiv.innerHTML="";
-  users.forEach(u=>{
-    const d=document.createElement("div");
-    d.className="user";
-    d.innerText=u;
+// LOAD OLD MESSAGES
+socket.on("loadMessages", (msgs) => {
+  messages.innerHTML = "";
+  msgs.forEach(addMessage);
+});
 
-    d.onclick=()=>{
-      const msg = prompt("DM to "+u);
-      socket.emit("dm",{to:u,msg});
-    };
+// ONLINE USERS
+socket.on("users", (users) => {
+  usersList.innerHTML = "";
 
-    usersDiv.appendChild(d);
+  users.forEach(u => {
+    const li = document.createElement("li");
+    li.innerText = u;
+
+    li.onclick = () => openDM(u);
+
+    usersList.appendChild(li);
   });
 });
 
-/* 🔥 DM */
-socket.on("dm",(msg)=>{
-  alert("DM: "+msg);
-});
+// SEND MESSAGE
+function sendMsg() {
+  const text = msgInput.value.trim();
+  const file = fileInput.files[0];
 
-/* 🔥 OLD */
-socket.on("oldMessages",(msgs)=>{
-  msgs.forEach(m=>socket.emit("msg",m));
+  if (!text && !file) return;
+
+  // TEXT MESSAGE
+  if (text) {
+    socket.emit("message", {
+      user: username,
+      text
+    });
+  }
+
+  // FILE UPLOAD
+  if (file) {
+    uploadFile(file);
+  }
+
+  msgInput.value = "";
+  fileInput.value = "";
+}
+
+// ADD MESSAGE UI
+function addMessage(data) {
+  const div = document.createElement("div");
+  div.className = "msg";
+
+  if (data.type === "image") {
+    div.innerHTML = `<b>${data.user}:</b><br><img src="${data.url}" width="150">`;
+  } else {
+    div.innerHTML = `<b>${data.user}:</b> ${data.text}`;
+  }
+
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+// FILE UPLOAD WITH %
+function uploadFile(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const xhr = new XMLHttpRequest();
+
+  xhr.open("POST", "/upload", true);
+
+  xhr.upload.onprogress = function (e) {
+    if (e.lengthComputable) {
+      let percent = Math.round((e.loaded / e.total) * 100);
+      progressDiv.innerText = "Uploading: " + percent + "%";
+    }
+  };
+
+  xhr.onload = function () {
+    progressDiv.innerText = "";
+
+    const res = JSON.parse(xhr.responseText);
+
+    socket.emit("message", {
+      user: username,
+      type: "image",
+      url: res.url
+    });
+  };
+
+  xhr.send(formData);
+}
+
+// SIDEBAR
+function toggleSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  sidebar.classList.toggle("open");
+}
+
+// DM SYSTEM (BASIC POPUP)
+function openDM(user) {
+  const msg = prompt("Send message to " + user);
+
+  if (!msg) return;
+
+  socket.emit("dm", {
+    to: user,
+    from: username,
+    text: msg
+  });
+}
+
+// RECEIVE DM
+socket.on("dm", (data) => {
+  alert(`DM from ${data.from}: ${data.text}`);
 });
