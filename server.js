@@ -8,7 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// ===== STORAGE =====
+// ===== DATA =====
 let users = [];
 let messages = [];
 
@@ -18,22 +18,25 @@ setInterval(() => {
   messages = messages.filter(m => now - m.time < 10 * 60 * 60 * 1000);
 }, 60000);
 
-// ===== STATIC FILES =====
-app.use(express.static("public"));
-app.use("/uploads", express.static("uploads"));
+// ===== STATIC FILES (IMPORTANT FIX) =====
+app.use(express.static(path.join(__dirname, "public")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// ===== ROOT ROUTE FIX =====
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "chat.html"));
+});
 
 // ===== FILE UPLOAD =====
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
   filename: (req, file, cb) => {
-    const unique = Date.now() + "-" + file.originalname;
-    cb(null, unique);
+    cb(null, Date.now() + "-" + file.originalname);
   }
 });
 
 const upload = multer({ storage });
 
-// ===== UPLOAD API =====
 app.post("/upload", upload.single("file"), (req, res) => {
   res.json({
     url: "/uploads/" + req.file.filename
@@ -48,11 +51,14 @@ io.on("connection", (socket) => {
   // JOIN
   socket.on("join", (username) => {
     socket.username = username;
-    users.push(username);
+
+    if (!users.includes(username)) {
+      users.push(username);
+    }
 
     io.emit("users", users);
 
-    // send old messages
+    // OLD MESSAGES
     socket.emit("loadMessages", messages);
   });
 
@@ -67,13 +73,12 @@ io.on("connection", (socket) => {
     };
 
     messages.push(msg);
-
     io.emit("message", msg);
   });
 
   // DM
   socket.on("dm", (data) => {
-    io.emit("dm", data); // simple version
+    io.emit("dm", data); // basic version
   });
 
   // DISCONNECT
