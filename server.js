@@ -11,27 +11,29 @@ const io = new Server(server);
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static("uploads"));
 
-/* 🔥 FILE UPLOAD */
+/* FILE UPLOAD */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
   filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname)
 });
+
 const upload = multer({ storage });
 
 app.post("/upload", upload.single("file"), (req, res) => {
   res.json({ url: "/uploads/" + req.file.filename });
 });
 
-/* 🔥 DATA */
+/* DATA */
 let users = {};
-let messages = []; // auto clear after 10 hours
+let messages = [];
 
+/* AUTO DELETE 10 HOURS */
 setInterval(() => {
   const now = Date.now();
   messages = messages.filter(m => now - m.time < 10 * 60 * 60 * 1000);
 }, 60000);
 
-/* 🔥 SOCKET */
+/* SOCKET */
 io.on("connection", (socket) => {
 
   socket.on("join", (username) => {
@@ -46,8 +48,7 @@ io.on("connection", (socket) => {
     io.emit("msg", data);
   });
 
-  /* 🔥 DM */
-  socket.on("dm", ({to, msg}) => {
+  socket.on("dm", ({ to, msg }) => {
     for (let id in users) {
       if (users[id] === to) {
         io.to(id).emit("dm", msg);
@@ -62,5 +63,9 @@ io.on("connection", (socket) => {
 
 });
 
+/* PORT FIX */
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log("Server running"));
+
+server.listen(PORT, () => {
+  console.log("Server running on port", PORT);
+});
