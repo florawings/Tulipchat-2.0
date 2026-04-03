@@ -1,108 +1,41 @@
 body{
 margin:0;
 font-family:sans-serif;
-background:#ece5dd;
-display:flex;
-flex-direction:column;
-height:100vh;
 }
 
-/* TOP */
-.top{
+.topbar{
 background:#075e54;
 color:white;
-padding:12px;
-display:flex;
-justify-content:space-between;
-}
-
-/* USERS */
-#users{
-display:flex;
-gap:10px;
-padding:5px;
-overflow-x:auto;
-background:#fff;
-}
-
-.user{
-background:#25d366;
-color:white;
-padding:5px 10px;
-border-radius:15px;
-cursor:pointer;
-}
-
-/* CHAT */
-#chat{
-flex:1;
-overflow-y:auto;
 padding:10px;
-display:flex;
-flex-direction:column;
-gap:6px;
+text-align:center;
 }
 
-/* MSG */
-.msg{
-max-width:70%;
-padding:8px;
-border-radius:10px;
+#users{
+background:#eee;
+padding:5px;
 }
 
-/* ME */
-.me{
-align-self:flex-end;
-background:#dcf8c6;
+#chat{
+height:70vh;
+overflow:auto;
+padding:10px;
 }
 
-/* OTHER */
-.other{
-align-self:flex-start;
-background:white;
-}
-
-/* INPUT */
-.input{
-display:flex;
-padding:8px;
-background:#f0f0f0;
+.inputBox{
 position:fixed;
 bottom:0;
 width:100%;
+display:flex;
 }
 
-.input input{
+input{
 flex:1;
 padding:10px;
-border-radius:20px;
-border:1px solid #ccc;
 }
 
-.input button{
-background:#075e54;
+button{
+padding:10px;
+background:#25d366;
 color:white;
 border:none;
-padding:10px;
-border-radius:50%;
-}
-
-/* DM */
-#dmBox{
-position:fixed;
-right:10px;
-bottom:70px;
-width:250px;
-height:300px;
-background:white;
-display:none;
-flex-direction:column;
-border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,0.3);
-}
-
-#dmMsgs{
-flex:1;
-overflow:auto;
-padding:5px;
 }
