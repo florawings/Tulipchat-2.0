@@ -1,69 +1,59 @@
-body{
-margin:0;
-font-family:sans-serif;
-background:#e5ddd5;
+body {
+  margin: 0;
+  font-family: sans-serif;
 }
 
-.top{
-background:#075e54;
-color:white;
-padding:10px;
-display:flex;
-justify-content:space-between;
+.app {
+  display: flex;
+  height: 100vh;
 }
 
-#chat{
-height:75vh;
-overflow:auto;
-padding:10px;
+.header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 50px;
+  background: #075E54;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  z-index: 10;
 }
 
-.msg{
-background:white;
-padding:8px;
-margin:5px;
-border-radius:8px;
-max-width:70%;
+.chat-area {
+  margin-top: 50px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-.me{
-background:#dcf8c6;
-margin-left:auto;
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
 }
 
-.input{
-position:fixed;
-bottom:0;
-width:100%;
-display:flex;
-background:white;
+.input-box {
+  display: flex;
+  padding: 5px;
+  background: #eee;
 }
 
-input{
-flex:1;
-padding:10px;
-border:none;
+input {
+  flex: 1;
 }
 
-button{
-background:#25d366;
-border:none;
-color:white;
-padding:10px;
+.sidebar {
+  position: fixed;
+  left: -200px;
+  top: 50px;
+  width: 200px;
+  height: 100%;
+  background: #ccc;
+  transition: 0.3s;
 }
 
-#users{
-display:flex;
-overflow-x:auto;
-background:#fff;
-padding:5px;
-}
-
-.user{
-background:#25d366;
-color:white;
-padding:5px 10px;
-margin-right:5px;
-border-radius:20px;
-cursor:pointer;
+.sidebar.open {
+  left: 0;
 }
