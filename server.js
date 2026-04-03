@@ -3,14 +3,15 @@ const app = express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 
+const path = require("path");
 const PORT = process.env.PORT || 3000;
 
-// STATIC FILES
-app.use(express.static(__dirname + "/public"));
+// STATIC (MOST IMPORTANT)
+app.use(express.static(path.join(__dirname, "public")));
 
-// DEFAULT ROUTE (MOST IMPORTANT)
+// ROOT ROUTE
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/chat.html");
+  res.sendFile(path.join(__dirname, "public", "chat.html"));
 });
 
 // SOCKET
@@ -35,4 +36,4 @@ io.on("connection", (socket) => {
 
 });
 
-http.listen(PORT, () => console.log("Server running"));
+http.listen(PORT, () => console.log("Server running on", PORT));
