@@ -26,4 +26,3 @@ socket.on('chat message', (data) => {
     chatDisplay.appendChild(div);
     chatDisplay.scrollTop = chatDisplay.scrollHeight; // Auto scroll to bottom
 });
-
