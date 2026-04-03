@@ -1,119 +1,42 @@
+console.log("CLIENT LOADED");
+
 const socket = io();
+
+const username = "User" + Math.floor(Math.random() * 1000);
+
+socket.on("connect", () => {
+  console.log("CONNECTED:", socket.id);
+  socket.emit("join", username);
+});
 
 const chat = document.getElementById("chat");
 const usersDiv = document.getElementById("users");
 const msgInput = document.getElementById("msg");
-const fileInput = document.getElementById("file");
-const sendBtn = document.getElementById("sendBtn");
 
-const dmBox = document.getElementById("dmBox");
-const dmMsgs = document.getElementById("dmMsgs");
-const dmInput = document.getElementById("dmInput");
-const dmTop = document.getElementById("dmTop");
+function send() {
+  const text = msgInput.value;
 
-let currentDM = null;
+  if (!text) return;
 
-const username = localStorage.getItem("user") || "User";
+  socket.emit("msg", { user: username, text });
 
-/* ADD MSG */
-function addMsg(user, text, file){
-const div = document.createElement("div");
-div.className = "msg";
-
-div.classList.add(user === username ? "me" : "other");
-
-div.innerHTML = `<b>${user}</b><br>${text}`;
-
-if(file){
-const img = document.createElement("img");
-img.src = file;
-div.appendChild(img);
+  msgInput.value = "";
 }
 
-chat.appendChild(div);
-chat.scrollTop = chat.scrollHeight;
-}
-
-/* SEND */
-function send(){
-const text = msgInput.value;
-const file = fileInput.files[0];
-
-if(!text && !file) return;
-
-if(text){
-socket.emit("msg",{user:username,text});
-}
-
-if(file){
-const reader = new FileReader();
-
-reader.onprogress = (e)=>{
-if(e.lengthComputable){
-let p = Math.round((e.loaded/e.total)*100);
-sendBtn.innerText = p+"%";
-}
-};
-
-reader.onload = ()=>{
-sendBtn.innerText = "Send";
-socket.emit("msg",{user:username,file:reader.result});
-};
-
-reader.readAsDataURL(file);
-}
-
-msgInput.value="";
-fileInput.value="";
-}
-
-/* RECEIVE */
-socket.on("msg",(data)=>{
-addMsg(data.user,data.text,data.file);
+socket.on("msg", (data) => {
+  const div = document.createElement("div");
+  div.innerText = data.user + ": " + data.text;
+  chat.appendChild(div);
 });
 
-/* USERS */
-socket.on("users",(list)=>{
-usersDiv.innerHTML="";
-list.forEach(u=>{
-const div=document.createElement("div");
-div.className="user";
-div.innerText=u;
-
-div.onclick=()=>{
-openDM(u);
-};
-
-usersDiv.appendChild(div);
-});
+socket.on("users", (users) => {
+  usersDiv.innerHTML = "Users: " + users.join(", ");
 });
 
-/* DM OPEN */
-function openDM(user){
-currentDM=user;
-dmBox.style.display="flex";
-dmTop.innerText="DM: "+user;
-dmMsgs.innerHTML="";
-}
-
-/* DM SEND */
-dmInput.addEventListener("keypress",(e)=>{
-if(e.key==="Enter"){
-socket.emit("dm",{to:currentDM,text:dmInput.value,from:username});
-dmMsgs.innerHTML+=`<div><b>Me:</b> ${dmInput.value}</div>`;
-dmInput.value="";
-}
+socket.on("oldMessages", (msgs) => {
+  msgs.forEach(m => {
+    const div = document.createElement("div");
+    div.innerText = m.user + ": " + m.text;
+    chat.appendChild(div);
+  });
 });
-
-/* DM RECEIVE */
-socket.on("dm",(data)=>{
-if(data.from===currentDM){
-dmMsgs.innerHTML+=`<div><b>${data.from}:</b> ${data.text}</div>`;
-}
-});
-
-/* LOGOUT */
-function logout(){
-localStorage.removeItem("user");
-window.location="/login.html";
-}
