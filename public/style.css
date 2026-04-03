@@ -1,22 +1,26 @@
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    font-family: 'Segoe UI', Tahoma, sans-serif; 
+}
 
-/* Pure screen ko fix karne ke liye */
+/* Body fix taaki pura layout screen ke andar rahe */
 html, body {
     height: 100%;
     width: 100%;
-    background-color: #0b0f1a;
     overflow: hidden;
-    position: fixed; /* Scrolling issues fix karne ke liye */
+    background-color: #0b0f1a;
 }
 
 .app-container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100vh; /* Pura mobile screen viewport */
     width: 100%;
 }
 
-/* Header */
+/* Header fix */
 .header {
     height: 55px;
     background: #fff;
@@ -24,50 +28,40 @@ html, body {
     align-items: center;
     justify-content: space-between;
     padding: 0 15px;
-    color: #e11d48;
+    flex-shrink: 0; /* Header dabega nahi */
     z-index: 10;
 }
-#menu-btn { background: none; border: none; font-size: 20px; color: #334155; }
 
-/* Chat Main Area */
+/* Chat area ko scrollable banayein */
 .chat-main {
-    flex: 1; /* Yeh bachi hui sari jagah lega */
+    flex: 1; /* Bachi hui sari jagah lega */
     overflow-y: auto;
     padding: 15px;
+    background: #0b0f1a;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    background: #0b0f1a;
 }
 
-.msg { 
-    padding: 10px 14px; 
-    border-radius: 15px; 
-    max-width: 80%; 
-    color: white; 
-    font-size: 14px;
-    background: #1e293b;
-}
-
-/* INPUT FOOTER FIX */
+/* Input area - YAHAN FIX HAI */
 .input-footer {
-    height: 65px;
+    min-height: 65px;
     background: #161d2f;
     padding: 10px;
     border-top: 1px solid #2d3748;
+    flex-shrink: 0; /* Yeh line input bar ko gayab hone se rokegi */
     display: flex;
     align-items: center;
-    padding-bottom: env(safe-area-inset-bottom); /* iPhone/New Androids ke liye */
 }
 
 .input-row {
     display: flex;
     width: 100%;
+    background: #0b0f1a;
+    border-radius: 25px;
+    padding: 5px 15px;
     align-items: center;
     gap: 10px;
-    background: #0b0f1a;
-    padding: 5px 12px;
-    border-radius: 25px;
 }
 
 #msg-input {
@@ -76,26 +70,23 @@ html, body {
     border: none;
     color: white;
     outline: none;
-    height: 35px;
+    padding: 10px 0;
+    font-size: 16px; /* Mobile typing ke liye best */
 }
 
-.icon-btn { background: none; border: none; color: #94a3b8; font-size: 18px; }
-#send-btn { background: none; border: none; color: #e11d48; font-size: 20px; }
-
-/* Sidebar Logic */
-.sidebar {
-    position: fixed;
-    left: -280px;
-    top: 0;
-    width: 280px;
-    height: 100%;
-    background: #161d2f;
-    transition: 0.3s;
-    z-index: 1000;
+#send-btn {
+    background: none;
+    border: none;
+    color: #e11d48;
+    font-size: 20px;
+    cursor: pointer;
 }
-.sidebar.active { left: 0; }
-.sidebar-header { padding: 20px; background: #0f172a; display: flex; justify-content: space-between; align-items: center; }
-#close-sidebar { background: none; border: none; color: white; font-size: 25px; }
-.sidebar-menu { list-style: none; padding: 10px 0; }
-.sidebar-menu li { padding: 15px 20px; color: #cbd5e1; border-bottom: 1px solid #2d3748; display: flex; align-items: center; gap: 15px; }
-.sidebar-menu li i { color: #3b82f6; }
+
+.msg {
+    padding: 10px 15px;
+    border-radius: 15px;
+    max-width: 80%;
+    color: white;
+    font-size: 14px;
+    background: #1e293b;
+    }
