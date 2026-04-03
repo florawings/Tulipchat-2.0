@@ -1,47 +1,125 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tulip Chat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/style.css">
+  <title>Tulips.chat</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #ece5dd;
+    }
+
+    .topbar {
+      background: #075e54;
+      color: white;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .container {
+      display: flex;
+      height: calc(100vh - 50px);
+    }
+
+    #sidebar {
+      width: 200px;
+      background: #fff;
+      border-right: 1px solid #ccc;
+      overflow-y: auto;
+    }
+
+    #sidebar.open {
+      display: block;
+    }
+
+    #users li {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
+
+    #chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+    }
+
+    .msg {
+      background: #dcf8c6;
+      padding: 8px;
+      margin: 5px;
+      border-radius: 5px;
+      max-width: 70%;
+    }
+
+    .inputBox {
+      display: flex;
+      padding: 10px;
+      background: #f0f0f0;
+    }
+
+    input {
+      flex: 1;
+      padding: 8px;
+    }
+
+    button {
+      padding: 8px;
+      background: #075e54;
+      color: white;
+      border: none;
+    }
+
+    #progress {
+      font-size: 12px;
+      padding: 5px;
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="app">
+<div class="topbar">
+  <span onclick="toggleSidebar()">☰</span>
+  <span>Tulips.chat</span>
+  <span>Logout</span>
+</div>
 
-  <!-- HEADER -->
-  <div class="header">
-    <button onclick="toggleSidebar()">☰</button>
-    <h2>Tulip Chat</h2>
-  </div>
+<div class="container">
 
-  <!-- SIDEBAR -->
-  <div id="sidebar" class="sidebar">
-    <h3>Users</h3>
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <h4>Online Users</h4>
     <ul id="users"></ul>
   </div>
 
-  <!-- CHAT AREA -->
-  <div class="chat-area">
+  <!-- Chat -->
+  <div id="chat">
 
-    <div id="messages" class="messages"></div>
+    <div id="messages"></div>
 
-    <!-- INPUT -->
-    <div class="input-box">
-      <input id="msg" placeholder="Type..." />
+    <div id="progress"></div>
+
+    <div class="inputBox">
+      <input id="msg" placeholder="Type message..." />
       <input type="file" id="file" />
       <button onclick="sendMsg()">Send</button>
     </div>
-
-    <!-- PROGRESS -->
-    <div id="progress"></div>
 
   </div>
 
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
-<script src="/client.js"></script>
+<script src="client.js"></script>
 
 </body>
 </html>
