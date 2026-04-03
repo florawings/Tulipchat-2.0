@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tulips Chat</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -25,22 +25,19 @@
             <header class="header">
                 <button id="menu-btn"><i class="fas fa-bars"></i></button>
                 <div class="logo">Tulips.chat</div>
-                <div class="online-count"><i class="fas fa-circle"></i> <span id="count">0</span></div>
+                <div class="online-status"><i class="fas fa-circle" style="color: #22c55e;"></i> <span id="online-count">1</span></div>
             </header>
 
-            <div class="chat-wrapper">
-                <div id="chat-messages" class="chat-display">
-                    </div>
-                
-                <div class="online-users" id="user-list">
-                    <h4>Online</h4>
-                    <ul id="users"></ul>
-                </div>
+            <div id="chat-messages" class="chat-display">
+                <div class="msg received">Welcome to Tulips Chat! Start typing below.</div>
             </div>
 
             <div class="input-area">
-                <input type="text" id="msg-input" placeholder="Type here...">
-                <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
+                <div class="input-container">
+                    <button class="action-btn"><i class="fas fa-plus"></i></button>
+                    <input type="text" id="msg-input" placeholder="Type here..." autocomplete="off">
+                    <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
+                </div>
             </div>
         </div>
     </div>
