@@ -1,71 +1,92 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-const path = require("path");
 const multer = require("multer");
+const path = require("path");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static(path.join(__dirname, "public")));
-app.use("/uploads", express.static("uploads"));
-
-/* FILE UPLOAD */
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname)
-});
-
-const upload = multer({ storage });
-
-app.post("/upload", upload.single("file"), (req, res) => {
-  res.json({ url: "/uploads/" + req.file.filename });
-});
-
-/* DATA */
-let users = {};
+// ===== STORAGE =====
+let users = [];
 let messages = [];
 
-/* AUTO DELETE 10 HOURS */
+// ===== AUTO DELETE (10 HOURS) =====
 setInterval(() => {
   const now = Date.now();
   messages = messages.filter(m => now - m.time < 10 * 60 * 60 * 1000);
 }, 60000);
 
-/* SOCKET */
+// ===== STATIC FILES =====
+app.use(express.static("public"));
+app.use("/uploads", express.static("uploads"));
+
+// ===== FILE UPLOAD =====
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, "uploads/"),
+  filename: (req, file, cb) => {
+    const unique = Date.now() + "-" + file.originalname;
+    cb(null, unique);
+  }
+});
+
+const upload = multer({ storage });
+
+// ===== UPLOAD API =====
+app.post("/upload", upload.single("file"), (req, res) => {
+  res.json({
+    url: "/uploads/" + req.file.filename
+  });
+});
+
+// ===== SOCKET =====
 io.on("connection", (socket) => {
 
+  console.log("User connected");
+
+  // JOIN
   socket.on("join", (username) => {
-    users[socket.id] = username;
-    io.emit("users", Object.values(users));
-    socket.emit("oldMessages", messages);
+    socket.username = username;
+    users.push(username);
+
+    io.emit("users", users);
+
+    // send old messages
+    socket.emit("loadMessages", messages);
   });
 
-  socket.on("msg", (data) => {
-    data.time = Date.now();
-    messages.push(data);
-    io.emit("msg", data);
+  // MESSAGE
+  socket.on("message", (data) => {
+    const msg = {
+      user: data.user,
+      text: data.text || "",
+      type: data.type || "text",
+      url: data.url || "",
+      time: Date.now()
+    };
+
+    messages.push(msg);
+
+    io.emit("message", msg);
   });
 
-  socket.on("dm", ({ to, msg }) => {
-    for (let id in users) {
-      if (users[id] === to) {
-        io.to(id).emit("dm", msg);
-      }
-    }
+  // DM
+  socket.on("dm", (data) => {
+    io.emit("dm", data); // simple version
   });
 
+  // DISCONNECT
   socket.on("disconnect", () => {
-    delete users[socket.id];
-    io.emit("users", Object.values(users));
+    users = users.filter(u => u !== socket.username);
+    io.emit("users", users);
   });
 
 });
 
-/* PORT FIX */
+// ===== START =====
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
-  console.log("Server running on port", PORT);
+  console.log("Server running on port " + PORT);
 });
