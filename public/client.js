@@ -1,42 +1,81 @@
-console.log("CLIENT LOADED");
-
 const socket = io();
+const username = "User" + Math.floor(Math.random()*1000);
 
-const username = "User" + Math.floor(Math.random() * 1000);
-
-socket.on("connect", () => {
-  console.log("CONNECTED:", socket.id);
-  socket.emit("join", username);
-});
+socket.emit("join", username);
 
 const chat = document.getElementById("chat");
 const usersDiv = document.getElementById("users");
-const msgInput = document.getElementById("msg");
 
-function send() {
-  const text = msgInput.value;
+function send(){
+  const text = msg.value;
+  const file = document.getElementById("file").files[0];
 
-  if (!text) return;
+  if(file){
+    const formData = new FormData();
+    formData.append("file", file);
 
-  socket.emit("msg", { user: username, text });
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST","/upload");
 
-  msgInput.value = "";
+    xhr.upload.onprogress = (e)=>{
+      if(e.lengthComputable){
+        console.log("Upload:", Math.round((e.loaded/e.total)*100)+"%");
+      }
+    };
+
+    xhr.onload = ()=>{
+      const res = JSON.parse(xhr.response);
+      socket.emit("msg",{user:username,file:res.url});
+    };
+
+    xhr.send(formData);
+  }
+
+  if(text){
+    socket.emit("msg",{user:username,text});
+    msg.value="";
+  }
 }
 
-socket.on("msg", (data) => {
+/* 🔥 MESSAGE */
+socket.on("msg",(d)=>{
   const div = document.createElement("div");
-  div.innerText = data.user + ": " + data.text;
+  div.className="msg"+(d.user===username?" me":"");
+
+  if(d.text) div.innerText = d.user+": "+d.text;
+  if(d.file){
+    const img = document.createElement("img");
+    img.src=d.file;
+    img.style.width="150px";
+    div.appendChild(img);
+  }
+
   chat.appendChild(div);
 });
 
-socket.on("users", (users) => {
-  usersDiv.innerHTML = "Users: " + users.join(", ");
+/* 🔥 USERS */
+socket.on("users",(users)=>{
+  usersDiv.innerHTML="";
+  users.forEach(u=>{
+    const d=document.createElement("div");
+    d.className="user";
+    d.innerText=u;
+
+    d.onclick=()=>{
+      const msg = prompt("DM to "+u);
+      socket.emit("dm",{to:u,msg});
+    };
+
+    usersDiv.appendChild(d);
+  });
 });
 
-socket.on("oldMessages", (msgs) => {
-  msgs.forEach(m => {
-    const div = document.createElement("div");
-    div.innerText = m.user + ": " + m.text;
-    chat.appendChild(div);
-  });
+/* 🔥 DM */
+socket.on("dm",(msg)=>{
+  alert("DM: "+msg);
+});
+
+/* 🔥 OLD */
+socket.on("oldMessages",(msgs)=>{
+  msgs.forEach(m=>socket.emit("msg",m));
 });
