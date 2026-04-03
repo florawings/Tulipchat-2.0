@@ -1,65 +1,94 @@
+/* Reset aur Basic Setup */
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
-html, body { height: 100%; width: 100%; overflow: hidden; background: #0b0f1a; }
 
+html, body {
+    height: 100%;
+    width: 100%;
+    background: #0b111d;
+    overflow: hidden; /* Body scroll band */
+    position: fixed; /* Mobile layout shift rokne ke liye */
+}
+
+/* Main Container Jo Puri Screen Cover Karega */
 .app-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    width: 100%;
 }
 
-/* Header */
+/* Header (Top Bar) */
 .header {
     height: 55px;
-    background: #fff;
+    background: #ffffff;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 15px;
-    color: #e11d48;
-    flex-shrink: 0;
+    flex-shrink: 0; /* Header dabega nahi */
+    z-index: 100;
 }
 
-/* Chat Box */
+/* Chat Display Area (Beech ka area jo scroll hoga) */
 .chat-main {
-    flex: 1;
+    flex: 1; /* Bachi hui puri jagah lega */
     overflow-y: auto;
+    background: #0b111d;
     padding: 15px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
-.msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; color: white; background: #1e293b; font-size: 14px; }
-.sent { align-self: flex-end; background: #e11d48; }
-
-/* Input Fixed at Bottom */
+/* INPUT AREA - YAHAN FIX HAI */
 .input-footer {
-    padding: 10px;
-    background: #161d2f;
-    flex-shrink: 0;
-    border-top: 1px solid #2d3748;
-}
-
-.input-wrapper {
+    height: 70px; /* Iski height fix rahegi */
+    background: #1a2236;
+    padding: 10px 15px;
     display: flex;
     align-items: center;
-    background: #0b0f1a;
-    border-radius: 25px;
-    padding: 5px 15px;
-    gap: 10px;
+    border-top: 1px solid #2d3748;
+    flex-shrink: 0; /* Yeh line chat option ko dabne nahi degi */
+    z-index: 100;
 }
 
-#msg-input { flex: 1; background: transparent; border: none; color: white; outline: none; padding: 8px 0; }
-#send-btn { background: none; border: none; color: #e11d48; font-size: 20px; }
+.input-box-wrapper {
+    display: flex;
+    width: 100%;
+    background: #0b111d;
+    border-radius: 25px;
+    padding: 5px 15px;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #3e4c6b;
+}
 
-/* Sidebar */
+#msg-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    outline: none;
+    height: 40px;
+    font-size: 16px;
+}
+
+#send-btn {
+    background: none;
+    border: none;
+    color: #e11d48;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* Sidebar Styling */
 .sidebar {
     position: fixed;
     left: -280px;
     top: 0;
     width: 280px;
     height: 100%;
-    background: #161d2f;
+    background: #1a2236;
     transition: 0.3s ease;
     z-index: 1000;
 }
