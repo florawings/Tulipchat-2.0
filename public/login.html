@@ -1,57 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Tulip Chat</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>VibeChat | Login</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
-<body>
-
-<div class="box">
-
-<h2>Tulipchat 2.0</h2>
-
-<input id="username" placeholder="username">
-<input id="password" type="password" placeholder="password">
-
-<button onclick="login()">Login</button>
-
-<a href="register.html">Register</a>
-
-</div>
-
-<script>
-
-async function login(){
-
-const username=document.getElementById("username").value
-const password=document.getElementById("password").value
-
-const res=await fetch("/login",{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({username,password})
-})
-
-const data=await res.json()
-
-if(data.success){
-
-localStorage.setItem("username",username)
-
-window.location="chat.html"
-
-}else{
-
-alert("Invalid login")
-
-}
-
-}
-
-</script>
-
+<body class="auth-bg">
+    <div class="auth-card">
+        <h2>Welcome to VibeChat</h2>
+        <input type="email" id="email" placeholder="Email Address">
+        <input type="password" id="pass" placeholder="Password">
+        <button onclick="loginUser()">Enter the Vibe</button>
+        <p>New here? <a href="signup.html">Create Account</a></p>
+    </div>
+    
+    <script>
+        async function loginUser() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('pass').value;
+            
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if(data.user) {
+                localStorage.setItem('vibeUser', JSON.stringify(data.user));
+                window.location.href = 'index.html'; // Chat page par bhej do
+            } else {
+                alert(data.msg);
+            }
+        }
+    </script>
 </body>
 </html>
