@@ -1,22 +1,25 @@
-<div class="app-container">
-    <aside class="sidebar" id="user-list">
-        <h3>Online Users</h3>
-        </aside>
+<div class="vibe-wrapper">
+    <aside class="vibe-sidebar">
+        <div class="logo">VibeChat</div>
+        <div class="user-list" id="online-users">
+            </div>
+    </aside>
 
-    <main class="global-area">
-        <div id="global-messages"></div>
-        <div class="input-box">
-            <input type="text" id="global-input" placeholder="Message to everyone...">
-            <button onclick="sendGlobal()">Send</button>
+    <main class="vibe-global">
+        <div class="chat-header">🌐 Global Public Square</div>
+        <div class="message-container" id="global-box"></div>
+        <div class="input-area">
+            <input type="text" id="global-input" placeholder="Say something to the world...">
+            <button id="send-global">Send</button>
         </div>
     </main>
 
-    <section class="dm-panel" id="dm-section">
-        <h4 id="dm-target-name">Private Chat</h4>
-        <div id="private-messages"></div>
-        <div class="input-box">
-            <input type="text" id="private-input" placeholder="Reply...">
-            <button onclick="sendPrivate()">➤</button>
+    <section class="vibe-dm" id="dm-window">
+        <div class="dm-header">💬 Private Chat</div>
+        <div class="dm-messages" id="private-box"></div>
+        <div class="dm-input">
+            <input type="text" id="private-input" placeholder="Type a secret...">
+            <button id="send-private">➤</button>
         </div>
     </section>
 </div>
