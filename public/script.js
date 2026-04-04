@@ -1,61 +1,65 @@
 const socket = io();
-const sidebar = document.getElementById('sidebar');
 const chatBox = document.getElementById('chat-box');
 const msgInput = document.getElementById('msg-input');
+const sidebar = document.getElementById('sidebar');
 
-// 1. UI Controls
+// 1. Sidebar Toggle
 function toggleSidebar() {
     sidebar.classList.toggle('active');
 }
 
-function checkEnter(e) {
-    if (e.key === 'Enter') sendMessage();
-}
+// 2. Emoji Picker Logic
+const picker = new EmojiButton({ position: 'top-start', theme: 'dark' });
+const emojiBtn = document.querySelector('#emoji-btn');
 
-// 2. Message Sending
+picker.on('emoji', selection => {
+    msgInput.value += selection;
+});
+
+emojiBtn.addEventListener('click', () => picker.togglePicker(emojiBtn));
+
+// 3. Send Text Message
 function sendMessage() {
     const text = msgInput.value.trim();
     if (!text) return;
-    
-    socket.emit('chat-msg', { type: 'text', content: text, user: 'Me' });
+    socket.emit('chat-msg', { type: 'text', content: text, user: 'Ravindra' });
     msgInput.value = '';
 }
 
-// 3. Photo/GIF Gallery Logic
+// 4. Send Image/GIF
 function handleFileUpload(input) {
     const file = input.files[0];
     if (file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
-            socket.emit('chat-msg', { 
-                type: 'image', 
-                content: e.target.result, 
-                user: 'Me' 
-            });
+        reader.onload = (e) => {
+            socket.emit('chat-msg', { type: 'image', content: e.target.result, user: 'Ravindra' });
         };
         reader.readAsDataURL(file);
     }
 }
 
-// 4. Receiving Messages
+// 5. Receive Messages
 socket.on('new-msg', (data) => {
     const div = document.createElement('div');
-    div.className = `msg ${data.user === 'Me' ? 'me' : ''}`;
+    div.className = `msg ${data.user === 'Ravindra' ? 'me' : ''}`;
     
-    let innerHTML = `<b>${data.user}</b>`;
+    let contentHtml = `<b>${data.user}</b>`;
     if (data.type === 'text') {
-        innerHTML += `<span>${data.content}</span>`;
+        contentHtml += `<span>${data.content}</span>`;
     } else {
-        innerHTML += `<img src="${data.content}" class="chat-img" onclick="window.open(this.src)">`;
+        contentHtml += `<img src="${data.content}" class="chat-img" onclick="window.open(this.src)">`;
     }
     
-    div.innerHTML = innerHTML;
+    div.innerHTML = contentHtml;
     chatBox.appendChild(div);
     chatBox.scrollTop = chatBox.scrollHeight;
 });
 
-// User list update logic
+// User List Update
 socket.on('update-users', (users) => {
-    const list = document.getElementById('user-list');
-    list.innerHTML = users.map(u => `<div class="user-item">${u}</div>`).join('');
+    document.getElementById('user-list').innerHTML = users.map(u => `<div class="user-item">${u}</div>`).join('');
+    document.getElementById('status-text').innerText = `${users.length} Users Online`;
 });
+
+// Enter key to send
+msgInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
