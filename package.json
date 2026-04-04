@@ -1,6 +1,7 @@
 {
-  "name": "chat-app",
+  "name": "vibechat",
   "version": "1.0.0",
+  "description": "Professional Community & Private Chat",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -8,6 +9,7 @@
   "dependencies": {
     "express": "^4.18.2",
     "socket.io": "^4.7.2",
-    "multer": "1.4.5-lts.1"
+    "mongoose": "^7.5.0",
+    "dotenv": "^16.3.1"
   }
 }
