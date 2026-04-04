@@ -1,35 +1,34 @@
 const socket = io();
-const chatBox = document.getElementById('chat-box');
 const msgInput = document.getElementById('msg-input');
-const sidebar = document.getElementById('sidebar');
+const chatBox = document.getElementById('chat-box');
 
 // 1. Sidebar Toggle
 function toggleSidebar() {
-    sidebar.classList.toggle('active');
+    document.getElementById('sidebar').classList.toggle('active');
 }
 
-// 2. Emoji Picker Logic
-const picker = new EmojiButton({ position: 'top-start', theme: 'dark' });
-const emojiBtn = document.querySelector('#emoji-btn');
+// 2. Emoji Picker
+const picker = new EmojiButton({ theme: 'dark' });
+const trigger = document.querySelector('#emoji-trigger');
 
 picker.on('emoji', selection => {
     msgInput.value += selection;
 });
 
-emojiBtn.addEventListener('click', () => picker.togglePicker(emojiBtn));
+trigger.addEventListener('click', () => picker.togglePicker(trigger));
 
-// 3. Send Text Message
+// 3. Send Message
 function sendMessage() {
-    const text = msgInput.value.trim();
-    if (!text) return;
-    socket.emit('chat-msg', { type: 'text', content: text, user: 'Ravindra' });
+    const val = msgInput.value.trim();
+    if(!val) return;
+    socket.emit('chat-msg', { type: 'text', content: val, user: 'Ravindra' });
     msgInput.value = '';
 }
 
-// 4. Send Image/GIF
+// 4. File Upload (Gallery)
 function handleFileUpload(input) {
     const file = input.files[0];
-    if (file) {
+    if(file) {
         const reader = new FileReader();
         reader.onload = (e) => {
             socket.emit('chat-msg', { type: 'image', content: e.target.result, user: 'Ravindra' });
@@ -38,28 +37,25 @@ function handleFileUpload(input) {
     }
 }
 
-// 5. Receive Messages
+// 5. Receive Message
 socket.on('new-msg', (data) => {
     const div = document.createElement('div');
     div.className = `msg ${data.user === 'Ravindra' ? 'me' : ''}`;
     
-    let contentHtml = `<b>${data.user}</b>`;
-    if (data.type === 'text') {
-        contentHtml += `<span>${data.content}</span>`;
+    if(data.type === 'text') {
+        div.innerHTML = `<b>${data.user}:</b><br>${data.content}`;
     } else {
-        contentHtml += `<img src="${data.content}" class="chat-img" onclick="window.open(this.src)">`;
+        div.innerHTML = `<b>${data.user}:</b><br><img src="${data.content}" style="max-width:100%; border-radius:8px;">`;
     }
     
-    div.innerHTML = contentHtml;
     chatBox.appendChild(div);
     chatBox.scrollTop = chatBox.scrollHeight;
 });
 
-// User List Update
+// Update Users
 socket.on('update-users', (users) => {
-    document.getElementById('user-list').innerHTML = users.map(u => `<div class="user-item">${u}</div>`).join('');
-    document.getElementById('status-text').innerText = `${users.length} Users Online`;
+    document.getElementById('status').innerText = `${users.length} Online`;
 });
 
-// Enter key to send
+// Enter Key support
 msgInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
