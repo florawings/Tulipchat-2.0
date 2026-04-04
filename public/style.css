@@ -1,18 +1,19 @@
-.app-container { display: flex; height: 100vh; }
+.vibe-wrapper { display: flex; height: 100vh; background: #000; color: #fff; }
 
-.sidebar { width: 20%; background: #1a1a1a; }
-.global-area { width: 55%; background: #000; border-right: 1px solid #333; }
-.dm-panel { width: 25%; background: #111; }
+.vibe-sidebar { width: 250px; border-right: 1px solid #222; padding: 20px; }
+.vibe-global { flex: 2; display: flex; flex-direction: column; border-right: 1px solid #222; }
+.vibe-dm { width: 300px; background: #0a0a0a; display: flex; flex-direction: column; }
 
-/* Mobile View (Responsive) */
-@media (max-width: 768px) {
-    .sidebar { display: none; } /* Sidebar hide kar do */
-    .global-area { width: 100%; } /* Global full screen */
-    .dm-panel { 
+/* Mobile Fixing */
+@media (max-width: 800px) {
+    .vibe-sidebar { display: none; }
+    .vibe-wrapper { flex-direction: column; }
+    .vibe-global { height: 60%; }
+    .vibe-dm { 
+        width: 100%; 
+        height: 40%; 
         position: fixed; 
         bottom: 0; 
-        height: 40%; 
-        width: 100%; 
-        z-index: 100;
+        box-shadow: 0 -10px 20px rgba(0,0,0,0.8);
     }
 }
