@@ -1,48 +1,16 @@
-module.exports = (io)=>{
+// Backend Logic (Node.js)
+io.on('connection', (socket) => {
+    
+    // 1. Global Message (Sabko dikhega)
+    socket.on('send-global-msg', (data) => {
+        io.emit('receive-global-msg', data); 
+    });
 
-let users = []
-let messages = []
-
-io.on("connection",(socket)=>{
-
-socket.on("join",(username)=>{
-
-socket.username = username
-
-if(!users.includes(username)){
-users.push(username)
-}
-
-io.emit("onlineUsers",users)
-
-socket.emit("chatHistory",messages)
-
-})
-
-socket.on("chat",(msg)=>{
-
-if(msg.text === "/clear"){
-messages = []
-io.emit("clearChat")
-return
-}
-
-messages.push(msg)
-
-io.emit("chat",msg)
-
-})
-
-socket.on("disconnect",()=>{
-
-users = users.filter(
-u => u !== socket.username
-)
-
-io.emit("onlineUsers",users)
-
-})
-
-})
-
-}
+    // 2. Private Message (Sirf recipient ko)
+    socket.on('send-private-msg', ({ toUserId, message }) => {
+        socket.to(toUserId).emit('receive-private-msg', {
+            from: socket.id,
+            message: message
+        });
+    });
+});
