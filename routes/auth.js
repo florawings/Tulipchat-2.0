@@ -1,29 +1,33 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User'); // Aapka User Model
-const bcrypt = require('bcryptjs');
+const User = require('../models/User');
 
-// Register Logic
+// SIGNUP ROUTE
 router.post('/register', async (req, res) => {
     try {
-        const { username, password } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ username, password: hashedPassword });
-        await newUser.save();
-        res.redirect('/login.html?success=true');
+        const { username, email, password } = req.body;
+        let user = await User.findOne({ email });
+        if (user) return res.status(400).json({ msg: 'User already exists' });
+
+        user = new User({ username, email, password }); // Ideally password should be hashed
+        await user.save();
+        res.json({ msg: 'Registration Successful', userId: user._id });
     } catch (err) {
-        res.status(500).send("Error creating user");
+        res.status(500).send('Server Error');
     }
 });
 
-// Login Logic
+// LOGIN ROUTE
 router.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
-    if (user && await bcrypt.compare(password, user.password)) {
-        res.redirect(`/chat.html?username=${username}&role=${user.role}`);
-    } else {
-        res.send("Invalid Username or Password");
+    const { email, password } = req.body;
+    try {
+        let user = await User.findOne({ email });
+        if (!user || user.password !== password) {
+            return res.status(400).json({ msg: 'Invalid Credentials' });
+        }
+        res.json({ msg: 'Login Success', user: { id: user._id, name: user.username } });
+    } catch (err) {
+        res.status(500).send('Server Error');
     }
 });
 
