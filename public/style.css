@@ -1,95 +1,18 @@
-/* Reset aur Basic Setup */
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+.app-container { display: flex; height: 100vh; }
 
-html, body {
-    height: 100%;
-    width: 100%;
-    background: #0b111d;
-    overflow: hidden; /* Body scroll band */
-    position: fixed; /* Mobile layout shift rokne ke liye */
-}
+.sidebar { width: 20%; background: #1a1a1a; }
+.global-area { width: 55%; background: #000; border-right: 1px solid #333; }
+.dm-panel { width: 25%; background: #111; }
 
-/* Main Container Jo Puri Screen Cover Karega */
-.app-container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    width: 100%;
+/* Mobile View (Responsive) */
+@media (max-width: 768px) {
+    .sidebar { display: none; } /* Sidebar hide kar do */
+    .global-area { width: 100%; } /* Global full screen */
+    .dm-panel { 
+        position: fixed; 
+        bottom: 0; 
+        height: 40%; 
+        width: 100%; 
+        z-index: 100;
+    }
 }
-
-/* Header (Top Bar) */
-.header {
-    height: 55px;
-    background: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 15px;
-    flex-shrink: 0; /* Header dabega nahi */
-    z-index: 100;
-}
-
-/* Chat Display Area (Beech ka area jo scroll hoga) */
-.chat-main {
-    flex: 1; /* Bachi hui puri jagah lega */
-    overflow-y: auto;
-    background: #0b111d;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-/* INPUT AREA - YAHAN FIX HAI */
-.input-footer {
-    height: 70px; /* Iski height fix rahegi */
-    background: #1a2236;
-    padding: 10px 15px;
-    display: flex;
-    align-items: center;
-    border-top: 1px solid #2d3748;
-    flex-shrink: 0; /* Yeh line chat option ko dabne nahi degi */
-    z-index: 100;
-}
-
-.input-box-wrapper {
-    display: flex;
-    width: 100%;
-    background: #0b111d;
-    border-radius: 25px;
-    padding: 5px 15px;
-    align-items: center;
-    gap: 10px;
-    border: 1px solid #3e4c6b;
-}
-
-#msg-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: white;
-    outline: none;
-    height: 40px;
-    font-size: 16px;
-}
-
-#send-btn {
-    background: none;
-    border: none;
-    color: #e11d48;
-    font-size: 20px;
-    cursor: pointer;
-}
-
-/* Sidebar Styling */
-.sidebar {
-    position: fixed;
-    left: -280px;
-    top: 0;
-    width: 280px;
-    height: 100%;
-    background: #1a2236;
-    transition: 0.3s ease;
-    z-index: 1000;
-}
-.sidebar.active { left: 0; }
