@@ -1,25 +1,38 @@
-<div class="vibe-wrapper">
-    <aside class="vibe-sidebar">
-        <div class="logo">VibeChat</div>
-        <div class="user-list" id="online-users">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeChat | Professional</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">VibeChat</div>
+            <div id="user-list"></div>
+        </aside>
+
+        <main class="global-chat">
+            <div class="header">🌐 Global Square</div>
+            <div id="global-msgs" class="chat-box"></div>
+            <div class="input-area">
+                <input type="text" id="global-input" placeholder="Message to everyone...">
+                <button onclick="sendGlobal()">Send</button>
             </div>
-    </aside>
+        </main>
 
-    <main class="vibe-global">
-        <div class="chat-header">🌐 Global Public Square</div>
-        <div class="message-container" id="global-box"></div>
-        <div class="input-area">
-            <input type="text" id="global-input" placeholder="Say something to the world...">
-            <button id="send-global">Send</button>
-        </div>
-    </main>
+        <section class="dm-panel">
+            <div class="header">💬 Private Chat</div>
+            <div id="private-msgs" class="chat-box small"></div>
+            <div class="input-area">
+                <input type="text" id="private-input" placeholder="DM...">
+                <button onclick="sendPrivate()">➤</button>
+            </div>
+        </section>
+    </div>
 
-    <section class="vibe-dm" id="dm-window">
-        <div class="dm-header">💬 Private Chat</div>
-        <div class="dm-messages" id="private-box"></div>
-        <div class="dm-input">
-            <input type="text" id="private-input" placeholder="Type a secret...">
-            <button id="send-private">➤</button>
-        </div>
-    </section>
-</div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
