@@ -1,29 +1,40 @@
 const express = require('express');
 const http = require('http');
-const { Server } = require('socket.io');
+const mongoose = require('mongoose');
+const socketio = require('socket.io');
 const path = require('path');
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = socketio(server);
 
-// Public folder ko serve karne ke liye
 app.use(express.static(path.join(__dirname, 'public')));
 
-io.on('connection', (socket) => {
-    console.log('A user connected');
+// MongoDB Connection (Render ke Environment Variables mein MONGO_URI daalein)
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("VibeDB Connected"))
+  .catch(err => console.log("DB Error:", err));
 
-    // Jab koi message bheje
-    socket.on('chat message', (data) => {
-        io.emit('chat message', data); // Sabko message dikhao
+// Socket Logic
+io.on('connection', (socket) => {
+    socket.on('join-global', () => {
+        socket.join('global-room');
     });
 
-    socket.on('disconnect', () => {
-        console.log('User disconnected');
+    socket.on('send-global', (data) => {
+        io.to('global-room').emit('receive-global', data);
+    });
+
+    socket.on('join-private', (userId) => {
+        socket.join(userId);
+    });
+
+    socket.on('send-private', (data) => {
+        // data.toId user ka unique ID hai
+        socket.to(data.toId).emit('receive-private', data);
     });
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+server.listen(PORT, () => console.log(`VibeChat running on ${PORT}`));
