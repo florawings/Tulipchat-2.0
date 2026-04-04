@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VibeChat | Pro Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VibeChat | Professional</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -14,10 +14,7 @@
                 <h2>VibeChat</h2>
                 <button class="close-btn" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
             </div>
-            <div class="user-section">
-                <h4><i class="fas fa-users"></i> Online Users</h4>
-                <div id="user-list" class="user-list"></div>
-            </div>
+            <div id="user-list" class="user-list"></div>
         </aside>
 
         <main class="chat-area">
@@ -25,22 +22,24 @@
                 <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
                 <div class="header-info">
                     <h3>Global Square</h3>
-                    <span id="status-text">Connecting...</span>
+                    <small id="status">Connecting...</small>
                 </div>
             </header>
 
             <div id="chat-box" class="chat-messages"></div>
 
-            <div class="input-container">
-                <button class="action-btn" id="emoji-btn"><i class="far fa-smile"></i></button>
-                <button class="action-btn" onclick="document.getElementById('file-input').click()">
+            <div class="bottom-bar">
+                <button class="icon-btn" id="emoji-trigger"><i class="far fa-smile"></i></button>
+                <button class="icon-btn" onclick="document.getElementById('file-input').click()">
                     <i class="far fa-image"></i>
                 </button>
                 <input type="file" id="file-input" hidden accept="image/*" onchange="handleFileUpload(this)">
                 
-                <input type="text" id="msg-input" placeholder="Type a message..." autocomplete="off">
+                <input type="text" id="msg-input" placeholder="Type your vibe..." autocomplete="off">
                 
-                <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                <button class="send-btn" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
         </main>
     </div>
@@ -50,3 +49,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+    
